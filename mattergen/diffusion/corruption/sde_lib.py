@@ -300,7 +300,7 @@ class VESDE(SDE):
         # This is the same as marginal_prob, but with a different time t.
         # We assume that s < t.
         assert torch.all(s < t), "s must be less than t"
-        std = maybe_expand(self.sigma_min * (self.sigma_max / self.sigma_min) ** s *( (self.sigma_max / self.sigma_min) ** (t-s) - 1), batch_idx, x)
+        std = maybe_expand(self.sigma_min * (self.sigma_max / self.sigma_min) ** s *np.sqrt( (self.sigma_max / self.sigma_min) ** (t-s) - 1), batch_idx, x)
         mean = x
         return mean, std
 
