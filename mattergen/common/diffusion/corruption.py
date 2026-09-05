@@ -95,6 +95,24 @@ class LatticeVPSDE(VPSDE):
         std = torch.sqrt((1.0 - mean_coeff_expanded**2) * limit_var)
         return mean, std
 
+    def marginal_prob_from_s(
+            self,
+            x: torch.Tensor,
+            t: torch.Tensor,
+            s: torch.Tensor,
+            batch_idx: B = None,
+            batch: BatchedData | None = None,
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            assert batch is not None
+            assert torch.all(s < t), "s must be less than t"
+            mean_coeff = self._marginal_mean_coeff(t) / self._marginal_mean_coeff(s)
+            limit_mean = self.get_limit_mean(x=x, batch=batch)
+            limit_var = self.get_limit_var(x=x, batch=batch)
+            mean_coeff_expanded = maybe_expand(mean_coeff, batch_idx, x)
+            mean = mean_coeff_expanded * x + (1 - mean_coeff_expanded) * limit_mean
+            std = torch.sqrt((1.0 - mean_coeff_expanded**2) * limit_var)
+            return mean, std
+
     def mean_coeff_and_std(
         self,
         x: torch.Tensor,
@@ -246,6 +264,22 @@ class NumAtomsVarianceAdjustedWrappedVESDE(WrappedVESDE):
         std_scale = self.std_scaling(batch)
         std = std * maybe_expand(std_scale, batch_idx, like=std)
         return mean, std
+
+    def marginal_prob_from_s(
+            self,
+            x: torch.Tensor,
+            t: torch.Tensor,
+            s: torch.Tensor,
+            batch_idx: B = None,
+            batch: BatchedData | None = None,
+        ) -> tuple[torch.Tensor, torch.Tensor]:
+            mean, std = super().marginal_prob_from_s(x, t, s, batch_idx, batch)
+            assert (
+                batch is not None
+            ), "batch must be provided when using NumAtomsVarianceAdjustedWrappedVESDEMixin"
+            std_scale = self.std_scaling(batch)
+            std = std * maybe_expand(std_scale, batch_idx, like=std)
+            return mean, std
 
     def prior_sampling(
         self,
