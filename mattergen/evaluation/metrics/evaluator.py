@@ -7,7 +7,7 @@ from collections.abc import Iterable, Sequence
 from functools import cached_property
 from inspect import getmembers, isclass
 from pathlib import Path
-from typing import Literal, Sequence, Type, TypeVar
+from typing import Literal, Type, TypeVar
 
 import numpy.typing
 import pandas as pd
@@ -43,16 +43,14 @@ T = TypeVar("T")
 
 
 def unique_item(iterable: Iterable[T]) -> T:
-    """returns the content of a sequence containing a single item."""
+    """Returns the content of a sequence containing a single item."""
     lst = list(iterable)
     assert len(lst) == 1, f"Tried to call unique_item, but {lst} contains {len(lst)} items."
     return lst[0]
 
 
 class MetricsEvaluator:
-    """
-    This class is used to evaluate a set of metrics on a set of structures.
-    """
+    """This class is used to evaluate a set of metrics on a set of structures."""
 
     def __init__(self, capabilities: Sequence[BaseMetricsCapability]):
         assert len(capabilities) > 0, "At least one capability is required."
@@ -72,8 +70,10 @@ class MetricsEvaluator:
         ) = DefaultDisorderedStructureMatcher(),
         n_failed_jobs: int = 0,
     ) -> Self:
-        """Instantiate MetricsEvaluator from a list of structures. This is useful for computing structure-based metrics."""
+        """Instantiate MetricsEvaluator from a list of structures.
 
+        This is useful for computing structure-based metrics.
+        """
         if reference is None:
             print("No reference dataset provided. Using MP2020 correction dataset as reference.")
             reference = ReferenceMP2020Correction()
@@ -228,7 +228,7 @@ class MetricsEvaluator:
     def _get_capability(self, capability: Type[CapabilityT]) -> CapabilityT:
         assert (
             capability in self.available_capability_types
-        ), f"Capability {capability} is not available. Must be one of {self.available_capability_types}."
+        ), f"Capability {capability} is not available. Must be one of {self.available_capability_types}."  # noqa: E501
         return unique_item(cap for cap in self.capabilities if isinstance(cap, capability))
 
     def _get_metric(self, metric: Type[BaseMetric]) -> BaseMetric:
@@ -256,14 +256,13 @@ class MetricsEvaluator:
         save_as: str | os.PathLike | None = None,
         pretty_print: bool = False,
     ) -> dict[str, float | int]:
-        """Computes metrics and returns them as a dictionary. Optionally, saves the dictionary to a file.
+        """Computes metrics and returns them as a dictionary.
 
-        Args:
-            metrics: List of metrics to compute. If "all", all available metrics are computed.
-            save_as: Path to save the dictionary. If None, the dictionary is not saved.
-            pretty_print: If True, the dictionary is printed in a pretty format.
+        Optionally, saves the dictionary to a file.         Args:             metrics: List of
+        metrics to compute. If "all", all available metrics are computed.             save_as: Path
+        to save the dictionary. If None, the dictionary is not saved.             pretty_print: If
+        True, the dictionary is printed in a pretty format.
         """
-
         metrics_dict: dict[str, dict] = {}
         metrics_classes = self.available_metrics if metrics == "all" else metrics
 
@@ -302,8 +301,8 @@ class MetricsEvaluator:
         metrics: Sequence[Type[BaseMetric]] | Literal["all"] | None = None,
         save_as: str | os.PathLike | None = None,
     ) -> DataFrame:
-        """Return aggregate metrics as a pandas DataFrame, along with additional information from each available capability."""
-
+        """Return aggregate metrics as a pandas DataFrame, along with additional information from
+        each available capability."""
         metrics = metrics or []
         metrics_classes = self.available_metrics if metrics == "all" else metrics
 

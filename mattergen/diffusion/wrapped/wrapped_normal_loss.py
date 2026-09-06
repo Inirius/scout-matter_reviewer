@@ -5,7 +5,7 @@ from typing import Literal, Optional
 
 import torch
 
-from mattergen.diffusion.corruption.sde_lib import SDE, maybe_expand
+from mattergen.diffusion.corruption.sde_lib import SDE
 from mattergen.diffusion.data.batched_data import BatchedData
 from mattergen.diffusion.training.field_loss import aggregate_per_sample
 
@@ -21,7 +21,7 @@ def get_pbc_offsets(pbc: torch.Tensor, max_offset_integer: int = 3) -> torch.Ten
 
     Returns:
         torch.Tensor, [batch_size, (2 * max_offset_integer + 1)^dim, dim]: The tensor containing the integer offsets of the pbc vectors.
-    """
+    """  # noqa: E501
     offset_range = torch.arange(-max_offset_integer, max_offset_integer + 1, device=pbc.device)
     meshgrid = torch.stack(
         torch.meshgrid(offset_range, offset_range, offset_range, indexing="xy"), dim=-1
@@ -39,19 +39,18 @@ def wrapped_normal_score(
     batch: torch.Tensor,
     max_offset_integer: int = 3,
 ) -> torch.Tensor:
-    """Approximate the the score of a 3D wrapped normal distribution with diagonal covariance matrix w.r.t. x via a truncated sum.
-       See docstring of `wrapped_normal_score` for details about the arguments
+    """Approximate the the score of a 3D wrapped normal distribution with diagonal covariance matrix
+    w.r.t.
 
-    Args:
-        x (torch.Tensor, [num_atoms, dim])
-        mean (torch.Tensor, [num_atoms, dim])
-        wrapping_boundary (torch.Tensor, [num_molecules, dim, dim])
-        variance_diag (torch.Tensor, [num_atoms,])
-        batch (torch.Tensor, [num_atoms, ])
-        max_offset_integer (int), Defaults to 3.
+    x via a truncated sum. See docstring of `wrapped_normal_score` for details about the arguments
 
-    Returns:
-        torch.Tensor, [num_atoms, dim]: The approximated score of the wrapped normal distribution.
+    Args:     x (torch.Tensor, [num_atoms, dim])     mean (torch.Tensor, [num_atoms, dim])
+    wrapping_boundary (torch.Tensor, [num_molecules, dim, dim])     variance_diag (torch.Tensor,
+    [num_atoms,])     batch (torch.Tensor, [num_atoms, ])     max_offset_integer (int), Defaults to
+    3.
+
+    Returns:     torch.Tensor, [num_atoms, dim]: The approximated score of the wrapped normal
+    distribution.
     """
     offset_add = get_pbc_offsets(
         wrapping_boundary,
@@ -78,6 +77,7 @@ def wrapped_normal_loss(
     **_,
 ) -> torch.Tensor:
     """Compute the loss for a wrapped normal distribution.
+
     Compares the score of the wrapped normal distribution to the score of the score model.
     """
     assert len(t) == batch_size
@@ -101,7 +101,7 @@ def wrapped_normal_loss(
         batch_size, -1, -1
     )
 
-    # We multiply the score by the standard deviation because we don't use raw_noise here; raw_noise is -score * std, i.e., we multiply the score by std.
+    # We multiply the score by the standard deviation because we don't use raw_noise here; raw_noise is -score * std, i.e., we multiply the score by std.  # noqa: E501
     target = (
         wrapped_normal_score(
             x=noisy_x,

@@ -92,16 +92,14 @@ class PredictorCorrector(Generic[Diffusable]):
         print_loss_history: bool = False,  # Flag to control printing of loss history
         algo: int = 0,  # Algorithm type
     ):
-        """
-        Args:
-            diffusion_module: diffusion module
-            predictor_partials: partials for constructing predictors. Keys are the names of the corruptions.
-            corrector_partials: partials for constructing correctors. Keys are the names of the corruptions.
-            device: device to run on
-            n_steps_corrector: number of corrector steps
-            N: number of noise levels
-            eps_t: diffusion time to stop denoising at
-            max_t: diffusion time to start denoising at. If None, defaults to the maximum diffusion time. You may want to start at T-0.01, say, for numerical stability.
+        """Args: diffusion_module: diffusion module predictor_partials: partials for constructing
+        predictors.
+
+        Keys are the names of the corruptions. corrector_partials: partials for constructing
+        correctors. Keys are the names of the corruptions. device: device to run on
+        n_steps_corrector: number of corrector steps N: number of noise levels eps_t: diffusion time
+        to stop denoising at max_t: diffusion time to start denoising at. If None, defaults to the
+        maximum diffusion time. You may want to start at T-0.01, say, for numerical stability.
         """
         self._diffusion_module = diffusion_module
         self.N = N
@@ -163,14 +161,14 @@ class PredictorCorrector(Generic[Diffusable]):
         self, conditioning_data: BatchedData, mask: Mapping[str, torch.Tensor] | None = None
     ) -> SampleAndMean:
         """Create one sample for each of a batch of conditions.
-        Args:
-            conditioning_data: batched conditioning data. Even if you think you don't want conditioning, you still need to pass a batch of conditions
-               because the sampler uses these to determine the shapes of things to generate.
-            mask: for inpainting. Keys should be a subset of the keys in `data`. 1 indicates data that should be fixed, 0 indicates data that should be replaced with sampled values.
-                Shapes of values in `mask` must match the shapes of values in `conditioning_data`.
-        Returns:
-           (batch, mean_batch). The difference between these is that `mean_batch` has no noise added at the final denoising step.
 
+        Args:     conditioning_data: batched conditioning data. Even if you think you don't want
+        conditioning, you still need to pass a batch of conditions        because the sampler uses
+        these to determine the shapes of things to generate.     mask: for inpainting. Keys should
+        be a subset of the keys in `data`. 1 indicates data that should be fixed, 0 indicates data
+        that should be replaced with sampled values.         Shapes of values in `mask` must match
+        the shapes of values in `conditioning_data`. Returns:    (batch, mean_batch). The difference
+        between these is that `mean_batch` has no noise added at the final denoising step.
         """
         return self._sample_maybe_record(conditioning_data, mask=mask, record=False)[:2]
 
@@ -179,14 +177,14 @@ class PredictorCorrector(Generic[Diffusable]):
         self, conditioning_data: BatchedData, mask: Mapping[str, torch.Tensor] | None = None
     ) -> SampleAndMeanAndRecords:
         """Create one sample for each of a batch of conditions.
-        Args:
-            conditioning_data: batched conditioning data. Even if you think you don't want conditioning, you still need to pass a batch of conditions
-               because the sampler uses these to determine the shapes of things to generate.
-            mask: for inpainting. Keys should be a subset of the keys in `data`. 1 indicates data that should be fixed, 0 indicates data that should be replaced with sampled values.
-                Shapes of values in `mask` must match the shapes of values in `conditioning_data`.
-        Returns:
-           (batch, mean_batch). The difference between these is that `mean_batch` has no noise added at the final denoising step.
 
+        Args:     conditioning_data: batched conditioning data. Even if you think you don't want
+        conditioning, you still need to pass a batch of conditions        because the sampler uses
+        these to determine the shapes of things to generate.     mask: for inpainting. Keys should
+        be a subset of the keys in `data`. 1 indicates data that should be fixed, 0 indicates data
+        that should be replaced with sampled values.         Shapes of values in `mask` must match
+        the shapes of values in `conditioning_data`. Returns:    (batch, mean_batch). The difference
+        between these is that `mean_batch` has no noise added at the final denoising step.
         """
         return self._sample_maybe_record(conditioning_data, mask=mask, record=True)
 
@@ -198,16 +196,17 @@ class PredictorCorrector(Generic[Diffusable]):
         record: bool = False,
     ) -> SampleAndMeanAndMaybeRecords:
         """Create one sample for each of a batch of conditions.
-        Args:
-            conditioning_data: batched conditioning data. Even if you think you don't want conditioning, you still need to pass a batch of conditions
-               because the sampler uses these to determine the shapes of things to generate.
-            mask: for inpainting. Keys should be a subset of the keys in `data`. 1 indicates data that should be fixed, 0 indicates data that should be replaced with sampled values.
-                Shapes of values in `mask` must match the shapes of values in `conditioning_data`.
-        Returns:
-           (batch, mean_batch, recorded_samples, recorded_predictions).
-           The difference between the former two is that `mean_batch` has no noise added at the final denoising step.
-           The latter two are only returned if `record` is True, and contain the samples and predictions from each step of the diffusion process.
 
+        Args:     conditioning_data: batched conditioning data. Even if you think you don't want
+        conditioning, you still need to pass a batch of conditions        because the sampler uses
+        these to determine the shapes of things to generate.     mask: for inpainting. Keys should
+        be a subset of the keys in `data`. 1 indicates data that should be fixed, 0 indicates data
+        that should be replaced with sampled values.         Shapes of values in `mask` must match
+        the shapes of values in `conditioning_data`. Returns:    (batch, mean_batch,
+        recorded_samples, recorded_predictions).    The difference between the former two is that
+        `mean_batch` has no noise added at the final denoising step.    The latter two are only
+        returned if `record` is True, and contain the samples and predictions from each step of the
+        diffusion process.
         """
         if isinstance(self._diffusion_module, torch.nn.Module):
             self._diffusion_module.eval()
@@ -226,7 +225,8 @@ class PredictorCorrector(Generic[Diffusable]):
         diffusion_loss_fn: Callable[[BatchedData, torch.Tensor], torch.Tensor],
         diffusion_loss_weight: list[float],
     ):
-        """Set or update the diffusion loss function and its weight after the module has been initialized."""
+        """Set or update the diffusion loss function and its weight after the module has been
+        initialized."""
         self.diffusion_loss_fn = diffusion_loss_fn
         self.diffusion_loss_weight = diffusion_loss_weight
         if len(self.diffusion_loss_weight) == 2:
@@ -388,7 +388,7 @@ class PredictorCorrector(Generic[Diffusable]):
                     samples_means=samples_means, batch=batch, mean_batch=mean_batch, mask=mask
                 )  # z_t-1
 
-                ############## Algorithm 1 ############
+                # Algorithm 1 ############
                 # Corrector updates.
                 if self._correctors and self.algo == 1:
                     for _ in range(self._n_steps_corrector):
@@ -412,7 +412,7 @@ class PredictorCorrector(Generic[Diffusable]):
                             mean_batch=mean_batch_,
                             mask=mask,
                         )
-                ############## Algorithm 1 ############
+                # Algorithm 1 ############
 
                 # Renoise the batch fieldwise
                 fns = {
@@ -430,7 +430,7 @@ class PredictorCorrector(Generic[Diffusable]):
                 batch = batch_.replace(**{k: v[0] for k, v in samples_means.items()})
                 mean_batch = mean_batch_.replace(**{k: v[1] for k, v in samples_means.items()})
 
-                ############## Algorithm 2 ############
+                # Algorithm 2 ############
                 # Corrector updates.
                 if self._correctors and self.algo == 2:
                     for _ in range(self._n_steps_corrector):
@@ -455,7 +455,7 @@ class PredictorCorrector(Generic[Diffusable]):
                             mask=mask,
                         )
 
-                ############## Algorithm 2 ############
+                # Algorithm 2 ############
 
                 score = self._score_fn(batch, t)
 

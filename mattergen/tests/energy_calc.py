@@ -40,9 +40,7 @@ PDIAG = None
 
 
 def _energy_hull(composition, energy):
-    """
-    Computes the energy above the hull for a given composition and energy.
-    """
+    """Computes the energy above the hull for a given composition and energy."""
     global PDIAG
     dir = "/path/to/mattergenbis/phase_diagram/"  # Directory for the phase diagram CSV
     if PDIAG is None:

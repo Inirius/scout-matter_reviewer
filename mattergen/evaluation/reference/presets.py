@@ -10,10 +10,12 @@ from mattergen.evaluation.reference.reference_dataset_serializer import LMDBGZSe
 
 class ReferenceMP2020Correction(ReferenceDataset):
     """Reference dataset using the MP2020 Energy Correction scheme.
-    This dataset contains entries from the Materials Project [https://next-gen.materialsproject.org/]
+
+    This dataset contains entries from the Materials Project [
+    https://next-gen.materialsproject.org/]
     and Alexandria [https://next-gen.materialsproject.org/].
     All 845,997 structures are relaxed using the GGA-PBE functional and have energy corrections applied using the MP2020 scheme.
-    """
+    """  # noqa: E501
 
     def __init__(self):
         super().__init__("MP2020correction", ReferenceMP2020Correction.from_preset())

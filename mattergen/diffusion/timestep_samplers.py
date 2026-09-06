@@ -5,8 +5,6 @@ from typing import Protocol
 
 import torch
 
-from mattergen.diffusion.corruption.sde_lib import SDE
-
 
 class TimestepSampler(Protocol):
     min_t: float
@@ -27,9 +25,8 @@ class UniformTimestepSampler:
     ):
         """Initializes the sampler.
 
-        Args:
-            min_t (float): Smallest timestep that will be seen during training.
-            max_t (float): Largest timestep that will be seen during training.
+        Args:     min_t (float): Smallest timestep that will be seen during training.     max_t
+        (float): Largest timestep that will be seen during training.
         """
         super().__init__()
         self.min_t = min_t

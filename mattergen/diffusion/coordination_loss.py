@@ -83,14 +83,9 @@ def _parse_species_group(
 def _parse_coordination_constraint(
     species_constraint: str,
 ) -> tuple[tuple[int, ...], tuple[int, ...]]:
-    """
-    Parse coordination keys.
+    """Parse coordination keys.
 
-    Supported forms:
-      A-B
-      A-[B,C,D]
-      A-B,C,D
-      [A,B,C]-D
+    Supported forms:   A-B   A-[B,C,D]   A-B,C,D   [A,B,C]-D
 
     At least one side must contain exactly one species.
     """
@@ -179,8 +174,7 @@ def _validate_soft_count_objective_config(target: dict, objective_name: str) -> 
     if ranked_options:
         options = ", ".join(repr(option) for option in ranked_options)
         raise ValueError(
-            f"{options} are ranked_coordination options and are not valid for "
-            f"'{objective_name}'."
+            f"{options} are ranked_coordination options and are not valid for '{objective_name}'."
         )
 
 
@@ -253,16 +247,13 @@ def _coordination_margin_penalties_per_A_single(
     margin: float = DEFAULT_COORDINATION_MARGIN,
     temperature: float = DEFAULT_COORDINATION_TEMPERATURE,
 ) -> torch.Tensor:
-    """
-    Return the ranked-neighbor softplus margin penalty for every central A atom.
+    """Return the ranked-neighbor softplus margin penalty for every central A atom.
 
-    For target coordination k, every d_(i) with i <= k is pulled below
-    r_cut - margin and every d_(i) with i > k is pushed above r_cut + margin.
-    Thus, all neighbors on the wrong side of the coordination sphere receive
-    a useful gradient, rather than only d_(k) and d_(k+1). The softplus tails
-    make the force on neighbors that already satisfy their margin decay
-    smoothly. The distances include 27 periodic B images, with only the
-    zero-shift self-image excluded.
+    For target coordination k, every d_(i) with i <= k is pulled below r_cut - margin and every
+    d_(i) with i > k is pushed above r_cut + margin. Thus, all neighbors on the wrong side of the
+    coordination sphere receive a useful gradient, rather than only d_(k) and d_(k+1). The softplus
+    tails make the force on neighbors that already satisfy their margin decay smoothly. The
+    distances include 27 periodic B images, with only the zero-shift self-image excluded.
     """
     frac = torch.as_tensor(
         frac,
@@ -454,8 +445,7 @@ def _compute_target_coordination_share_single(
     r_cut: float | None = None,
     alpha: float = DEFAULT_COORDINATION_ALPHA,
 ) -> torch.Tensor:
-    """
-    Compute one structure's sigmoid-soft-count target-coordination share.
+    """Compute one structure's sigmoid-soft-count target-coordination share.
 
     Returns (1/|A|) sum_i exp(-((C_i-target)/tau)^2).
     """
@@ -482,8 +472,7 @@ def compute_target_coordination_share(
     r_cut: float | None = None,
     alpha: float = DEFAULT_COORDINATION_ALPHA,
 ) -> torch.Tensor:
-    """
-    Batched sigmoid-soft-count target share.
+    """Batched sigmoid-soft-count target share.
 
     Returns (B,) if batched, scalar if single.
     """
@@ -528,19 +517,13 @@ def target_coordination_share_loss(
     alpha: float = DEFAULT_COORDINATION_ALPHA,
     default_tau: float = 0.5,
 ) -> torch.Tensor:
-    """
-    Maximize the sigmoid-soft-count target-coordination share.
+    """Maximize the sigmoid-soft-count target-coordination share.
 
-    Each A-B target minimizes 1 - share_A(k; B), where the share is computed
-    with a Gaussian window of width ``tau`` in coordination space.
+    Each A-B target minimizes 1 - share_A(k; B), where the share is computed with a Gaussian window
+    of width ``tau`` in coordination space.
 
-    `target` can be:
-      {'alpha': 3.0, 'A-B': k}
-      {'A-B': k}
-      {'A-B': [k, r_cut]}
-      {'A-B': [k, r_cut, tau]}
-      {'A-[B,C,D]': k}
-      {'[A,B,C]-D': k}
+    `target` can be:   {'alpha': 3.0, 'A-B': k}   {'A-B': k}   {'A-B': [k, r_cut]}   {'A-B': [k,
+    r_cut, tau]}   {'A-[B,C,D]': k}   {'[A,B,C]-D': k}
     """
     if not isinstance(x, ChemGraph):
         raise ValueError("x must be a ChemGraph object")
@@ -615,13 +598,11 @@ def compute_mean_coordination(
     r_cut: float | None = None,
     alpha: float = DEFAULT_COORDINATION_ALPHA,
 ) -> torch.Tensor:
-    """
-    Batched mean sigmoid-soft-count coordination, mean_i sum_j g(d_ij).
+    """Batched mean sigmoid-soft-count coordination, mean_i sum_j g(d_ij).
 
-    Either `type_A` or `type_B` may be a collection of atomic numbers. Grouped
-    centers are pooled before taking the mean. If `r_cut` is omitted, each
-    center element uses its own default cutoff; for a grouped neighbor set this
-    is the maximum default cutoff over that center's neighbor pairs.
+    Either `type_A` or `type_B` may be a collection of atomic numbers. Grouped centers are pooled
+    before taking the mean. If `r_cut` is omitted, each center element uses its own default cutoff;
+    for a grouped neighbor set this is the maximum default cutoff over that center's neighbor pairs.
     Returns: (B,) if batched, scalar if single.
     """
     # Normalize to batched
@@ -674,14 +655,12 @@ def compute_ranked_coordination(
     cn_temperature: float = DEFAULT_COORDINATION_CN_TEMPERATURE,
     satisfaction_weight: float = DEFAULT_COORDINATION_SATISFACTION_WEIGHT,
 ) -> torch.Tensor:
-    """
-    Batched mean ranked-neighbor softplus penalty for an exact integer target.
+    """Batched mean ranked-neighbor softplus penalty for an exact integer target.
 
-    Every rank i <= k is assigned inside the cutoff margin and every rank
-    i > k outside it. The mean penalty is supplemented by a smooth reward for
-    centers whose sigmoid coordination lies within k +/- ``cn_tolerance``.
-    Set ``satisfaction_weight=0`` to recover the pure group-softplus objective.
-    Returns (B,) if batched, scalar if single.
+    Every rank i <= k is assigned inside the cutoff margin and every rank i > k outside it. The mean
+    penalty is supplemented by a smooth reward for centers whose sigmoid coordination lies within k
+    +/- ``cn_tolerance``. Set ``satisfaction_weight=0`` to recover the pure group-softplus
+    objective. Returns (B,) if batched, scalar if single.
     """
     alpha = float(alpha)
     satisfaction_weight = float(satisfaction_weight)
@@ -752,30 +731,24 @@ def mean_coordination_loss(
     target: dict,
     alpha: float = DEFAULT_COORDINATION_ALPHA,
 ) -> torch.Tensor:
-    """
-    Computes the pair- or group-coordination loss for a given ChemGraph.
+    """Computes the pair- or group-coordination loss for a given ChemGraph.
 
-    Computes an l1/l2/Huber comparison between mean sigmoid-soft-count
-    coordination and its target. Use ``ranked_coordination_loss`` for the
-    direct ranked-neighbor softplus penalty.
+    Computes an l1/l2/Huber comparison between mean sigmoid-soft-count coordination and its target.
+    Use ``ranked_coordination_loss`` for the direct ranked-neighbor softplus penalty.
 
     Example of target: {'alpha': 3.0, 'O-H': 1, 'O-C': [1,2.0], 'C-C': 2,
-                        'H-[Pd,Ni,Pt]': 3, '[H,C]-O': 2}
-    Meaning that the environment of O should have 1 H and 1 C but with a r_cut
-    of 2.0 for C, the environment of C should have 2 C, and H should have a
-    total of 3 Pd/Ni/Pt neighbors.
-    The non-specified distance will be using the default r_cut, which is the sum of the covalent radii of the two species plus 0.5.
-    The function computes the mean coordination loss for the specified species in the ChemGraph.
-    The loss is computed as the absolute difference between the computed environment and the target value.
+    'H-[Pd,Ni,Pt]': 3, '[H,C]-O': 2} Meaning that the environment of O should have 1 H and 1 C but
+    with a r_cut of 2.0 for C, the environment of C should have 2 C, and H should have a total of 3
+    Pd/Ni/Pt neighbors. The non-specified distance will be using the default r_cut, which is the sum
+    of the covalent radii of the two species plus 0.5. The function computes the mean coordination
+    loss for the specified species in the ChemGraph. The loss is computed as the absolute difference
+    between the computed environment and the target value.
 
-    Args:
-        x (ChemGraph): The input ChemGraph.
-        t (Any): Unused, but required for compatibility.
-        target (dict): The species of interest and the target value for each coordination constraint.
-        alpha (float): Sharpness of the sigmoid neighbor count.
+    Args:     x (ChemGraph): The input ChemGraph.     t (Any): Unused, but required for
+    compatibility.     target (dict): The species of interest and the target value for each
+    coordination constraint.     alpha (float): Sharpness of the sigmoid neighbor count.
 
-    Returns:
-        torch.Tensor: The computed mean coordination loss.
+    Returns:     torch.Tensor: The computed mean coordination loss.
     """
     if not isinstance(x, ChemGraph):
         raise ValueError("x must be a ChemGraph object")
@@ -836,7 +809,7 @@ def mean_coordination_loss(
     target_tensor = target_vec.expand(-1, B)  # (num_pairs, B)
 
     # Compute the loss
-    if mode == "l1" or mode == None or mode == "test":
+    if mode == "l1" or mode is None or mode == "test":
         loss = torch.abs(f_AB - target_tensor)
     elif mode == "l2":
         loss = torch.nn.functional.mse_loss(f_AB, target_tensor, reduction="none")
@@ -877,7 +850,7 @@ def ranked_coordination_loss(
     invalid_options = sorted({"mode"}.intersection(target))
     if invalid_options:
         options = ", ".join(repr(option) for option in invalid_options)
-        raise ValueError(f"{options} are not valid for " "'ranked_coordination'.")
+        raise ValueError(f"{options} are not valid for 'ranked_coordination'.")
 
     default_margin = float(target.get("margin", default_margin))
     default_temperature = float(target.get("temperature", default_temperature))

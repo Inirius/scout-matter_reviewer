@@ -17,6 +17,7 @@ TargetProperty = dict[PropertySourceId, int | float | Sequence[str]]
 @dataclass(frozen=True)
 class PropertyValues:
     "A class for storing the values of a property"
+
     values: np.ndarray
     property_source_doc_id: PropertySourceId
     origins: list[PropertyOrigin] | None = (

@@ -51,7 +51,12 @@ def draw_samples_from_sampler(
     properties_to_condition_on = properties_to_condition_on or {}
 
     # we cannot conditional sample on something on which the model was not trained to condition on
-    assert all([key in sampler.diffusion_module.model.cond_fields_model_was_trained_on for key in properties_to_condition_on.keys()])  # type: ignore
+    assert all(
+        [
+            key in sampler.diffusion_module.model.cond_fields_model_was_trained_on
+            for key in properties_to_condition_on.keys()
+        ]
+    )  # type: ignore
 
     all_samples_list = []
     all_trajs_list = []
@@ -61,7 +66,6 @@ def draw_samples_from_sampler(
     sampler.algo = algo  # NEW
 
     for conditioning_data, mask in tqdm(condition_loader, desc="Generating samples"):
-
         # generate samples
         if record_trajectories:
             sample, mean, intermediate_samples = sampler.sample_with_record(conditioning_data, mask)
@@ -229,11 +233,20 @@ class CrystalGenerator:
             "please add it to mattergen.common.data.num_atoms_distribution.NUM_ATOMS_DISTRIBUTIONS."
         )
         if self.target_compositions_dict:
-            assert self.cfg.lightning_module.diffusion_module.loss_fn.weights.get(
-                "atomic_numbers", 0.0
-            ) == 0.0 and "atomic_numbers" not in self.cfg.lightning_module.diffusion_module.corruption.get(
-                "discrete_corruptions", {}
-            ), "Input model appears to have been trained for crystal generation (i.e., with atom type denoising), not crystal structure prediction. Please use a model trained for crystal structure prediction instead."
+            assert (
+                self.cfg.lightning_module.diffusion_module.loss_fn.weights.get(
+                    "atomic_numbers", 0.0
+                )
+                == 0.0
+                and "atomic_numbers"
+                not in self.cfg.lightning_module.diffusion_module.corruption.get(
+                    "discrete_corruptions", {}
+                )
+            ), (
+                "Input model appears to have been trained for crystal generation (i.e., with atom "
+                "type denoising), not crystal structure prediction. Please use a model trained for "
+                "crystal structure prediction instead."
+            )
             sampling_cfg = self._load_sampling_config(
                 sampling_config_name=self.sampling_config_name,
                 sampling_config_overrides=self.sampling_config_overrides,
@@ -244,7 +257,9 @@ class CrystalGenerator:
                 or "atomic_numbers" in sampling_cfg.sampler_partial.corrector_partials
             ):
                 raise ValueError(
-                    "Incompatible sampling config for crystal structure prediction: found atomic_numbers in predictor_partials or corrector_partials. Use the 'csp' sampling config instead, e.g., via --sampling-config-name=csp."
+                    "Incompatible sampling config for crystal structure prediction: found "
+                    "atomic_numbers in predictor_partials or corrector_partials. Use the 'csp' "
+                    "sampling config instead, e.g., via --sampling-config-name=csp."
                 )
 
     @property
@@ -261,18 +276,16 @@ class CrystalGenerator:
 
     @property
     def num_structures_to_generate(self) -> int:
-        """Returns the total number of structures to generate if `batch_size` and `num_batches` are specified at construction time;
-        otherwise, raises an AssertionError.
-        """
+        """Returns the total number of structures to generate if `batch_size` and `num_batches` are
+        specified at construction time; otherwise, raises an AssertionError."""
         assert self.batch_size is not None
         assert self.num_batches is not None
         return self.batch_size * self.num_batches
 
     @property
     def sampling_config(self) -> DictConfig:
-        """Returns the sampling config if `batch_size` and `num_batches` are specified at construction time;
-        otherwise, raises an AssertionError.
-        """
+        """Returns the sampling config if `batch_size` and `num_batches` are specified at
+        construction time; otherwise, raises an AssertionError."""
         assert self.batch_size is not None
         assert self.num_batches is not None
         return self.load_sampling_config(
@@ -298,9 +311,10 @@ class CrystalGenerator:
         num_batches: int,
         target_compositions_dict: list[dict[str, float]] | None = None,
     ) -> DictConfig:
-        """
-        Create a sampling config from the given parameters.
-        We specify certain sampling hyperparameters via the sampling config that is loaded via hydra.
+        """Create a sampling config from the given parameters.
+
+        We specify certain sampling hyperparameters via the sampling config that is loaded via
+        hydra.
         """
         if self.sampling_config_overrides is None:
             sampling_config_overrides = []
@@ -322,8 +336,14 @@ class CrystalGenerator:
                 num_batches * batch_size // len(target_compositions_dict)
             )
             sampling_config_overrides += [
-                "condition_loader_partial._target_=mattergen.common.data.condition_factory.get_composition_data_loader",
-                f"+condition_loader_partial.num_structures_to_generate_per_composition={num_structures_to_generate_per_composition}",
+                (
+                    "condition_loader_partial._target_="
+                    "mattergen.common.data.condition_factory.get_composition_data_loader"
+                ),
+                (
+                    "+condition_loader_partial.num_structures_to_generate_per_composition="
+                    f"{num_structures_to_generate_per_composition}"
+                ),
                 f"+condition_loader_partial.batch_size={batch_size}",
             ]
         return self._load_sampling_config(

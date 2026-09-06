@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-import json
 from typing import Callable, Generic, TypeVar
 
 import torch
@@ -37,10 +36,9 @@ g = ChemGraph(
 
 
 class DiffusionModule(torch.nn.Module, Generic[T]):
-    """Denoising diffusion model for a multi-part state
-    diffusion_loss_fn: Loss function that is used for the universal diffusion guidance
-    diffusion_loss_weight: Weight for the diffusion loss (theorelically should be 1.0)
-    """
+    """Denoising diffusion model for a multi-part state diffusion_loss_fn: Loss function that is
+    used for the universal diffusion guidance diffusion_loss_weight: Weight for the diffusion loss
+    (theorelically should be 1.0)"""
 
     def __init__(
         self,
@@ -66,10 +64,8 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
         self._register_corruption_modules()
 
     def _register_corruption_modules(self):
-        """
-        Register corruptions that are instances of `torch.nn.Module`s for proper device, parameter,
-        etc handling.
-        """
+        """Register corruptions that are instances of `torch.nn.Module`s for proper device,
+        parameter, etc handling."""
         assert isinstance(self.corruption, MultiCorruption)
         for idx, (key, _corruption) in enumerate(self.corruption._corruptions.items()):
             if isinstance(_corruption, torch.nn.Module):
@@ -78,19 +74,15 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
     def calc_loss(
         self, batch: T, node_is_unmasked: torch.LongTensor | None = None
     ) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
-        """
-        Calculate loss and metrics given a batch of clean data which may include
+        """Calculate loss and metrics given a batch of clean data which may include
         context/conditioning fields. Add noise, predict score using score model, then calculate
         loss.
 
-        Args:
-            batch: batch of training data
-            node_is_unmasked: mask that has a value 1 for nodes that are included in the loss, and
-                a value of 0 for nodes that should be ignored. If None, all nodes are included.
+        Args:     batch: batch of training data     node_is_unmasked: mask that has a value 1 for
+        nodes that are included in the loss, and         a value of 0 for nodes that should be
+        ignored. If None, all nodes are included.
 
-        Returns:
-            loss: the loss for the batch
-            metrics: a dictionary of metrics for the batch
+        Returns:     loss: the loss for the batch     metrics: a dictionary of metrics for the batch
         """
         batch = self.pre_corruption_fn(batch)
 
@@ -113,18 +105,15 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
         self,
         batch: T,
     ) -> tuple[T, torch.Tensor]:
-        """
-        Corrupt a batch of data for use in a training step:
-        - sample a different timestep for each sample in the batch
-        - add noise according to the corruption process
+        """Corrupt a batch of data for use in a training step:
 
-        Args:
-            batch: Batch of clean states
+        - sample a different timestep for each sample in the batch - add noise according to the
+        corruption process
 
-        Returns:
-            noisy_batch: batch of noisy samples
-            t: the timestep used for each sample in the batch
+        Args:     batch: Batch of clean states
 
+        Returns:     noisy_batch: batch of noisy samples     t: the timestep used for each sample in
+        the batch
         """
         # Sample timesteps
         t = self.sample_timesteps(batch)
@@ -142,16 +131,12 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
         score: T | None = None,
         get_alpha: bool = False,
     ) -> T:
-        """Predict the x_0 from a batch of data at a given timestep
-        Args:
-            x: batch of data
-            atomic_numbers: atomic numbers of the predicted atoms in the batch
-            t: timestep
-            score: score of the batch of data at the given timestep, if None, it will be calculated (it is modified in the self-rec steps)
-            get_alpha: whether to return alpha values for each field
+        """Predict the x_0 from a batch of data at a given timestep Args: x: batch of data
+        atomic_numbers: atomic numbers of the predicted atoms in the batch t: timestep score: score
+        of the batch of data at the given timestep, if None, it will be calculated (it is modified
+        in the self-rec steps) get_alpha: whether to return alpha values for each field.
 
-        Returns:
-            x_0: predicted x_0 for the batch of data at the given timestep
+        Returns:     x_0: predicted x_0 for the batch of data at the given timestep
         """
         replace_kwargs = ["pos", "cell"]
 
@@ -197,14 +182,11 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
         return x0
 
     def score_fn(self, x: T, t: torch.Tensor) -> T:
-        """Calculate the score of a batch of data at a given timestep
+        """Calculate the score of a batch of data at a given timestep.
 
-        Args:
-            x: batch of data
-            t: timestep
+        Args:     x: batch of data     t: timestep
 
-        Returns:
-            score: score of the batch of data at the given timestep
+        Returns:     score: score of the batch of data at the given timestep
         """
         model_out: T = self.model(x, t)
         fns = {k: convert_model_out_to_score for k in self.corruption.sdes.keys()}
@@ -226,11 +208,9 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
         return model_out.replace(**scores)
 
     def sample_timesteps(self, batch: T) -> torch.Tensor:
-        """Sample the timesteps, which will be used to determine how much noise
-        to add to data.
+        """Sample the timesteps, which will be used to determine how much noise to add to data.
 
-        Args:
-           batch: batch of data to be corrupted
+        Args:    batch: batch of data to be corrupted
 
         Returns: sampled timesteps
         """

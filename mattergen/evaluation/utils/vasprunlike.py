@@ -26,11 +26,12 @@ class IdentityCorrectionScheme(Compatibility):
 
 
 class VasprunLike:
-    """
-    Mocks a VASP run using only the structure as well as INCAR and POTCAR information from MPRelaxSet.
-    Code adapted from https://github.com/materialsproject/pymatgen/blob/6c23d744efbd892ec48346297d61b4f3f86b1478/pymatgen/io/vasp/outputs.py#L153
+    """Mocks a VASP run using only the structure as well as INCAR and POTCAR information from
+    MPRelaxSet. Code adapted from https://github.com/materialsproject/pymatgen/blob/6c23d744efbd892e
+    c48346297d61b4f3f86b1478/pymatgen/io/vasp/outputs.py#L153.
 
-    Note that this object does not have the full functionality of a Vasprun. It is only used to obtain energy corrections if the full Vasprun information is not available.
+    Note that this object does not have the full functionality of a Vasprun. It is only used to
+    obtain energy corrections if the full Vasprun information is not available.
     """
 
     def __init__(
@@ -63,8 +64,9 @@ class VasprunLike:
 
     @property
     def hubbards(self) -> dict:
-        """
-        Hubbard U values used if a vasprun is a GGA+U run. {} otherwise.
+        """Hubbard U values used if a vasprun is a GGA+U run.
+
+        {} otherwise.
         """
         symbols = [s.split()[1] for s in self.potcar_symbols]
         symbols = [re.split(r"_", s)[0] for s in symbols]
@@ -82,10 +84,11 @@ class VasprunLike:
 
     @property
     def run_type(self) -> str:
-        """
-        Returns the run type. Simplified version of https://github.com/materialsproject/pymatgen/blob/6c23d744efbd892ec48346297d61b4f3f86b1478/pymatgen/io/vasp/outputs.py#L716.
-        """
+        """Returns the run type.
 
+        Simplified version of
+        https://github.com/materialsproject/pymatgen/blob/6c23d744efbd892ec48346297d61b4f3f86b1478/pymatgen/io/vasp/outputs.py#L716.
+        """
         rt = "GGA"
         if self.is_hubbard:
             rt += "+U"
@@ -94,9 +97,7 @@ class VasprunLike:
 
     @property
     def is_hubbard(self) -> bool:
-        """
-        True if run is a DFT+U run.
-        """
+        """True if run is a DFT+U run."""
         if len(self.hubbards) == 0:
             return False
         return sum(self.hubbards.values()) > 1e-8

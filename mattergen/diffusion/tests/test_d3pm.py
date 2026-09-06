@@ -24,6 +24,7 @@
 # limitations under the License.
 
 """Tests for d3pm.py."""
+
 import functools
 
 import numpy as np
@@ -36,7 +37,6 @@ from mattergen.diffusion.d3pm import d3pm as diffusion
 @pytest.mark.parametrize("schedule_kind", ["linear", "standard", "cosine"])
 def test_prior_kl(schedule_kind: str):
     """Test the prior KL computation."""
-
     schedule = diffusion.create_discrete_diffusion_schedule(
         kind=schedule_kind,
         beta_min=1e-3,
@@ -53,8 +53,10 @@ def test_prior_kl(schedule_kind: str):
 
 
 def test_product_the_hard_way():
-    """Tests that the discrete transition matrices computed via q(x_t | x_0) and q(x_t|x_{t-1}) are equivalent
-    for t in {0, 1}. Uses the slow iterative method of computing the transition matrix q(x_t | x_0).
+    """Tests that the discrete transition matrices computed via q(x_t | x_0) and q(x_t|x_{t-1}) are
+    equivalent for t in {0, 1}.
+
+    Uses the slow iterative method of computing the transition matrix q(x_t | x_0).
     """
     schedule = diffusion.create_discrete_diffusion_schedule(
         kind="linear",
@@ -75,8 +77,10 @@ def test_product_the_hard_way():
 
 
 def test_product_fast():
-    """Tests that the discrete transition matrices computed via q(x_t | x_0) and q(x_t|x_{t-1}) are equivalent
-    for t in {0, 1}. Uses the fast closed-form method of computing the transition matrix q(x_t | x_0).
+    """Tests that the discrete transition matrices computed via q(x_t | x_0) and q(x_t|x_{t-1}) are
+    equivalent for t in {0, 1}.
+
+    Uses the fast closed-form method of computing the transition matrix q(x_t | x_0).
     """
     schedule = diffusion.create_discrete_diffusion_schedule(
         kind="linear",
@@ -97,9 +101,9 @@ def test_product_fast():
 
 
 def test_product_constant():
-    """Tests, when we have a constant beta schedule (transition probabilities don't change over time),
-    whether the transition matrices computed via q(x_t | x_0) and q(x_t|x_{t-1}), and via explicit matrix
-    multiplication are equivalent."""
+    """Tests, when we have a constant beta schedule (transition probabilities don't change over
+    time), whether the transition matrices computed via q(x_t | x_0) and q(x_t|x_{t-1}), and via
+    explicit matrix multiplication are equivalent."""
     schedule = diffusion.create_discrete_diffusion_schedule(
         kind="linear",
         beta_min=1e-3,
@@ -123,8 +127,8 @@ def test_product_constant():
 
 
 def test_sample_and_posterior():
-    """Tests whether the samples and posterior are as expected when providing timestep 0 for the sampling."""
-
+    """Tests whether the samples and posterior are as expected when providing timestep 0 for the
+    sampling."""
     schedule = diffusion.create_discrete_diffusion_schedule(
         kind="linear",
         beta_min=1e-3,
@@ -149,7 +153,6 @@ def test_sample_and_posterior():
 
 def test_compute_posterior():
     """Tests that the forward diffusion probabilities are correct for t=0."""
-
     schedule = diffusion.create_discrete_diffusion_schedule(
         kind="linear",
         beta_min=1e-3,
@@ -277,7 +280,8 @@ def test_large_matrices():
 
 
 def test_loss_computation():
-    """Tests whether the loss computation uses the right terms (KL / cross-entropy) and broadcasts correctly."""
+    """Tests whether the loss computation uses the right terms (KL / cross-entropy) and broadcasts
+    correctly."""
     torch.manual_seed(234)
     num_steps = 100
     num_classes = 7
@@ -312,7 +316,7 @@ def test_loss_computation():
     kl_loss = loss_dict.pop("kl/kl_loss")
     cross_entropy_loss = loss_dict.pop("kl/cross_entropy_loss")
     assert loss.shape == t.shape
-    # KL loss should be the same as the loss for all timesteps except the first one, where cross-entropy is used.
+    # KL loss should be the same as the loss for all timesteps except the first one, where cross-entropy is used.  # noqa: E501
     assert torch.allclose(kl_loss[1:], loss[1:])
     assert torch.allclose(cross_entropy_loss[:1], loss[:1])
     assert torch.allclose(kl_loss, torch.zeros_like(kl_loss), atol=1e-6)

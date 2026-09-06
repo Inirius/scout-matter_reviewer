@@ -78,9 +78,9 @@ class BaseDataset(Dataset):
         properties: list[PropertySourceId] | None = None,
         dataset_transforms: list[DatasetTransform] | None = None,
     ):
-        """
-        Load a dataset using a dataset name and split. We assume the dataset is stored in the
-        datasets folder in the project root.
+        """Load a dataset using a dataset name and split.
+
+        We assume the dataset is stored in the datasets folder in the project root.
         """
         return CrystalDatasetBuilder.from_dataset_name(
             dataset_name=dataset_name,
@@ -97,17 +97,14 @@ class BaseDataset(Dataset):
         properties: list[PropertySourceId] | None = None,
         dataset_transforms: list[DatasetTransform] | None = None,
     ) -> T:
-        """
-        Load a dataset from a specified cache path.
+        """Load a dataset from a specified cache path.
 
-        Args:
-            name: Name of the reference dataset.
-            transforms: List of transforms to apply to **each datapoint** when loading, e.g., to make the lattice matrices symmetric.
-            properties: List of properties to condition on.
-            dataset_transforms: List of transforms to apply to the **whole dataset**, e.g., to filter out certain entries.
+        Args:     name: Name of the reference dataset.     transforms: List of transforms to apply
+        to **each datapoint** when loading, e.g., to make the lattice matrices symmetric.
+        properties: List of properties to condition on.     dataset_transforms: List of transforms
+        to apply to the **whole dataset**, e.g., to filter out certain entries.
 
-        Returns:
-            The dataset.
+        Returns:     The dataset.
         """
         return CrystalDatasetBuilder.from_cache_path(
             cache_path=cache_path,
@@ -116,15 +113,11 @@ class BaseDataset(Dataset):
         ).build(cls, dataset_transforms=dataset_transforms)
 
     def subset(self, indices: Sequence[int]) -> "BaseDataset":
-        """
-        Create a subset of the dataset with the given indices.
-        """
+        """Create a subset of the dataset with the given indices."""
         raise NotImplementedError
 
     def repeat(self, repeats: int) -> "BaseDataset":
-        """
-        Repeat the dataset a number of times.
-        """
+        """Repeat the dataset a number of times."""
         raise NotImplementedError
 
 
@@ -138,13 +131,14 @@ def repeat_along_first_axis(
 
 @dataclass(frozen=True, kw_only=True)
 class CrystalDataset(BaseDataset):
-    """
-    Dataset for crystal structures. Takes as input numpy arrays for positions, cell, atomic numbers,
-    number of atoms and structure id. Optionally, properties can be added as well, as a dictionary
-    of numpy arrays. The dataset can also be transformed using a list of transforms.
-    The recommended way of creating a CrystalDataset is to use the class method
-    CrystalDataset.from_preset with a preset name, which will use the CrystalDatasetBuilder class to
-    fetch the dataset from cache if it exists, and otherwise cache it.
+    """Dataset for crystal structures.
+
+    Takes as input numpy arrays for positions, cell, atomic numbers, number of atoms and structure
+    id. Optionally, properties can be added as well, as a dictionary of numpy arrays. The dataset
+    can also be transformed using a list of transforms. The recommended way of creating a
+    CrystalDataset is to use the class method CrystalDataset.from_preset with a preset name, which
+    will use the CrystalDatasetBuilder class to fetch the dataset from cache if it exists, and
+    otherwise cache it.
     """
 
     pos: numpy.typing.NDArray
@@ -177,8 +171,8 @@ class CrystalDataset(BaseDataset):
 
     @cached_property
     def index_offset(self):
-        """
-        Returns an array of indices that can be used to offset the indices of the atoms.
+        """Returns an array of indices that can be used to offset the indices of the atoms.
+
         That is, for structure index <ix>, the atoms are located at indices
         <index_offset[ix]:index_offset[ix]+num_atoms[ix]> in the pos and atomic_numbers arrays.
         """
@@ -226,10 +220,7 @@ class CrystalDataset(BaseDataset):
         )
 
     def repeat(self, repeats: int) -> "CrystalDataset":
-        """
-        Repeat the dataset a number of times.
-        """
-
+        """Repeat the dataset a number of times."""
         pos = repeat_along_first_axis(self.pos, repeats)
         cell = repeat_along_first_axis(self.cell, repeats)
         atomic_numbers = repeat_along_first_axis(self.atomic_numbers, repeats)
@@ -249,12 +240,12 @@ class CrystalDataset(BaseDataset):
 
 @dataclass(frozen=True, kw_only=True)
 class NumAtomsCrystalDataset(BaseDataset):
-    """
-    A dataset class for crystal structures where the number of atoms is the only property. Optionally,
-    other properties can be added as well, as a dictionary of numpy arrays.
-    This is useful for sampling, where only need to condition on the number of atoms in the structure.
-    Positions and cell are filled with NaNs, and the atomic numbers are filled with -1 for ChemGraphs
-    that are created from this dataset.
+    """A dataset class for crystal structures where the number of atoms is the only property.
+
+    Optionally, other properties can be added as well, as a dictionary of numpy arrays. This is
+    useful for sampling, where only need to condition on the number of atoms in the structure.
+    Positions and cell are filled with NaNs, and the atomic numbers are filled with -1 for
+    ChemGraphs that are created from this dataset.
     """
 
     num_atoms: numpy.typing.NDArray
@@ -293,9 +284,7 @@ class NumAtomsCrystalDataset(BaseDataset):
         )
 
     def repeat(self, repeats: int) -> "NumAtomsCrystalDataset":
-        """
-        Repeat the dataset a number of times.
-        """
+        """Repeat the dataset a number of times."""
         num_atoms = repeat_along_first_axis(self.num_atoms, repeats)
         structure_id = repeat_along_first_axis(self.structure_id, repeats)
         properties = {k: repeat_along_first_axis(v, repeats) for k, v in self.properties.items()}
@@ -313,19 +302,16 @@ class NumAtomsCrystalDataset(BaseDataset):
         num_samples: int,
         transforms: list[Transform] | None = None,
     ) -> T:
+        """Construct a NumAtomsCrystalDataset from a distribution over number of atoms.
+
+        Args:     num_atoms_distribution: A dictionary with the number of atoms as keys and the
+        probability of that number of atoms as values.     transforms: List of transforms to apply
+        to **each datapoint** when loading, e.g., to make the lattice matrices symmetric.
+        properties: List of properties to condition on.     dataset_transforms: List of transforms
+        to apply to the **whole dataset**, e.g., to filter out certain entries.
+
+        Returns:     The dataset.
         """
-        Construct a NumAtomsCrystalDataset from a distribution over number of atoms.
-
-        Args:
-            num_atoms_distribution: A dictionary with the number of atoms as keys and the probability of that number of atoms as values.
-            transforms: List of transforms to apply to **each datapoint** when loading, e.g., to make the lattice matrices symmetric.
-            properties: List of properties to condition on.
-            dataset_transforms: List of transforms to apply to the **whole dataset**, e.g., to filter out certain entries.
-
-        Returns:
-            The dataset.
-        """
-
         return NumAtomsCrystalDataset(
             num_atoms=np.random.choice(
                 list(num_atoms_distribution.keys()),
@@ -339,9 +325,10 @@ class NumAtomsCrystalDataset(BaseDataset):
 def structures_to_numpy(
     structures: Iterable[Structure],
 ) -> tuple[dict[str, numpy.typing.NDArray], dict[PropertySourceId, numpy.typing.NDArray]]:
-    """
-    Convert a list of Structures to numpy arrays for positions, cell, atomic numbers,
-    number of atoms and structure id. Returns a dictionary with the numpy arrays.
+    """Convert a list of Structures to numpy arrays for positions, cell, atomic numbers, number of
+    atoms and structure id.
+
+    Returns a dictionary with the numpy arrays.
     """
     structure_infos: dict[str, list[numpy.typing.NDArray]] = {
         "pos": [],
@@ -379,9 +366,10 @@ def structures_to_numpy(
 
 
 class CrystalDatasetBuilder:
-    """
-    Class for building CrystalDatasets. The builder handles the caching of the numpy arrays and
-    properties, and can be used to add new properties to the cache.
+    """Class for building CrystalDatasets.
+
+    The builder handles the caching of the numpy arrays and properties, and can be used to add new
+    properties to the cache.
 
     The most common way to use the CrystalDatasetBuilder is to use the from_preset method, which
     only requires the name of the reference dataset. The builder will then check if the dataset is
@@ -447,13 +435,13 @@ class CrystalDatasetBuilder:
         dataset_class: Type[T] = CrystalDataset,
         dataset_transforms: list[DatasetTransform] | None = None,
     ) -> T:
-        """
-        Build a dataset from the cached numpy arrays and properties. The dataset class can be
-        either CrystalDataset, CrystalStructurePredictionSamplingDataset, or NumAtomsCrystalDataset.
+        """Build a dataset from the cached numpy arrays and properties.
 
-        Args:
-            dataset_class: The class of the dataset to build.
-            dataset_transforms: List of transforms to apply to the dataset.
+        The dataset class can be either CrystalDataset, CrystalStructurePredictionSamplingDataset,
+        or NumAtomsCrystalDataset.
+
+        Args:     dataset_class: The class of the dataset to build.     dataset_transforms: List of
+        transforms to apply to the dataset.
         """
         if dataset_class == CrystalDataset:
             dataset = self._build_full_dataset()
@@ -467,10 +455,7 @@ class CrystalDatasetBuilder:
         return dataset
 
     def _build_full_dataset(self) -> CrystalDataset:
-        """
-        Build a CrystalDataset from the cached numpy arrays and properties.
-        """
-
+        """Build a CrystalDataset from the cached numpy arrays and properties."""
         dataset = CrystalDataset(
             pos=self.pos,
             cell=self.cell,
@@ -483,10 +468,7 @@ class CrystalDatasetBuilder:
         return dataset
 
     def _build_num_atoms(self) -> NumAtomsCrystalDataset:
-        """
-        Build a NumAtomsCrystalDataset from the cached numpy arrays and properties.
-        """
-
+        """Build a NumAtomsCrystalDataset from the cached numpy arrays and properties."""
         dataset = NumAtomsCrystalDataset(
             num_atoms=self.num_atoms,
             structure_id=self.structure_id,
@@ -514,10 +496,7 @@ class CrystalDatasetBuilder:
         transforms: list[Transform] | None = None,
         properties: list[PropertySourceId] | None = None,
     ) -> "CrystalDatasetBuilder":
-        """
-        Create a CrystalDatasetBuilder from a path that contains cache for the dataset.
-        """
-
+        """Create a CrystalDatasetBuilder from a path that contains cache for the dataset."""
         return cls(
             cache_path=cache_path,
             transforms=transforms,
@@ -556,9 +535,7 @@ class CrystalDatasetBuilder:
         )
 
     def list_available_properties(self) -> list[PropertySourceId]:
-        """
-        List the properties that are available in the cache.
-        """
+        """List the properties that are available in the cache."""
         return [
             prop.split(".json")[0] for prop in os.listdir(self.cache_path) if prop.endswith(".json")
         ]
@@ -568,9 +545,9 @@ class CrystalDatasetBuilder:
         property_name: PropertySourceId,
         data: dict[str, numpy.typing.NDArray],
     ):
-        """
-        Add a new property to the cache. The property will be stored in the blob storage and added
-        to the properties of the dataset.
+        """Add a new property to the cache.
+
+        The property will be stored in the blob storage and added to the properties of the dataset.
 
         The data should be a dictionary with the structure id as keys and the property values as
         values. The properties can be sparse, i.e. some structures can be missing the property.

@@ -1,15 +1,16 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-"""Note that importing this module has two side effects:
-1. It sets the environment variable `PROJECT_ROOT` to the root of the explorers project.
-2. It registers a new resolver for OmegaConf, `eval`, which allows us to use `eval` in our config files.
+"""Note that importing this module has two side effects: 1.
+
+It sets the environment variable `PROJECT_ROOT` to the root of the explorers project. 2. It
+registers a new resolver for OmegaConf, `eval`, which allows us to use `eval` in our config files.
 """
+
 import os
 from functools import lru_cache
 from pathlib import Path
 
-import psutil
 import torch
 from omegaconf import OmegaConf
 
@@ -17,9 +18,7 @@ device = None
 
 
 def get_device_name() -> torch.device:
-    """
-    Returns the name of the current device (GPU or CPU).
-    """
+    """Returns the name of the current device (GPU or CPU)."""
     global device
     if device is None:
         device = get_device()
@@ -28,8 +27,9 @@ def get_device_name() -> torch.device:
 
 @lru_cache
 def get_device(min_gpu_mem_gb=8, force_gpu: int | None = None) -> torch.device:
-    """
-    Returns the GPU device with the most free memory, and at least min_gpu_mem_gb free memory, if available.
+    """Returns the GPU device with the most free memory, and at least min_gpu_mem_gb free memory, if
+    available.
+
     Otherwise, returns CPU.
     """
     global device
@@ -56,9 +56,7 @@ def get_device(min_gpu_mem_gb=8, force_gpu: int | None = None) -> torch.device:
 
 @lru_cache
 def get_pyg_device() -> torch.device:
-    """
-    Some operations of pyg don't work on MPS, so fall back to CPU.
-    """
+    """Some operations of pyg don't work on MPS, so fall back to CPU."""
     if torch.cuda.is_available():
         return torch.device("cuda")
     return torch.device("cpu")
@@ -167,8 +165,8 @@ MAX_ATOMIC_NUM = 100
 
 # Set `eval` resolver
 def try_eval(s):
-    """This is a custom resolver for OmegaConf that allows us to use `eval` in our config files
-    with the syntax `${eval:'${foo} + ${bar}'}
+    """This is a custom resolver for OmegaConf that allows us to use `eval` in our config files with
+    the syntax `${eval:'${foo} + ${bar}'}
 
     See:
     https://omegaconf.readthedocs.io/en/2.3_branch/how_to_guides.html#id1

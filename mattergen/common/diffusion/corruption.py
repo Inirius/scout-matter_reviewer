@@ -20,13 +20,12 @@ def expand(a, x_shape, left=False):
 
 
 def make_noise_symmetric_preserve_variance(noise: torch.Tensor) -> torch.Tensor:
-    """Makes the noise matrix symmetric, preserving the variance. Assumes i.i.d. noise for each dimension.
+    """Makes the noise matrix symmetric, preserving the variance.
 
-    Args:
-        noise (torch.Tensor): Input noise matrix, must be a batched square matrix, i.e., have shape (batch_size, dim, dim).
+    Assumes i.i.d. noise for each dimension.     Args:         noise (torch.Tensor): Input noise
+    matrix, must be a batched square matrix, i.e., have shape (batch_size, dim, dim).
 
-    Returns:
-        torch.Tensor: The symmetric noise matrix, with the same variance as the input.
+    Returns:     torch.Tensor: The symmetric noise matrix, with the same variance as the input.
     """
     assert (
         len(noise.shape) == 3 and noise.shape[1] == noise.shape[2]
@@ -142,16 +141,12 @@ class LatticeVPSDE(VPSDE):
         ).to(x.device)
 
     def get_limit_var(self, x: torch.Tensor, batch: BatchedData) -> torch.Tensor:
-        """
-        Returns the element-wise variance of the limit distribution.
-        NOTE: even though we have a different limit variance per data
-        dimension we still sample IID for each element per data point.
-        We do NOT do any correlated sampling over data dimensions per
-        data point.
+        """Returns the element-wise variance of the limit distribution. NOTE: even though we have a
+        different limit variance per data dimension we still sample IID for each element per data
+        point. We do NOT do any correlated sampling over data dimensions per data point.
 
         Return shape=x.shape
         """
-
         # x: shape [batch_size, *x.shape[1:]]
         # limit_info: shape [batch_size,]
         # necessary for mypy
@@ -231,8 +226,10 @@ class LatticeVPSDE(VPSDE):
 
 
 class NumAtomsVarianceAdjustedWrappedVESDE(WrappedVESDE):
-    """Wrapped VESDE with variance adjusted by number of atoms. We divide the standard deviation by the cubic root of the number of atoms.
-    The goal is to reduce the influence by the cell size on the variance of the fractional coordinates.
+    """Wrapped VESDE with variance adjusted by number of atoms.
+
+    We divide the standard deviation by the cubic root of the number of atoms. The goal is to reduce
+    the influence by the cell size on the variance of the fractional coordinates.
     """
 
     def __init__(
@@ -297,8 +294,8 @@ class NumAtomsVarianceAdjustedWrappedVESDE(WrappedVESDE):
             torch.arange(num_atoms.shape[0], device=num_atoms.device), num_atoms, dim=0
         )
         std_scale = self.std_scaling(conditioning_data)
-        # prior sample is randn() * sigma_max, so we need additionally multiply by std_scale to get the correct variance.
-        # We call VESDE.prior_sampling (a "grandparent" function) because the super() prior_sampling already does the wrapping,
+        # prior sample is randn() * sigma_max, so we need additionally multiply by std_scale to get the correct variance.  # noqa: E501
+        # We call VESDE.prior_sampling (a "grandparent" function) because the super() prior_sampling already does the wrapping,  # noqa: E501
         # which means we couldn't do the variance adjustment here anymore otherwise.
         prior_sample = DiffVESDE.prior_sampling(self, shape=shape).to(num_atoms.device)
         return self.wrap(prior_sample * maybe_expand(std_scale, batch_idx, like=prior_sample))

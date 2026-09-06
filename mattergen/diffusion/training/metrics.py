@@ -12,8 +12,8 @@ from mattergen.diffusion.score_models.base import Diffusable
 
 
 class Metric(Protocol):
-    """
-    Computes a metric to be logged during training.
+    """Computes a metric to be logged during training.
+
     Each metric must have a name which is used as a prefix for the metric in the log.
     """
 
@@ -30,17 +30,15 @@ class Metric(Protocol):
         batch: BatchedData,
         noisy_batch: BatchedData,
     ) -> Dict[str, torch.Tensor]:
-        """
-        Computes a metric to be logged during training. Useful, e.g., for plotting loss over time.
+        """Computes a metric to be logged during training.
 
-        Args:
-            loss_per_sample_per_field: Dict[str, torch.Tensor], where each tensor has shape (batch_size,).
-            multi_corruption: MultiCorruption
-            score_model_output: the output produced by the model per field.
-            t: shape (batch_size,). Time for each element in the loss.
-            batch_idx: Dict[str, torch.LongTensor]: batch indices per field
-            batch: BatchedData: the clean (un-perturbed) batched data
-            noisy_batch: BatchedData: the corrupted batched data
+        Useful, e.g., for plotting loss over time.         Args:
+        loss_per_sample_per_field: Dict[str, torch.Tensor], where each tensor has shape
+        (batch_size,).             multi_corruption: MultiCorruption             score_model_output:
+        the output produced by the model per field.             t: shape (batch_size,). Time for
+        each element in the loss.             batch_idx: Dict[str, torch.LongTensor]: batch indices
+        per field             batch: BatchedData: the clean (un-perturbed) batched data
+        noisy_batch: BatchedData: the corrupted batched data
         """
         pass
 
@@ -48,15 +46,12 @@ class Metric(Protocol):
 def loss_per_time_bin(
     loss_per_sample: torch.Tensor, t: torch.Tensor, bins: torch.Tensor
 ) -> torch.Tensor:
-    """
-    Aggregate loss per bin. Useful for plotting loss over time.
+    """Aggregate loss per bin.
 
-    Args:
-        loss_per_sample: shape (batch_size,). Loss for each sample.
-        t: shape (batch_size,). Time for each element in the loss.
-        bins: shape (num_bins,). Upper boundaries of the time bins.
-    Returns:
-        avg_loss_per_bin: shape (num_bins,). Average loss per time bin.
+    Useful for plotting loss over time.     Args:         loss_per_sample: shape (batch_size,). Loss
+    for each sample.         t: shape (batch_size,). Time for each element in the loss.
+    bins: shape (num_bins,). Upper boundaries of the time bins.     Returns:
+    avg_loss_per_bin: shape (num_bins,). Average loss per time bin.
     """
     bin_per_element = torch.bucketize(t, bins)
     avg_loss_per_bin = scatter(
@@ -78,8 +73,9 @@ class LossPerTimeBin(Metric):
         t: torch.Tensor,
         **_,
     ) -> Dict[str, torch.Tensor]:
-        """
-        Compute loss bins per diffusion time bin. Useful for plotting loss over diffusion time.
+        """Compute loss bins per diffusion time bin.
+
+        Useful for plotting loss over diffusion time.
         """
         metrics_dict = {}
         for k, v in loss_per_sample_per_field.items():
@@ -102,9 +98,7 @@ class LossPerTimeBin(Metric):
 
 
 class MetricsCalculator:
-    """
-    Computes a set of metrics to be logged during training.
-    """
+    """Computes a set of metrics to be logged during training."""
 
     def __init__(self, metric_fns: Iterable[Metric]):
         self.metric_fns = metric_fns

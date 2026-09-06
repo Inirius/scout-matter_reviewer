@@ -28,12 +28,12 @@ class MultiCorruptionConfig:
 
 
 class MultiCorruption(Generic[Diffusable]):
-    """Wraps multiple `Corruption` instances to operate on different fields of a State
+    """Wraps multiple `Corruption` instances to operate on different fields of a State.
 
     In the forward process, each field of State is corrupted independently.
 
-    In the reverse process, a single score model takes in the entire State and
-    uses it to estimate the score with respect to each field of the State.
+    In the reverse process, a single score model takes in the entire State and uses it to estimate
+    the score with respect to each field of the State.
     """
 
     def _get_batch_indices(self, batch: Diffusable) -> Dict[str, torch.Tensor]:
@@ -44,11 +44,8 @@ class MultiCorruption(Generic[Diffusable]):
         sdes: Optional[Mapping[str, SDE]] = None,
         discrete_corruptions: Optional[Mapping[str, D3PMCorruption]] = None,
     ):
-        """
-        Args:
-            sdes: mapping from fields of batch to SDE corruption processes
-            discrete_corruptions: mapping from fields of batch to discrete corruption processes
-        """
+        """Args: sdes: mapping from fields of batch to SDE corruption processes
+        discrete_corruptions: mapping from fields of batch to discrete corruption processes."""
         if sdes is None:
             sdes = {}
         if discrete_corruptions is None:
@@ -110,7 +107,7 @@ class MultiCorruption(Generic[Diffusable]):
     def sde(
         self, batch: Diffusable, t: torch.Tensor
     ) -> Dict[str, Tuple[torch.Tensor, torch.Tensor]]:
-        """Get drift and diffusion for each component of the state"""
+        """Get drift and diffusion for each component of the state."""
         assert (
             not self.has_discrete_corruptions
         ), "Cannot call `sde` on a MultiCorruption with non-SDE corruptions"
@@ -146,9 +143,9 @@ class MultiCorruption(Generic[Diffusable]):
 
 def apply(fns: Dict[str, Callable[..., R]], broadcast, **kwargs) -> Dict[str, R]:
     """Apply different function with different argument values to each field.
-    fns: dict of the form {field_name: function_to_apply}
-    broadcast: arguments that are identical for every field_name
-    kwargs: dict of the form {argument_name: {field_name: argument_value}}
+
+    fns: dict of the form {field_name: function_to_apply} broadcast: arguments that are identical
+    for every field_name kwargs: dict of the form {argument_name: {field_name: argument_value}}
     """
     return {
         field_name: fn(

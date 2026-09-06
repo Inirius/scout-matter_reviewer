@@ -79,7 +79,6 @@ class DiscreteDiffusionBase(abc.ABC):
 
     def sample_t(self, shape=(1,)):
         """Samples batches of time steps to use."""
-
         num_steps = self.num_steps
         t = torch.randint(shape, minval=0, maxval=num_steps)
         return t
@@ -117,26 +116,19 @@ class DiscreteDiffusionBase(abc.ABC):
     ):
         """Samples from q(x_{t+1} | x_0), then computes q(x_t | x_{t+1}, x_0).
 
-        Args:
-          x_0: an array containing x_0 samples. These are expected to be integral
-            unless make_one_hot is False (in which case probabilities can be
-            provided).
-          t: the timestep to compute (as an int or integer array with shape that
-            matches x_0.
-          samples: if not None, use these samples to compute the posterior.
-          transition_probs: precomputed transition probabilities.
-          return_logits: if True, returns the (noisy) log of the probabilities.
-          return_transition_probs: if true, returns the transition probs as well.
-          transition_probs_in_logits: include transition probs in logits.
-          make_one_hot: if True, will convert the input to a one_hot vector.
-          epsilon: a small amount of noise to add to logits if needed.
-          step_size: if provided, computes q(x_{t + step_size} | x_0), etc. This is
-            used to sample fewer steps for ELBO evaluation on a longer trained
-            model.
+        Args:   x_0: an array containing x_0 samples. These are expected to be integral     unless
+        make_one_hot is False (in which case probabilities can be     provided).   t: the timestep
+        to compute (as an int or integer array with shape that     matches x_0.   samples: if not
+        None, use these samples to compute the posterior.   transition_probs: precomputed transition
+        probabilities.   return_logits: if True, returns the (noisy) log of the probabilities.
+        return_transition_probs: if true, returns the transition probs as well.
+        transition_probs_in_logits: include transition probs in logits.   make_one_hot: if True,
+        will convert the input to a one_hot vector.   epsilon: a small amount of noise to add to
+        logits if needed.   step_size: if provided, computes q(x_{t + step_size} | x_0), etc. This
+        is     used to sample fewer steps for ELBO evaluation on a longer trained     model.
 
-        Returns:
-          a list of samples with the same shape as x_0 and the associated posterior
-          probabilities (or logits).
+        Returns:   a list of samples with the same shape as x_0 and the associated posterior
+        probabilities (or logits).
         """
 
 
@@ -162,27 +154,24 @@ class DiscreteDiffusionMatrixBase(DiscreteDiffusionBase):
     def supports_efficient_inference(self):
         """Returns true if custom_product_fn is implemented.
 
-        The ontology of efficient_get and efficient_inference is this:
-          * if efficient_inference is enabled, it is used to return q(x_t | x_0)
-            without computing expensive products.
-          * if efficient_get is enabled, get(...) is used to get the posterior of
-            q(x_{t-1} | x_t, x_0). If not, get_q_given_q0 is called to get
-            q(x_{t+1} | x_0), and qt_reverse is called to get the q(x_{t+1} | x_t).
+        The ontology of efficient_get and efficient_inference is this:   * if efficient_inference is
+        enabled, it is used to return q(x_t | x_0)     without computing expensive products.   * if
+        efficient_get is enabled, get(...) is used to get the posterior of     q(x_{t-1} | x_t,
+        x_0). If not, get_q_given_q0 is called to get     q(x_{t+1} | x_0), and qt_reverse is called
+        to get the q(x_{t+1} | x_t).
         """
         return False
 
     def qt_reverse(self, qt_plus_1, t, return_logits=False, make_one_hot=False, epsilon=1e-20):
-        """Get q(x_{t+1} | x_t), for each possible value of x_t. Thus, the rows of the output do not sum to 1.
+        """Get q(x_{t+1} | x_t), for each possible value of x_t.
 
-        Args:
-          qt_plus_1: an array of floats specifying a distribution over q(x_{t+1} | x_0).
-          t: t in q(x_{t+1} | x_t).
-          return_logits: if True, return the output logits
-          make_one_hot: if True, will convert q(x_{t+1}) to floats if needed.
-          epsilon: a small number to normalize logits conversion with, if needed.
+        Thus, the rows of the output do not sum to 1.         Args:           qt_plus_1: an array of
+        floats specifying a distribution over q(x_{t+1} | x_0).           t: t in q(x_{t+1} | x_t).
+        return_logits: if True, return the output logits           make_one_hot: if True, will
+        convert q(x_{t+1}) to floats if needed.           epsilon: a small number to normalize
+        logits conversion with, if needed.
 
-        Returns:
-          q(x_{t+1} | x_t), shape [num_samples, num_classes].
+        Returns:   q(x_{t+1} | x_t), shape [num_samples, num_classes].
         """
         raise NotImplementedError
 
@@ -279,28 +268,20 @@ class DiscreteDiffusionMatrixBase(DiscreteDiffusionBase):
     ):
         """Samples from q(x_{t+1} | x_0), then computes q(x_t | x_{t+1}, x_0).
 
-        Args:
-          x_0: an array containing x_0 samples. These are expected to be integral
-            unless make_one_hot is False (in which case probabilities can be
-            provided).
-          t: the timestep to compute (as an int or integer array with shape that
-            matches x_0.
-          samples: if not None, use these samples to compute the posterior.
-          transition_probs: precomputed transition probabilities.
-          return_logits: if True, returns the (noisy) log of the probabilities.
-          return_transition_probs: if true, returns the transition probs as well.
-          transition_probs_in_logits: include transition probs in logits.
-          make_one_hot: if True, will convert the input to a one_hot vector.
-          epsilon: a small amount of noise to add to logits if needed.
-          step_size: if provided, computes q(x_{t + step_size} | x_0), etc. This is
-            used to sample fewer steps for ELBO evaluation on a longer trained
-            model.
+        Args:   x_0: an array containing x_0 samples. These are expected to be integral     unless
+        make_one_hot is False (in which case probabilities can be     provided).   t: the timestep
+        to compute (as an int or integer array with shape that     matches x_0.   samples: if not
+        None, use these samples to compute the posterior.   transition_probs: precomputed transition
+        probabilities.   return_logits: if True, returns the (noisy) log of the probabilities.
+        return_transition_probs: if true, returns the transition probs as well.
+        transition_probs_in_logits: include transition probs in logits.   make_one_hot: if True,
+        will convert the input to a one_hot vector.   epsilon: a small amount of noise to add to
+        logits if needed.   step_size: if provided, computes q(x_{t + step_size} | x_0), etc. This
+        is     used to sample fewer steps for ELBO evaluation on a longer trained     model.
 
-        Returns:
-          a list of samples with the same shape as x_0 and the associated posterior
-          probabilities (or logits).
+        Returns:   a list of samples with the same shape as x_0 and the associated posterior
+        probabilities (or logits).
         """
-
         dim = self.dim
         device = x_0.device
         # t = torch.tensor(t, device=x_0.device)
@@ -355,10 +336,10 @@ class DiscreteDiffusionMatrixBase(DiscreteDiffusionBase):
                             qt_plus_1=transition_probs, make_one_hot=False, t=t + step_size - 1 - i
                         )
                 else:
-                    # Computes q(x_{t+1} | x_t), i.e., for each possible x_t, what is the probability of transitioning to each x_{t+1}.
+                    # Computes q(x_{t+1} | x_t), i.e., for each possible x_t, what is the probability of transitioning to each x_{t+1}.  # noqa: E501
                     # Thus, these probabilities do not sum to 1 per row.
-                    # If we don't return logits, transition_probs will be used to compute q(x_t | x_{t+1}).
-                    # Otherwise, we return the logits of q(x_t | x_{t+1}) = q(x_{t+1} | x_t) * q(x_t | x_0), i.e., omit normalization by q(x_{t+1} | x_0).
+                    # If we don't return logits, transition_probs will be used to compute q(x_t | x_{t+1}).  # noqa: E501
+                    # Otherwise, we return the logits of q(x_t | x_{t+1}) = q(x_{t+1} | x_t) * q(x_t | x_0), i.e., omit normalization by q(x_{t+1} | x_0).  # noqa: E501
                     # Shape [batch_size, num_classes]
                     transition_probs = self.qt_reverse(qt_plus_1=samples, make_one_hot=True, t=t)
 
@@ -398,13 +379,10 @@ class MaskDiffusion(DiscreteDiffusionMatrixBase):
     def __init__(self, dim, schedule, precision=torch.float32, use_fast_inference=True):
         """A simple scheduler for masking policies.
 
-        Args:
-          dim: int, the dimensionality of the state space.
-          schedule: a DiffusionSchedule object for scheduling rates.
-          precision: matmul precision.
-          use_fast_inference: if False, uses a slower, brute force approach.
+        Args:   dim: int, the dimensionality of the state space.   schedule: a DiffusionSchedule
+        object for scheduling rates.   precision: matmul precision.   use_fast_inference: if False,
+        uses a slower, brute force approach.
         """
-
         self.num_steps = schedule.num_steps
         self.schedule = schedule
         self.use_fast_inference = use_fast_inference
@@ -437,7 +415,10 @@ class MaskDiffusion(DiscreteDiffusionMatrixBase):
         return torch.full(shape, self.dim - 1)
 
     def custom_product_fn(self, t):
-        """Returns product of first n matrices. Only supported for beta constant."""
+        """Returns product of first n matrices.
+
+        Only supported for beta constant.
+        """
         dim = self.dim
 
         if self.schedule.is_constant:
@@ -465,19 +446,16 @@ class MaskDiffusion(DiscreteDiffusionMatrixBase):
         return ret if len(t.shape) == 1 else ret.squeeze(0)
 
     def qt_reverse(self, qt_plus_1, t, return_logits=False, make_one_hot=False, epsilon=1e-20):
-        """Get q(x_{t+1} | x_t), for each possible value of x_t. Thus, the rows of the output do not sum to 1.
+        """Get q(x_{t+1} | x_t), for each possible value of x_t.
 
-        Args:
-          qt_plus_1: an array of floats specifying a distribution over q(x_{t+1} | x_0).
-          t: t in q(x_{t+1} | x_t).
-          return_logits: if True, return the output logits
-          make_one_hot: if True, will convert q(x_{t+1}) to floats if needed.
-          epsilon: a small number to normalize logits conversion with, if needed.
+        Thus, the rows of the output do not sum to 1.         Args:           qt_plus_1: an array of
+        floats specifying a distribution over q(x_{t+1} | x_0).           t: t in q(x_{t+1} | x_t).
+        return_logits: if True, return the output logits           make_one_hot: if True, will
+        convert q(x_{t+1}) to floats if needed.           epsilon: a small number to normalize
+        logits conversion with, if needed.
 
-        Returns:
-          q(x_{t+1} | x_t), shape [num_samples, num_classes].
+        Returns:   q(x_{t+1} | x_t), shape [num_samples, num_classes].
         """
-
         if make_one_hot:
             assert qt_plus_1.dtype in [torch.long, torch.int32]
             qt_plus_1 = torch.eye(self.dim, device=qt_plus_1.device)[qt_plus_1]
@@ -487,9 +465,9 @@ class MaskDiffusion(DiscreteDiffusionMatrixBase):
         beta = self.schedule(t)
 
         # q(x_{t+1} | x_t) = (1 - beta) if x_t = x_{t+1} != mask type
-        #   else: beta if x_t != mask type else 1. (beta is the probability of transitioning to the absorbing state at t).
-        # I.e., if x_{t+1} is in some non-masked state S, then the probability of transitioning from S in t to S in t+1 is (1 - beta).
-        # Else, if x_{t+1} is in the masked state, then the probability of transitioning from a non-masked state S in t to the masked state in t+1 is beta,
+        #   else: beta if x_t != mask type else 1. (beta is the probability of transitioning to the absorbing state at t).  # noqa: E501
+        # I.e., if x_{t+1} is in some non-masked state S, then the probability of transitioning from S in t to S in t+1 is (1 - beta).  # noqa: E501
+        # Else, if x_{t+1} is in the masked state, then the probability of transitioning from a non-masked state S in t to the masked state in t+1 is beta,  # noqa: E501
         # and the probability of transitioning from the masked state to itself is 1.
         non_mask_prob = (1 - beta)[:, None] * qt_plus_1[:, :-1] + beta[:, None] * qt_plus_1[:, -1:]
         prob_at_time_t = (
@@ -562,20 +540,14 @@ def create_discrete_diffusion_schedule(
 ):
     """Creates a callable schedule object to use for diffusion rates.
 
-    Args:
-      kind: str, one of 'standard', 'linear', 'cosine', 'mutual_information'. If
-        standard, performs standard binomial diffusion taken from Sohl-Dicksteein
-        et al, ignoring betas. Otherwise, linear schedule between beta_min and
-        beta_max.
-      beta_min: the minimum beta. Ignored if kind == standard.
-      beta_max: the maximum beta.
-      num_steps: int, the number of steps to take.
-      scale: for standard schedule, rescales num_steps by this amount.
+    Args:   kind: str, one of 'standard', 'linear', 'cosine', 'mutual_information'. If     standard,
+    performs standard binomial diffusion taken from Sohl-Dicksteein     et al, ignoring betas.
+    Otherwise, linear schedule between beta_min and     beta_max.   beta_min: the minimum beta.
+    Ignored if kind == standard.   beta_max: the maximum beta.   num_steps: int, the number of steps
+    to take.   scale: for standard schedule, rescales num_steps by this amount.
 
-    Returns:
-      a DiffusionSchedule object.
+    Returns:   a DiffusionSchedule object.
     """
-
     assert beta_min <= beta_max
     assert num_steps > 0
     assert scale >= 1
@@ -629,29 +601,19 @@ def p_forward(
 ):
     """Returns probabilities from the reverse process p(x_{t-1} | x_t).
 
-    Args:
-      denoise_fn: the reverse process. Must support embed, call, and attend.
-      x_t: the current value of x_t to condition on.
-      t: the timestep t.
-      diffusion: the Diffusion object to use for noise.
-      predict_x0: if True, assumes the model output corresponds to its prediction
-        for p(x_0 | x_t). Otherwise assumes model predicts p(x_{t-1} | x_t).
-      return_x0: if True, will return probs for x_0 as well as x_{t-1}.
-      return_logits: if True, will return logits instead of probabilities.
-      special_case_x0: if True, will directly predict x0 instead of using the
-        forward process probabilities.
-      transition_probs: if provided, q(x_{t+1} | x_t) probs to reuse.
-      transition_probs_in_logits: if False, will ignore transition probs in logits
-        (only allowed if return_logits is True). This is because this term is
-        independent of theta.
-      maximum_likelihood: if true, will draw the most likely x0 before applying
-        the forward process.
-      epsilon: a small number.
-      step_size: step size to compute posterior from.
+    Args:   denoise_fn: the reverse process. Must support embed, call, and attend.   x_t: the
+    current value of x_t to condition on.   t: the timestep t.   diffusion: the Diffusion object to
+    use for noise.   predict_x0: if True, assumes the model output corresponds to its prediction
+    for p(x_0 | x_t). Otherwise assumes model predicts p(x_{t-1} | x_t).   return_x0: if True, will
+    return probs for x_0 as well as x_{t-1}.   return_logits: if True, will return logits instead of
+    probabilities.   special_case_x0: if True, will directly predict x0 instead of using the
+    forward process probabilities.   transition_probs: if provided, q(x_{t+1} | x_t) probs to reuse.
+    transition_probs_in_logits: if False, will ignore transition probs in logits     (only allowed
+    if return_logits is True). This is because this term is     independent of theta.
+    maximum_likelihood: if true, will draw the most likely x0 before applying     the forward
+    process.   epsilon: a small number.   step_size: step size to compute posterior from.
 
-    Returns:
-      probabilities for q(x_{t-1} | x_t) (and probabilities for x0 if predict_x0
-      is True)
+    Returns:   probabilities for q(x_{t-1} | x_t) (and probabilities for x0 if predict_x0   is True)
     """
     assert not (step_size > 1 and not predict_x0)
 
@@ -697,7 +659,6 @@ def p_forward(
 
 def q_sample(x_start, t, diffusion, return_logits=False):
     """Draws a sample from the posterior q(x_t | x_start)."""
-
     assert x_start.dtype in [torch.int32, torch.long]
 
     dim = diffusion.dim
@@ -713,16 +674,11 @@ def q_sample(x_start, t, diffusion, return_logits=False):
 def q_sample_from_s(x, t, s, diffusion, return_logits=False, batch_idx=None):
     """Sample marginal for x(t) given x(s) with s < t.
 
-    Args:
-      x: shape (batch_size, ...)
-      t: shape (batch_size,)
-      s: shape (batch_size,)
-      diffusion: a DiscreteDiffusionBase instance
-      return_logits: if True, also return logits
-      batch_idx: (optional) not used here, but for API consistency
+    Args:   x: shape (batch_size, ...)   t: shape (batch_size,)   s: shape (batch_size,)
+    diffusion: a DiscreteDiffusionBase instance   return_logits: if True, also return logits
+    batch_idx: (optional) not used here, but for API consistency
 
-    Returns:
-      sampled x(t) (same shape as input x), [optionally logits]
+    Returns:   sampled x(t) (same shape as input x), [optionally logits]
     """
     assert x.dtype in [torch.int32, torch.long]
     dim = diffusion.dim
@@ -790,34 +746,27 @@ def compute_kl_reverse_process(
 ) -> Dict[str, torch.Tensor]:
     """Returns the KL for one term in the ELBO (time t) (loss L_t).
 
-    This assumes x_start is a sample from x_0, from which we draw samples from
-    q(x_t | x_0) and then compute q(x_{t-1} | x_t, x_0) following the LaTeX. This
-    is the KL divergence for terms L_1 through L_{T-1}.
+    This assumes x_start is a sample from x_0, from which we draw samples from q(x_t | x_0) and then
+    compute q(x_{t-1} | x_t, x_0) following the LaTeX. This is the KL divergence for terms L_1
+    through L_{T-1}.
 
-    Args:
-      x_start: a sample from p(data) (or q(x_0)).
-      t: the loss term to compute.
-      diffusion: the diffusion object to use.
-      denoise_fn: a functool.partial-ed version of the model_apply function which
-        takes a set of targets (x_t) and noise level and returns q(x_{t-1} | x_t,
-        x_0).
-      predict_x0: if True, will predict a distribution over x0 instead of x_{t-1}.
-      log_space: if True, will perform the loss calculations in log space.
-      label_smoothing: label smoothing for cross entropy.
-      hybrid_lambda: coefficient for hybrid cross-entropy loss.
-      use_cached_transition: if True, will reuse q(x_{t+1} | x_t) computation.
-      target_mask: mask for target sequence.
-      step_size: the step size over which the ELBO is computed.
+    Args:   x_start: a sample from p(data) (or q(x_0)).   t: the loss term to compute.   diffusion:
+    the diffusion object to use.   denoise_fn: a functool.partial-ed version of the model_apply
+    function which     takes a set of targets (x_t) and noise level and returns q(x_{t-1} | x_t,
+    x_0).   predict_x0: if True, will predict a distribution over x0 instead of x_{t-1}.
+    log_space: if True, will perform the loss calculations in log space.   label_smoothing: label
+    smoothing for cross entropy.   hybrid_lambda: coefficient for hybrid cross-entropy loss.
+    use_cached_transition: if True, will reuse q(x_{t+1} | x_t) computation.   target_mask: mask for
+    target sequence.   step_size: the step size over which the ELBO is computed.
 
-    Returns:
-      the KL divergence and denominator.
+    Returns:   the KL divergence and denominator.
     """
     assert x_start.dtype in [torch.int32, torch.long]
 
     if step_size > 1 and not predict_x0:
         raise ValueError("cannot skip steps when not predicting x0.")
 
-    # If x_t_plus_1 is None, sample from q(x_{t+1} | x_start). Otherwise use the provided samples for x_{t+1}.
+    # If x_t_plus_1 is None, sample from q(x_{t+1} | x_start). Otherwise use the provided samples for x_{t+1}.  # noqa: E501
     # Then compute q(x_t | x_{t+1}, x_start)
     # q_t and p_t can be logits or probs depending on log_space.
     q_t, x_t_plus_1, transition_probs = diffusion.sample_and_compute_posterior_q(

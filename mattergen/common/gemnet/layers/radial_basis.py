@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/radial_basis.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/radial_basis.py.
 """
 
 import math
@@ -14,13 +14,9 @@ from torch_geometric.nn.models.schnet import GaussianSmearing
 
 
 class PolynomialEnvelope(torch.nn.Module):
-    """
-    Polynomial envelope function that ensures a smooth cutoff.
+    """Polynomial envelope function that ensures a smooth cutoff.
 
-    Parameters
-    ----------
-        exponent: int
-            Exponent of the envelope function.
+    Parameters ----------     exponent: int         Exponent of the envelope function.
     """
 
     def __init__(self, exponent):
@@ -42,11 +38,10 @@ class PolynomialEnvelope(torch.nn.Module):
 
 
 class ExponentialEnvelope(torch.nn.Module):
-    """
-    Exponential envelope function that ensures a smooth cutoff,
-    as proposed in Unke, Chmiela, Gastegger, Schütt, Sauceda, Müller 2021.
-    SpookyNet: Learning Force Fields with Electronic Degrees of Freedom
-    and Nonlocal Effects
+    """Exponential envelope function that ensures a smooth cutoff, as proposed in Unke, Chmiela,
+    Gastegger, Schütt, Sauceda, Müller 2021.
+
+    SpookyNet: Learning Force Fields with Electronic Degrees of Freedom and Nonlocal Effects
     """
 
     def __init__(self):
@@ -58,15 +53,10 @@ class ExponentialEnvelope(torch.nn.Module):
 
 
 class SphericalBesselBasis(torch.nn.Module):
-    """
-    1D spherical Bessel basis
+    """1D spherical Bessel basis.
 
-    Parameters
-    ----------
-    num_radial: int
-        Controls maximum frequency.
-    cutoff: float
-        Cutoff distance in Angstrom.
+    Parameters ---------- num_radial: int     Controls maximum frequency. cutoff: float     Cutoff
+    distance in Angstrom.
     """
 
     def __init__(

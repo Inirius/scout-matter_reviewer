@@ -21,8 +21,9 @@ class TqdmLoggingHandler(logging.StreamHandler):
 # https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/utils/logging.py
 def get_logger(name=None, level=logging.INFO) -> logging.Logger:
     """Returns a logger that is configured as:
-    - by default INFO level or higher messages are logged out in STDOUT.
-    - format includes file name, line number, etc.
+
+    - by default INFO level or higher messages are logged out in STDOUT. - format includes file
+    name, line number, etc.
     """
     logger = logging.getLogger(name)
     logger.setLevel(level)

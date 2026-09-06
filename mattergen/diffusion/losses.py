@@ -30,6 +30,7 @@ class Loss(Protocol[T]):
         pass
 
     """model_targets tells us what this loss function trains the score model to predict.
+
     We need this information in order to convert the model output to a score during sampling.
     """
     model_targets: ModelTargets
@@ -52,7 +53,7 @@ class SummedFieldLoss(Loss[T]):
         else:
             assert set(weights.keys()) == set(
                 self.loss_fns.keys()
-            ), f"weight keys {set(weights.keys())} do not match loss_fns keys {set(self.loss_fns.keys())}"
+            ), f"weight keys {set(weights.keys())} do not match loss_fns keys {set(self.loss_fns.keys())}"  # noqa: E501
             self.loss_weights = weights
 
     def __call__(

@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/efficient.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/efficient.py.
 """
 
 from warnings import warn
@@ -13,15 +13,10 @@ from mattergen.common.gemnet.initializers import he_orthogonal_init
 
 
 class EfficientInteractionDownProjection(torch.nn.Module):
-    """
-    Down projection in the efficient reformulation.
+    """Down projection in the efficient reformulation.
 
-    Parameters
-    ----------
-        emb_size_interm: int
-            Intermediate embedding size (down-projection size).
-        kernel_initializer: callable
-            Initializer of the weight matrix.
+    Parameters ----------     emb_size_interm: int         Intermediate embedding size (down-
+    projection size).     kernel_initializer: callable         Initializer of the weight matrix.
     """
 
     def __init__(
@@ -89,15 +84,10 @@ class EfficientInteractionDownProjection(torch.nn.Module):
 
 
 class EfficientInteractionBilinear(torch.nn.Module):
-    """
-    Efficient reformulation of the bilinear layer and subsequent summation.
+    """Efficient reformulation of the bilinear layer and subsequent summation.
 
-    Parameters
-    ----------
-        units_out: int
-            Embedding output size of the bilinear layer.
-        kernel_initializer: callable
-            Initializer of the weight matrix.
+    Parameters ----------     units_out: int         Embedding output size of the bilinear layer.
+    kernel_initializer: callable         Initializer of the weight matrix.
     """
 
     def __init__(

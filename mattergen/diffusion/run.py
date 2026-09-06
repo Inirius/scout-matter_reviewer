@@ -33,8 +33,8 @@ logger = logging.getLogger(__name__)
 
 
 def maybe_instantiate(instance_or_config: T | Mapping, expected_type=None, **kwargs) -> T:
-    """
-    If instance_or_config is a mapping with a _target_ field, instantiate it.
+    """If instance_or_config is a mapping with a _target_ field, instantiate it.
+
     Otherwise, return it as is.
     """
     if isinstance(instance_or_config, Mapping) and "_target_" in instance_or_config:
@@ -74,7 +74,8 @@ class SimpleParser:
 
 
 class AddConfigCallback(Callback):
-    """Adds a copy of the config to the checkpoint, so that `load_from_checkpoint` can use it to instantiate everything."""
+    """Adds a copy of the config to the checkpoint, so that `load_from_checkpoint` can use it to
+    instantiate everything."""
 
     def __init__(self, config: dict[str, Any]):
         self._config_dict = config
@@ -88,15 +89,16 @@ class AddConfigCallback(Callback):
 def main(
     config: Config | DictConfig, save_config: bool = True, seed: int | None = None
 ) -> tuple[pl.Trainer, pl.LightningModule]:
-    """
-    Main entry point to train and evaluate a diffusion model.
+    """Main entry point to train and evaluate a diffusion model.
 
-    save_config: if True, the config will be saved both as a YAML file and in each checkpoint. This doesn't work if the config contains things that can't be `yaml.dump`-ed, so
-    if you don't care about saving and loading checkpoints and want to use a config that contains things like `torch.nn.Module`s already instantiated, set this to False.
+    save_config: if True, the config will be saved both as a YAML file and in each checkpoint. This
+    doesn't work if the config contains things that can't be `yaml.dump`-ed, so if you don't care
+    about saving and loading checkpoints and want to use a config that contains things like
+    `torch.nn.Module`s already instantiated, set this to False.
     """
     if config.checkpoint_path and config.auto_resume:
         raise AmbiguousConfig(
-            f"Ambiguous config: you set both a checkpoint path {config.checkpoint_path} and `auto_resume` which means automatically select a checkpoint path to resume from."
+            f"Ambiguous config: you set both a checkpoint path {config.checkpoint_path} and `auto_resume` which means automatically select a checkpoint path to resume from."  # noqa: E501
         )
 
     if seed is not None:
@@ -156,12 +158,10 @@ def main(
 
 
 def cli(argv: list[str] | None) -> None:
-    """
-    Args:
-        argv: list of command-line arguments as strings, or None. If None,
-          command-line arguments will be got from sys.argv
-    """
+    """Args: argv: list of command-line arguments as strings, or None.
 
+    If None, command-line arguments will be got from sys.argv
+    """
     parser = argparse.ArgumentParser(allow_abbrev=False)  # prevent prefix matching issues
     parser.add_argument(
         "--seed",

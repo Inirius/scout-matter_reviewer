@@ -14,11 +14,10 @@ from mattergen.common.data.dataset import CrystalDataset
 
 
 def worker_init_fn(id: int):
-    """
-    DataLoaders workers init function.
+    """DataLoaders workers init function.
 
-    Initialize the numpy.random seed correctly for each worker, so that
-    random augmentations between workers and/or epochs are not identical.
+    Initialize the numpy.random seed correctly for each worker, so that random augmentations between
+    workers and/or epochs are not identical.
 
     If a global seed is set, the augmentations are deterministic.
 
@@ -90,8 +89,5 @@ class CrystDataModule(pl.LightningDataModule):
 
     def __repr__(self) -> str:
         return (
-            f"{self.__class__.__name__}("
-            f"{self.datasets=}, "
-            f"{self.num_workers=}, "
-            f"{self.batch_size=})"
+            f"{self.__class__.__name__}({self.datasets=}, {self.num_workers=}, {self.batch_size=})"
         )

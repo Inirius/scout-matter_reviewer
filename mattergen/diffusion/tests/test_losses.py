@@ -34,7 +34,6 @@ def get_multi_corruption(corruption_type, keys: List[str]):
 @pytest.mark.parametrize("corruption_type", SDE_TYPES)
 def test_calc_loss(tiny_state_batch, corruption_type: Type[Corruption]):
     """Check that calc_loss returns expected values for a few examples."""
-
     clean_batch = tiny_state_batch
     multi_corruption = get_multi_corruption(corruption_type=corruption_type, keys=["foo", "bar"])
 
@@ -99,7 +98,6 @@ def test_weighted_summed_field_loss(
     corruption_type: Type[Corruption],
 ):
     """Check that SummedFieldLoss returns expected values for a few examples."""
-
     clean_batch = tiny_state_batch
     multi_corruption = get_multi_corruption(
         corruption_type=corruption_type,
@@ -153,7 +151,7 @@ def test_weighted_summed_field_loss(
 
 
 def test_wrapped_normal_loss(tiny_state_batch):
-    # Simulate the case that wrapping has basically no effect and the loss is equivalent to DenoisingScoreMatchingLoss
+    # Simulate the case that wrapping has basically no effect and the loss is equivalent to DenoisingScoreMatchingLoss  # noqa: E501
     clean_batch = tiny_state_batch.replace(
         foo=tiny_state_batch["foo"] + 500, bar=tiny_state_batch["bar"][:, :3] + 500
     )

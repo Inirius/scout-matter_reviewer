@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/gemnet.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/gemnet.py.
 """
 
 from dataclasses import dataclass
@@ -124,59 +124,33 @@ class RBFBasedLatticeUpdateBlockFrac(RBFBasedLatticeUpdateBlock):
 
 
 class GemNetT(torch.nn.Module):
-    """
-    GemNet-T, triplets-only variant of GemNet
+    """GemNet-T, triplets-only variant of GemNet.
 
-    Parameters
-    ----------
-        num_targets: int
-            Number of prediction targets.
+    Parameters ----------     num_targets: int         Number of prediction targets.
 
-        num_spherical: int
-            Controls maximum frequency.
-        num_radial: int
-            Controls maximum frequency.
-        num_blocks: int
-            Number of building blocks to be stacked.
+    num_spherical: int     Controls maximum frequency. num_radial: int     Controls maximum
+    frequency. num_blocks: int     Number of building blocks to be stacked.
 
-        atom_embedding: torch.nn.Module
-            a module that embeds atomic numbers into vectors of size emb_dim_atomic_number.
-        emb_size_atom: int
-            Embedding size of the atoms. This can be different from emb_dim_atomic_number.
-        emb_size_edge: int
-            Embedding size of the edges.
-        emb_size_trip: int
-            (Down-projected) Embedding size in the triplet message passing block.
-        emb_size_rbf: int
-            Embedding size of the radial basis transformation.
-        emb_size_cbf: int
-            Embedding size of the circular basis transformation (one angle).
-        emb_size_bil_trip: int
-            Embedding size of the edge embeddings in the triplet-based message passing block after the bilinear layer.
-        num_before_skip: int
-            Number of residual blocks before the first skip connection.
-        num_after_skip: int
-            Number of residual blocks after the first skip connection.
-        num_concat: int
-            Number of residual blocks after the concatenation.
-        num_atom: int
-            Number of residual blocks in the atom embedding blocks.
-        cutoff: float
-            Embedding cutoff for interactomic directions in Angstrom.
-        rbf: dict
-            Name and hyperparameters of the radial basis function.
-        envelope: dict
-            Name and hyperparameters of the envelope function.
-        cbf: dict
-            Name and hyperparameters of the cosine basis function.
-        output_init: str
-            Initialization method for the final dense layer.
-        activation: str
-            Name of the activation function.
-        scale_file: str
-            Path to the json file containing the scaling factors.
-        encoder_mode: bool
-            if <True>, use the encoder mode of the model, i.e. only get the atom/edge embedddings.
+    atom_embedding: torch.nn.Module     a module that embeds atomic numbers into vectors of size
+    emb_dim_atomic_number. emb_size_atom: int     Embedding size of the atoms. This can be different
+    from emb_dim_atomic_number. emb_size_edge: int     Embedding size of the edges. emb_size_trip:
+    int     (Down-projected) Embedding size in the triplet message passing block. emb_size_rbf: int
+    Embedding size of the radial basis transformation. emb_size_cbf: int     Embedding size of the
+    circular basis transformation (one angle). emb_size_bil_trip: int     Embedding size of the edge
+    embeddings in the triplet-based message passing block after the bilinear layer. num_before_skip:
+    int     Number of residual blocks before the first skip connection. num_after_skip: int
+    Number of residual blocks after the first skip connection. num_concat: int     Number of
+    residual blocks after the concatenation. num_atom: int     Number of residual blocks in the atom
+    embedding blocks. cutoff: float     Embedding cutoff for interactomic directions in Angstrom.
+    rbf: dict     Name and hyperparameters of the radial basis function. envelope: dict     Name and
+    hyperparameters of the envelope function. cbf: dict     Name and hyperparameters of the cosine
+    basis function. output_init: str     Initialization method for the final dense layer.
+    activation: str     Name of the activation function. scale_
+    file:
+    str
+    Path to the json file containing the scaling factors.
+    encoder_mode: bool
+    if <True>, use the encoder mode of the model, i.e. only get the atom/edge embedddings.
     """
 
     def __init__(
@@ -229,7 +203,7 @@ class GemNetT(torch.nn.Module):
         self.otf_graph = otf_graph
 
         self.regress_stress = regress_stress
-        # we might want to take care of permutation invariance w.r.t. the order of the lattice vectors, though I don't think this is critical.
+        # we might want to take care of permutation invariance w.r.t. the order of the lattice vectors, though I don't think this is critical.  # noqa: E501
         self.angle_edge_emb = nn.Sequential(
             nn.Linear(emb_size_edge + 3, emb_size_edge),
             nn.ReLU(),
@@ -331,7 +305,7 @@ class GemNetT(torch.nn.Module):
                     num_atom=num_atom,
                     activation=activation,
                     scale_file=scale_file,
-                    name=f"IntBlock_{i+1}",
+                    name=f"IntBlock_{i + 1}",
                 )
             )
 
@@ -364,18 +338,13 @@ class GemNetT(torch.nn.Module):
     def get_triplets(
         self, edge_index: torch.Tensor, num_atoms: int
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Get all b->a for each edge c->a.
-        It is possible that b=c, as long as the edges are distinct.
+        """Get all b->a for each edge c->a. It is possible that b=c, as long as the edges are
+        distinct.
 
-        Returns
-        -------
-        id3_ba: torch.Tensor, shape (num_triplets,)
-            Indices of input edge b->a of each triplet b->a<-c
-        id3_ca: torch.Tensor, shape (num_triplets,)
-            Indices of output edge c->a of each triplet b->a<-c
-        id3_ragged_idx: torch.Tensor, shape (num_triplets,)
-            Indices enumerating the copies of id3_ca for creating a padded matrix
+        Returns ------- id3_ba: torch.Tensor, shape (num_triplets,)     Indices of input edge b->a
+        of each triplet b->a<-c id3_ca: torch.Tensor, shape (num_triplets,)     Indices of output
+        edge c->a of each triplet b->a<-c id3_ragged_idx: torch.Tensor, shape (num_triplets,)
+        Indices enumerating the copies of id3_ca for creating a padded matrix
         """
         idx_s, idx_t = edge_index  # c->a (source=c, target=a)
 
@@ -426,18 +395,14 @@ class GemNetT(torch.nn.Module):
         edge_dist: torch.Tensor,
         edge_vector: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Reorder edges to make finding counter-directional edges easier.
+        """Reorder edges to make finding counter-directional edges easier.
 
-        Some edges are only present in one direction in the data,
-        since every atom has a maximum number of neighbors. Since we only use i->j
-        edges here, we lose some j->i edges and add others by
-        making it symmetric.
-        We could fix this by merging edge_index with its counter-edges,
-        including the cell_offsets, and then running torch.unique.
-        But this does not seem worth it.
+        Some edges are only present in one direction in the data, since every atom has a maximum
+        number of neighbors. Since we only use i->j edges here, we lose some j->i edges and add
+        others by making it symmetric. We could fix this by merging edge_index with its counter-
+        edges, including the cell_offsets, and then running torch.unique. But this does not seem
+        worth it.
         """
-
         # Generate mask
         mask_sep_atoms = edge_index[0] < edge_index[1]
         # Distinguish edges between the same (periodic) atom by ordering the cells
@@ -614,23 +579,14 @@ class GemNetT(torch.nn.Module):
         num_bonds: Optional[torch.Tensor] = None,
         lattice: Optional[torch.Tensor] = None,
     ) -> ModelOutput:
-        """
-        args:
-            z: (N_cryst, num_latent)
-            frac_coords: (N_atoms, 3)
-            atom_types: (N_atoms, ) with D3PM need to use atomic number
-            num_atoms: (N_cryst,)
-            lengths: (N_cryst, 3) (optional, either lengths and angles or lattice must be passed)
-            angles: (N_cryst, 3) (optional, either lengths and angles or lattice must be passed)
-            edge_index: (2, N_edge) (optional, only needed if self.otf_graph is False)
-            to_jimages: (N_edge, 3) (optional, only needed if self.otf_graph is False)
-            num_bonds: (N_cryst,) (optional, only needed if self.otf_graph is False)
-            lattice: (N_cryst, 3, 3) (optional, either lengths and angles or lattice must be passed)
-        returns:
-            atom_frac_coords: (N_atoms, 3)
-            atom_types: (N_atoms, MAX_ATOMIC_NUM)
-        """
-
+        """Args: z: (N_cryst, num_latent) frac_coords: (N_atoms, 3) atom_types: (N_atoms, ) with
+        D3PM need to use atomic number num_atoms: (N_cryst,) lengths: (N_cryst, 3) (optional, either
+        lengths and angles or lattice must be passed) angles: (N_cryst, 3) (optional, either lengths
+        and angles or lattice must be passed) edge_index: (2, N_edge) (optional, only needed if
+        self.otf_graph is False) to_jimages: (N_edge, 3) (optional, only needed if self.otf_graph is
+        False) num_bonds: (N_cryst,) (optional, only needed if self.otf_graph is False) lattice:
+        (N_cryst, 3, 3) (optional, either lengths and angles or lattice must be passed) returns:
+        atom_frac_coords: (N_atoms, 3) atom_types: (N_atoms, MAX_ATOMIC_NUM)"""
         if self.otf_graph:
             assert all(
                 [edge_index is None, to_jimages is None, num_bonds is None]

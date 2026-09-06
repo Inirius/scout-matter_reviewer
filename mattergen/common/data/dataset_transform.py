@@ -19,8 +19,8 @@ def is_nan(value: NDArray) -> NDArray:
 
 
 def filter_sparse_properties(dataset: BaseDataset) -> BaseDataset:
-    """
-    Filter out structures with missing properties.
+    """Filter out structures with missing properties.
+
     Returns a new dataset with only structures that have all properties.
     """
     if len(dataset.properties) == 0:
@@ -32,7 +32,5 @@ def filter_sparse_properties(dataset: BaseDataset) -> BaseDataset:
 
 
 def repeat(dataset: BaseDataset, n: int) -> BaseDataset:
-    """
-    Repeat the dataset n times.
-    """
+    """Repeat the dataset n times."""
     return dataset.repeat(n)

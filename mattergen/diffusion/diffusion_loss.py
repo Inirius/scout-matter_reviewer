@@ -7,7 +7,7 @@ from pymatgen.analysis.phase_diagram import PDEntry, PhaseDiagram
 from pymatgen.core import Composition
 
 from mattergen.common.data.chemgraph import ChemGraph
-from mattergen.diffusion.coordination_loss import (  # Public compatibility re-exports; coordination implementations live in; coordination_loss.py.
+from mattergen.diffusion.coordination_loss import (  # Public compatibility re-exports; coordination implementations live in; coordination_loss.py.  # noqa: E501
     COORDINATION_CONFIG_KEYS,
     DEFAULT_COORDINATION_ALPHA,
     DEFAULT_COORDINATION_CN_TEMPERATURE,
@@ -87,11 +87,10 @@ def clear_globals():
 
 
 def volume(x, t):
-    """
-    Batched volume loss: computes the absolute difference between each actual volume and the target.
-    x.cell: [N, 3, 3]
-    target: float
-    Returns: [N] tensor of losses
+    """Batched volume loss: computes the absolute difference between each actual volume and the
+    target.
+
+    x.cell: [N, 3, 3] target: float Returns: [N] tensor of losses
     """
     assert isinstance(x, ChemGraph), "x must be a ChemGraph object"
     cell = x.cell  # shape: [B, 3, 3]
@@ -107,11 +106,10 @@ def volume(x, t):
 
 
 def volume_loss(x, t, target):
-    """
-    Batched volume loss: computes the absolute difference between each actual volume and the target.
-    x.cell: [N, 3, 3]
-    target: float
-    Returns: [N] tensor of losses
+    """Batched volume loss: computes the absolute difference between each actual volume and the
+    target.
+
+    x.cell: [N, 3, 3] target: float Returns: [N] tensor of losses
     """
     vol = volume(x, t)
     # Ensure target is broadcastable
@@ -121,16 +119,12 @@ def volume_loss(x, t, target):
 
 
 def volume_pa(x, t):
-    """
-    Batched computatuion of volume per atom.
-    """
+    """Batched computatuion of volume per atom."""
     return volume(x, t) / x.num_atoms
 
 
 def volume_pa_loss(x, t, target):
-    """
-    Batched computatuion of volume per atom.
-    """
+    """Batched computatuion of volume per atom."""
     vol_pa = volume_pa(x, t)
     target_tensor = torch.as_tensor(target, dtype=vol_pa.dtype, device=vol_pa.device)
     loss = torch.abs(vol_pa - target_tensor)
@@ -138,20 +132,19 @@ def volume_pa_loss(x, t, target):
 
 
 def composition(num, pos):
-    """
-    Computes the composition of a list of atoms.
-    li is a list of int with 101 beeing an empty atom.
-    Returns a list of strings with the chemical symbols of the atoms.
-    Example: [1, 101, 8, 8, 101] -> ['H', 'O', 'O']
+    """Computes the composition of a list of atoms.
+
+    li is a list of int with 101 beeing an empty atom. Returns a list of strings with the chemical
+    symbols of the atoms. Example: [1, 101, 8, 8, 101] -> ['H', 'O', 'O']
     """
     return num[num != 101], pos[num != 101]
 
 
 def energy(x, t, target=None):
-    """
-    Computes the energy above the hull for a given composition and energy.
-    x is a chemgraph batch
-    The function uses a precomputed phase diagram to determine the energy above the hull.
+    """Computes the energy above the hull for a given composition and energy.
+
+    x is a chemgraph batch The function uses a precomputed phase diagram to determine the energy
+    above the hull.
     """
     from mattersim.datasets.utils.convertor import ChemGraphBatchConvertor
     from mattersim.forcefield.m3gnet.m3gnet import M3Gnet
@@ -192,12 +185,11 @@ def energy(x, t, target=None):
 
 
 def _energy_hull(x):
+    """Computes the energy above the hull for a given composition and energy.
+
+    x is a (Compo, Energy) tuple (str, float) CSV : Compo , Energy
     """
-    Computes the energy above the hull for a given composition and energy.
-    x is a (Compo, Energy) tuple (str, float)
-    CSV : Compo , Energy
-    """
-    dir = "/path/to/mattergenbis/phase_diagram/"  # This should be the directory where the phase diagram is saved
+    dir = "/path/to/mattergenbis/phase_diagram/"  # This should be the directory where the phase diagram is saved  # noqa: E501
     global PDIAG
     if PDIAG is None:
         # Load the CSV file only once
@@ -216,8 +208,8 @@ def _energy_hull(x):
 
 
 def new_loss(x, t, target) -> torch.Tensor:
-    """
-    Example of a new loss function.
+    """Example of a new loss function.
+
     This is just a placeholder and should be replaced with an actual implementation.
     """
     # x : ChemGraph object
@@ -227,10 +219,10 @@ def new_loss(x, t, target) -> torch.Tensor:
 
 
 def make_combined_loss(guidance_dict: dict) -> callable:
-    """
-    Returns a loss function that combines all guidance losses defined in guidance_dict.
-    Each key in guidance_dict must be in LOSS_REGISTRY, and the value is the target.
-    More flexibility can be allowed, the value can be a dict containing parameters for the loss function.
+    """Returns a loss function that combines all guidance losses defined in guidance_dict.
+
+    Each key in guidance_dict must be in LOSS_REGISTRY, and the value is the target. More
+    flexibility can be allowed, the value can be a dict containing parameters for the loss function.
     """
     partial_losses = []
     for loss_name, target in guidance_dict.items():

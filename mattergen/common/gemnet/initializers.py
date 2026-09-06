@@ -1,14 +1,14 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/initializers.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/initializers.py.
 """
 
 import torch
 
 
-# This function is not type annotated because mypy complains that axis could be either an integer or a tuple of integers,
+# This function is not type annotated because mypy complains that axis could be either an integer or a tuple of integers,  # noqa: E501
 # even though this is precicely how torch.var_mean works
 def _standardize(kernel):
     """
@@ -27,13 +27,12 @@ def _standardize(kernel):
 
 
 def he_orthogonal_init(tensor: torch.Tensor) -> torch.Tensor:
-    """
-    Generate a weight matrix with variance according to He (Kaiming) initialization.
-    Based on a random (semi-)orthogonal matrix neural networks
-    are expected to learn better when features are decorrelated
-    (stated by eg. "Reducing overfitting in deep networks by decorrelating representations",
-    "Dropout: a simple way to prevent neural networks from overfitting",
-    "Exact solutions to the nonlinear dynamics of learning in deep linear neural networks")
+    """Generate a weight matrix with variance according to He (Kaiming) initialization.
+
+    Based on a random (semi-)orthogonal matrix neural networks are expected to learn better when
+    features are decorrelated (stated by eg. "Reducing overfitting in deep networks by decorrelating
+    representations", "Dropout: a simple way to prevent neural networks from overfitting", "Exact
+    solutions to the nonlinear dynamics of learning in deep linear neural networks")
     """
     tensor = torch.nn.init.orthogonal_(tensor)
 

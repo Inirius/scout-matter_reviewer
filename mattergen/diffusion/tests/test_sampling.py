@@ -57,9 +57,7 @@ INCOMPATIBLE_SAMPLERS[WrappedVESDE] = [
 @pytest.mark.parametrize("predictor_type", DEFAULT_PREDICTORS + WRAPPED_PREDICTORS)
 @pytest.mark.parametrize("sde_type", SDE_TYPES)
 def test_predictor(make_state_batch: Callable, predictor_type: Type, sde_type, EPS: float):
-    """Tests whether implemented predictors return arrays of consistent
-    graph shape
-    """
+    """Tests whether implemented predictors return arrays of consistent graph shape."""
     tiny_state_batch = make_state_batch(sde_type)
 
     with (
@@ -94,9 +92,7 @@ def dummy_score_fn(x, t, batch_idx):
 @pytest.mark.parametrize("corrector_type", DEFAULT_CORRECTORS + WRAPPED_CORRECTORS)
 @pytest.mark.parametrize("sde_type", SDE_TYPES)
 def test_corrector(make_state_batch: Callable, corrector_type: Type, sde_type, EPS: float):
-    """Tests whether implemented correctors return arrays of consistent
-    graph shape
-    """
+    """Tests whether implemented correctors return arrays of consistent graph shape."""
     tiny_state_batch = make_state_batch(sde_type)
 
     with (
