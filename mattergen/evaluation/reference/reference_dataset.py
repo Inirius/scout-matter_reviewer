@@ -48,11 +48,15 @@ class ReferenceDataset(Iterable[ComputedStructureEntry]):
 
     @cached_property
     def space_group_numbers(self) -> dict[str, float]:
-        return np.array([DefaultSpaceGroupAnalyzer(e.structure).get_space_group_number() for e in self])
+        return np.array(
+            [DefaultSpaceGroupAnalyzer(e.structure).get_space_group_number() for e in self]
+        )
 
     @cached_property
     def disordered_space_group_numbers(self) -> dict[str, float]:
-        return np.array([DisorderedSpaceGroupAnalyzer(e.structure).get_space_group_number() for e in self])
+        return np.array(
+            [DisorderedSpaceGroupAnalyzer(e.structure).get_space_group_number() for e in self]
+        )
 
     @cached_property
     def lattice_angles(self) -> np.typing.NDArray[np.float64]:

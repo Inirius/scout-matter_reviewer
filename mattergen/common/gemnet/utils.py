@@ -123,7 +123,7 @@ def repeat_blocks(
     """
     assert sizes.dim() == 1
     assert all(sizes >= 0)
- 
+
     # Remove 0 sizes
     sizes_nonzero = sizes > 0
     if not torch.all(sizes_nonzero):

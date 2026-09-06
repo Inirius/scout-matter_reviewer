@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-from pathlib import Path
 from functools import cached_property
+from pathlib import Path
 
 from mattergen.evaluation.reference.reference_dataset import ReferenceDataset
 from mattergen.evaluation.reference.reference_dataset_serializer import LMDBGZSerializer
@@ -28,4 +28,4 @@ class ReferenceMP2020Correction(ReferenceDataset):
     @cached_property
     def is_ordered(self) -> bool:
         """Returns True if all structures are ordered."""
-        return True # Setting it manually to avoid computation at runtime.
+        return True  # Setting it manually to avoid computation at runtime.

@@ -1,10 +1,10 @@
 import math
-
-import torch
 from typing import Any
 
-from mattergen.common.data.chemgraph import ChemGraph
+import torch
 from pymatgen.core import Element
+
+from mattergen.common.data.chemgraph import ChemGraph
 
 shifts = None
 DEFAULT_COORDINATION_ALPHA = 2.0
@@ -24,6 +24,7 @@ COORDINATION_CONFIG_KEYS = {
     "cn_temperature",
     "satisfaction_weight",
 }
+
 
 def _as_atomic_number_tuple(
     atomic_numbers: int | list[int] | tuple[int, ...] | set[int],
@@ -140,9 +141,7 @@ def _coordination_r_cut_per_center(
     r_cut: float | None,
 ) -> torch.Tensor:
     if r_cut is not None:
-        return torch.full(
-            center_types.shape, float(r_cut), dtype=dtype, device=center_types.device
-        )
+        return torch.full(center_types.shape, float(r_cut), dtype=dtype, device=center_types.device)
     return torch.tensor(
         [
             _default_coordination_r_cut(int(type_A_i), type_Bs)
@@ -163,9 +162,7 @@ def _normalize_coordination_mode(coordination_mode: str) -> str:
     try:
         return aliases[coordination_mode.lower()]
     except (AttributeError, KeyError) as exc:
-        raise ValueError(
-            "coordination_mode must be 'soft_count' or 'kth_neighbor'."
-        ) from exc
+        raise ValueError("coordination_mode must be 'soft_count' or 'kth_neighbor'.") from exc
 
 
 def _validate_soft_count_objective_config(target: dict, objective_name: str) -> None:
@@ -190,14 +187,10 @@ def _validate_soft_count_objective_config(target: dict, objective_name: str) -> 
 def _validate_target_coordination(target: float) -> int:
     target_float = float(target)
     if not math.isfinite(target_float) or not target_float.is_integer():
-        raise ValueError(
-            "The k-th-neighbor coordination target must be a non-negative integer."
-        )
+        raise ValueError("The k-th-neighbor coordination target must be a non-negative integer.")
     target_int = int(target_float)
     if target_int < 0:
-        raise ValueError(
-            "The k-th-neighbor coordination target must be a non-negative integer."
-        )
+        raise ValueError("The k-th-neighbor coordination target must be a non-negative integer.")
     return target_int
 
 
@@ -245,9 +238,7 @@ def _mean_ranked_coordination_objective(
         temperature=cn_temperature,
     )
     boundary_scale = float(softplus_temperature) * math.log(2.0)
-    return base_loss + satisfaction_weight * boundary_scale * (
-        1.0 - satisfaction.mean()
-    )
+    return base_loss + satisfaction_weight * boundary_scale * (1.0 - satisfaction.mean())
 
 
 def _coordination_margin_penalties_per_A_single(
@@ -332,22 +323,17 @@ def _coordination_margin_penalties_per_A_single(
     # remain valid candidate neighbors.
     zero_shift = (shifts == 0).all(dim=1)
     self_mask = (
-        (idx_A[:, None] == idx_B[None, :])[:, :, None]
-        & zero_shift[None, None, :]
+        (idx_A[:, None] == idx_B[None, :])[:, :, None] & zero_shift[None, None, :]
     ).reshape(idx_A.numel(), -1)
     distances = distances.masked_fill(self_mask, torch.inf)
     ordered_distances = torch.sort(distances, dim=1).values
 
     # Zero-based index `target_int` is d_(k+1), including the k=0 case.
     if target_int >= ordered_distances.shape[1]:
-        raise ValueError(
-            f"Not enough B-neighbor images to define d_({target_int + 1})."
-        )
+        raise ValueError(f"Not enough B-neighbor images to define d_({target_int + 1}).")
     d_k_plus_1 = ordered_distances[:, target_int]
     if not torch.isfinite(d_k_plus_1).all():
-        raise ValueError(
-            f"Not enough B-neighbor images to define d_({target_int + 1})."
-        )
+        raise ValueError(f"Not enough B-neighbor images to define d_({target_int + 1}).")
 
     # Preserve the per-neighbor force scale of the former d_(k)/d_(k+1)
     # objective by summing, rather than averaging, over ranked neighbors.
@@ -355,11 +341,7 @@ def _coordination_margin_penalties_per_A_single(
     push_extra_outside = (
         temperature
         * torch.nn.functional.softplus(
-            (
-                (r_cut_per_A + margin).unsqueeze(1)
-                - outside_distances
-            )
-            / temperature
+            ((r_cut_per_A + margin).unsqueeze(1) - outside_distances) / temperature
         )
     ).sum(dim=1)
     if target_int == 0:
@@ -369,11 +351,7 @@ def _coordination_margin_penalties_per_A_single(
     pull_required_inside = (
         temperature
         * torch.nn.functional.softplus(
-            (
-                inside_distances
-                - (r_cut_per_A - margin).unsqueeze(1)
-            )
-            / temperature
+            (inside_distances - (r_cut_per_A - margin).unsqueeze(1)) / temperature
         )
     ).sum(dim=1)
     return pull_required_inside + push_extra_outside
@@ -382,7 +360,7 @@ def _coordination_margin_penalties_per_A_single(
 def _soft_neighbor_counts_per_A_single(
     cell: torch.Tensor,
     frac: torch.Tensor,
-    types,                     # accepts numpy or torch
+    types,  # accepts numpy or torch
     type_A: int | list[int] | tuple[int, ...] | set[int],
     type_B: int | list[int] | tuple[int, ...] | set[int],
     r_cut: float | None = None,
@@ -396,8 +374,9 @@ def _soft_neighbor_counts_per_A_single(
     If a central atom's type is included in B, subtract its self-interaction.
     """
     # Normalize inputs to torch on the same device/dtype (keeps grad from frac if it has one)
-    frac = torch.as_tensor(frac, dtype=getattr(frac, "dtype", torch.float32),
-                           device=getattr(frac, "device", None))
+    frac = torch.as_tensor(
+        frac, dtype=getattr(frac, "dtype", torch.float32), device=getattr(frac, "device", None)
+    )
     cell = torch.as_tensor(cell, dtype=frac.dtype, device=frac.device)
     types = torch.as_tensor(types, dtype=torch.int64, device=frac.device)
     type_As = _as_atomic_number_tuple(type_A)
@@ -416,7 +395,7 @@ def _soft_neighbor_counts_per_A_single(
 
     if idx_A.numel() == 0 or idx_B.numel() == 0:
         # Return a scalar-zero preserving the graph
-        return cell.sum()*frac.sum() * torch.zeros(1, device=device)
+        return cell.sum() * frac.sum() * torch.zeros(1, device=device)
 
     r_cut_per_A = _coordination_r_cut_per_center(
         types[idx_A], type_Bs, dtype=frac.dtype, r_cut=r_cut
@@ -425,12 +404,17 @@ def _soft_neighbor_counts_per_A_single(
     # PBC 27 images
     global shifts
     if shifts is None or shifts.device != device:
-        shifts = torch.stack(torch.meshgrid(
-            torch.arange(-1, 2, device=device),
-            torch.arange(-1, 2, device=device),
-            torch.arange(-1, 2, device=device),
-            indexing='ij'
-        ), dim=-1).reshape(-1, 3)  # (27,3)
+        shifts = torch.stack(
+            torch.meshgrid(
+                torch.arange(-1, 2, device=device),
+                torch.arange(-1, 2, device=device),
+                torch.arange(-1, 2, device=device),
+                indexing="ij",
+            ),
+            dim=-1,
+        ).reshape(
+            -1, 3
+        )  # (27,3)
 
     frac_A = frac[idx_A]  # (n_A,3)
     frac_B = frac[idx_B]  # (n_B,3)
@@ -440,8 +424,8 @@ def _soft_neighbor_counts_per_A_single(
 
     # Distances
     d = frac_A.unsqueeze(1) - frac_B_images.unsqueeze(0)  # (n_A, n_B*27, 3)
-    dc = torch.matmul(d, cell)                             # (n_A, n_B*27, 3)
-    dist = dc.norm(dim=-1)                                 # (n_A, n_B*27)
+    dc = torch.matmul(d, cell)  # (n_A, n_B*27, 3)
+    dist = dc.norm(dim=-1)  # (n_A, n_B*27)
 
     G = torch.sigmoid(alpha * (r_cut_per_A[:, None] - dist))
 
@@ -486,10 +470,10 @@ def _compute_target_coordination_share_single(
 
 
 def compute_target_coordination_share(
-    cell: torch.Tensor,           # (B, 3, 3) or (3, 3)
-    frac: torch.Tensor,           # (B, N, 3) or (N, 3)
-    atomic_numbers: torch.Tensor, # (sumN_i,)
-    num_atoms: torch.Tensor,      # (B,)
+    cell: torch.Tensor,  # (B, 3, 3) or (3, 3)
+    frac: torch.Tensor,  # (B, N, 3) or (N, 3)
+    atomic_numbers: torch.Tensor,  # (sumN_i,)
+    num_atoms: torch.Tensor,  # (B,)
     type_A: int | list[int] | tuple[int, ...] | set[int],
     type_B: int | list[int] | tuple[int, ...] | set[int],
     *,
@@ -504,7 +488,8 @@ def compute_target_coordination_share(
     Returns (B,) if batched, scalar if single.
     """
     if cell.ndim == 2:
-        cell = cell.unsqueeze(0); squeeze_out = True
+        cell = cell.unsqueeze(0)
+        squeeze_out = True
     else:
         squeeze_out = False
 
@@ -514,8 +499,11 @@ def compute_target_coordination_share(
     for b in range(B):
         count_ = count + num_atoms[b]
         res = _compute_target_coordination_share_single(
-            cell[b], frac[count:count_], atomic_numbers[count:count_],
-            type_A, type_B,
+            cell[b],
+            frac[count:count_],
+            atomic_numbers[count:count_],
+            type_A,
+            type_B,
             target=target,
             tau=tau,
             r_cut=r_cut,
@@ -574,8 +562,8 @@ def target_coordination_share_loss(
 
         if isinstance(val, (list, tuple)):
             tgt = float(val[0])
-            rcut = (None if len(val) < 2 or val[1] is None else float(val[1]))
-            tau = (default_tau if len(val) < 3 or val[2] is None else float(val[2]))
+            rcut = None if len(val) < 2 or val[1] is None else float(val[1])
+            tau = default_tau if len(val) < 3 or val[2] is None else float(val[2])
         else:
             tgt = float(val)
             rcut = None
@@ -584,8 +572,12 @@ def target_coordination_share_loss(
         ZAs, ZBs = _parse_coordination_constraint(species_pair)
 
         objective = compute_target_coordination_share(
-            cell=cell, frac=frac, atomic_numbers=atomic_numbers, num_atoms=num_atoms,
-            type_A=ZAs, type_B=ZBs,
+            cell=cell,
+            frac=frac,
+            atomic_numbers=atomic_numbers,
+            num_atoms=num_atoms,
+            type_A=ZAs,
+            type_B=ZBs,
             target=tgt,
             tau=tau,
             r_cut=rcut,
@@ -614,14 +606,14 @@ def dominant_environment_loss(*args, **kwargs) -> torch.Tensor:
 
 
 def compute_mean_coordination(
-        cell: torch.Tensor,  # (B, 3, 3) or (3, 3)
-        frac: torch.Tensor,  # (B, N, 3) or (N, 3)
-        atomic_numbers: torch.Tensor,  # (\Sum N_i)
-        num_atoms: torch.Tensor,  # (B,)
-        type_A: int | list[int] | tuple[int, ...] | set[int],
-        type_B: int | list[int] | tuple[int, ...] | set[int],
-        r_cut: float | None = None,
-        alpha: float = DEFAULT_COORDINATION_ALPHA,
+    cell: torch.Tensor,  # (B, 3, 3) or (3, 3)
+    frac: torch.Tensor,  # (B, N, 3) or (N, 3)
+    atomic_numbers: torch.Tensor,  # (\Sum N_i)
+    num_atoms: torch.Tensor,  # (B,)
+    type_A: int | list[int] | tuple[int, ...] | set[int],
+    type_B: int | list[int] | tuple[int, ...] | set[int],
+    r_cut: float | None = None,
+    alpha: float = DEFAULT_COORDINATION_ALPHA,
 ) -> torch.Tensor:
     """
     Batched mean sigmoid-soft-count coordination, mean_i sum_j g(d_ij).
@@ -666,21 +658,21 @@ def compute_mean_coordination(
 
 
 def compute_ranked_coordination(
-        cell: torch.Tensor,  # (B, 3, 3) or (3, 3)
-        frac: torch.Tensor,  # (B, N, 3) or (N, 3)
-        atomic_numbers: torch.Tensor,  # (\Sum N_i)
-        num_atoms: torch.Tensor,  # (B,)
-        type_A: int | list[int] | tuple[int, ...] | set[int],
-        type_B: int | list[int] | tuple[int, ...] | set[int],
-        *,
-        target: float,
-        r_cut: float | None = None,
-        margin: float = DEFAULT_COORDINATION_MARGIN,
-        temperature: float = DEFAULT_COORDINATION_TEMPERATURE,
-        alpha: float = DEFAULT_COORDINATION_ALPHA,
-        cn_tolerance: float = DEFAULT_COORDINATION_CN_TOLERANCE,
-        cn_temperature: float = DEFAULT_COORDINATION_CN_TEMPERATURE,
-        satisfaction_weight: float = DEFAULT_COORDINATION_SATISFACTION_WEIGHT,
+    cell: torch.Tensor,  # (B, 3, 3) or (3, 3)
+    frac: torch.Tensor,  # (B, N, 3) or (N, 3)
+    atomic_numbers: torch.Tensor,  # (\Sum N_i)
+    num_atoms: torch.Tensor,  # (B,)
+    type_A: int | list[int] | tuple[int, ...] | set[int],
+    type_B: int | list[int] | tuple[int, ...] | set[int],
+    *,
+    target: float,
+    r_cut: float | None = None,
+    margin: float = DEFAULT_COORDINATION_MARGIN,
+    temperature: float = DEFAULT_COORDINATION_TEMPERATURE,
+    alpha: float = DEFAULT_COORDINATION_ALPHA,
+    cn_tolerance: float = DEFAULT_COORDINATION_CN_TOLERANCE,
+    cn_temperature: float = DEFAULT_COORDINATION_CN_TEMPERATURE,
+    satisfaction_weight: float = DEFAULT_COORDINATION_SATISFACTION_WEIGHT,
 ) -> torch.Tensor:
     """
     Batched mean ranked-neighbor softplus penalty for an exact integer target.
@@ -847,9 +839,9 @@ def mean_coordination_loss(
     if mode == "l1" or mode == None or mode == "test":
         loss = torch.abs(f_AB - target_tensor)
     elif mode == "l2":
-        loss = torch.nn.functional.mse_loss(f_AB, target_tensor, reduction='none')
+        loss = torch.nn.functional.mse_loss(f_AB, target_tensor, reduction="none")
     elif mode == "huber":
-        loss = torch.nn.functional.huber_loss(f_AB, target_tensor, reduction='none', delta=1.5)
+        loss = torch.nn.functional.huber_loss(f_AB, target_tensor, reduction="none", delta=1.5)
         # eps sensitif ?
     elif mode == "divergence":
         pass  # Placeholder for divergence loss, not implemented
@@ -885,24 +877,15 @@ def ranked_coordination_loss(
     invalid_options = sorted({"mode"}.intersection(target))
     if invalid_options:
         options = ", ".join(repr(option) for option in invalid_options)
-        raise ValueError(
-            f"{options} are not valid for "
-            "'ranked_coordination'."
-        )
+        raise ValueError(f"{options} are not valid for " "'ranked_coordination'.")
 
     default_margin = float(target.get("margin", default_margin))
     default_temperature = float(target.get("temperature", default_temperature))
     alpha = float(target.get("alpha", DEFAULT_COORDINATION_ALPHA))
-    cn_tolerance = float(
-        target.get("cn_tolerance", DEFAULT_COORDINATION_CN_TOLERANCE)
-    )
-    cn_temperature = float(
-        target.get("cn_temperature", DEFAULT_COORDINATION_CN_TEMPERATURE)
-    )
+    cn_tolerance = float(target.get("cn_tolerance", DEFAULT_COORDINATION_CN_TOLERANCE))
+    cn_temperature = float(target.get("cn_temperature", DEFAULT_COORDINATION_CN_TEMPERATURE))
     satisfaction_weight = float(
-        target.get(
-            "satisfaction_weight", DEFAULT_COORDINATION_SATISFACTION_WEIGHT
-        )
+        target.get("satisfaction_weight", DEFAULT_COORDINATION_SATISFACTION_WEIGHT)
     )
     penalties = []
     for species_pair, val in target.items():
@@ -912,14 +895,8 @@ def ranked_coordination_loss(
         if isinstance(val, (list, tuple)):
             target_value = float(val[0])
             r_cut = None if len(val) < 2 or val[1] is None else float(val[1])
-            margin = (
-                default_margin if len(val) < 3 or val[2] is None else float(val[2])
-            )
-            temperature = (
-                default_temperature
-                if len(val) < 4 or val[3] is None
-                else float(val[3])
-            )
+            margin = default_margin if len(val) < 3 or val[2] is None else float(val[2])
+            temperature = default_temperature if len(val) < 4 or val[3] is None else float(val[3])
         else:
             target_value = float(val)
             r_cut = None
@@ -967,13 +944,101 @@ def group_target_coordination_loss(*args, **kwargs) -> torch.Tensor:
     return target_coordination_loss(*args, **kwargs)
 
 
-INTER_ATOMIC_CUTOFF = {1: 0.31, 2: 0.28, 3: 1.28, 4: 0.96, 5: 0.84, 6: 0.76, 7: 0.71, 8: 0.66, 9: 0.57, 10: 0.58,
-                       11: 1.66, 12: 1.41, 13: 1.21, 14: 1.11, 15: 1.07, 16: 1.05, 17: 1.02, 18: 1.06, 19: 2.03,
-                       20: 1.76, 21: 1.7, 22: 1.6, 23: 1.53, 24: 1.39, 25: 1.39, 26: 1.32, 27: 1.26, 28: 1.24, 29: 1.32,
-                       30: 1.22, 31: 1.22, 32: 1.2, 33: 1.19, 34: 1.2, 35: 1.2, 36: 1.16, 37: 2.2, 38: 1.95, 39: 1.9,
-                       40: 1.75, 41: 1.64, 42: 1.54, 43: 1.47, 44: 1.46, 45: 1.42, 46: 1.39, 47: 1.45, 48: 1.44,
-                       49: 1.42, 50: 1.39, 51: 1.39, 52: 1.38, 53: 1.39, 54: 1.4, 55: 2.44, 56: 2.15, 57: 2.07,
-                       58: 2.04, 59: 2.03, 60: 2.01, 61: 1.99, 62: 1.98, 63: 1.98, 64: 1.96, 65: 1.94, 66: 1.92,
-                       67: 1.92, 68: 1.89, 69: 1.9, 70: 1.87, 71: 1.87, 72: 1.75, 73: 1.7, 74: 1.62, 75: 1.51, 76: 1.44,
-                       77: 1.41, 78: 1.36, 79: 1.36, 80: 1.32, 81: 1.45, 82: 1.46, 83: 1.48, 84: 1.4, 85: 1.5, 86: 1.5,
-                       87: 2.6, 88: 2.21, 89: 2.15, 90: 2.06, 91: 2.0, 92: 1.96, 93: 1.9, 94: 1.87, 95: 1.8, 96: 1.69}
+INTER_ATOMIC_CUTOFF = {
+    1: 0.31,
+    2: 0.28,
+    3: 1.28,
+    4: 0.96,
+    5: 0.84,
+    6: 0.76,
+    7: 0.71,
+    8: 0.66,
+    9: 0.57,
+    10: 0.58,
+    11: 1.66,
+    12: 1.41,
+    13: 1.21,
+    14: 1.11,
+    15: 1.07,
+    16: 1.05,
+    17: 1.02,
+    18: 1.06,
+    19: 2.03,
+    20: 1.76,
+    21: 1.7,
+    22: 1.6,
+    23: 1.53,
+    24: 1.39,
+    25: 1.39,
+    26: 1.32,
+    27: 1.26,
+    28: 1.24,
+    29: 1.32,
+    30: 1.22,
+    31: 1.22,
+    32: 1.2,
+    33: 1.19,
+    34: 1.2,
+    35: 1.2,
+    36: 1.16,
+    37: 2.2,
+    38: 1.95,
+    39: 1.9,
+    40: 1.75,
+    41: 1.64,
+    42: 1.54,
+    43: 1.47,
+    44: 1.46,
+    45: 1.42,
+    46: 1.39,
+    47: 1.45,
+    48: 1.44,
+    49: 1.42,
+    50: 1.39,
+    51: 1.39,
+    52: 1.38,
+    53: 1.39,
+    54: 1.4,
+    55: 2.44,
+    56: 2.15,
+    57: 2.07,
+    58: 2.04,
+    59: 2.03,
+    60: 2.01,
+    61: 1.99,
+    62: 1.98,
+    63: 1.98,
+    64: 1.96,
+    65: 1.94,
+    66: 1.92,
+    67: 1.92,
+    68: 1.89,
+    69: 1.9,
+    70: 1.87,
+    71: 1.87,
+    72: 1.75,
+    73: 1.7,
+    74: 1.62,
+    75: 1.51,
+    76: 1.44,
+    77: 1.41,
+    78: 1.36,
+    79: 1.36,
+    80: 1.32,
+    81: 1.45,
+    82: 1.46,
+    83: 1.48,
+    84: 1.4,
+    85: 1.5,
+    86: 1.5,
+    87: 2.6,
+    88: 2.21,
+    89: 2.15,
+    90: 2.06,
+    91: 2.0,
+    92: 1.96,
+    93: 1.9,
+    94: 1.87,
+    95: 1.8,
+    96: 1.69,
+}

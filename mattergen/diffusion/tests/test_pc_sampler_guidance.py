@@ -2,10 +2,7 @@ from types import SimpleNamespace
 
 import torch
 
-from mattergen.diffusion.sampling.pc_sampler import (
-    _compute_guidance_grads,
-    _prepare_guidance_grad,
-)
+from mattergen.diffusion.sampling.pc_sampler import _compute_guidance_grads, _prepare_guidance_grad
 
 
 def test_compute_guidance_grads_returns_both_first_order_gradients():
@@ -43,9 +40,7 @@ def test_normalize_ragged_gradient_per_sample():
     )
     batch_idx = torch.tensor([0, 0, 1])
 
-    normalized = _prepare_guidance_grad(
-        grad, batch_idx=batch_idx, batch_size=2, normalize=True
-    )
+    normalized = _prepare_guidance_grad(grad, batch_idx=batch_idx, batch_size=2, normalize=True)
 
     expected = torch.tensor(
         [
@@ -67,9 +62,7 @@ def test_normalize_dense_gradient_per_sample_and_preserve_zero_sample():
         requires_grad=True,
     )
 
-    normalized = _prepare_guidance_grad(
-        grad, batch_idx=None, batch_size=3, normalize=True
-    )
+    normalized = _prepare_guidance_grad(grad, batch_idx=None, batch_size=3, normalize=True)
 
     expected = torch.tensor(
         [

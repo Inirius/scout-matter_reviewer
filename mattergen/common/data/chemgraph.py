@@ -158,8 +158,9 @@ class ChemGraph(pyg_data.Data):
         replace_kwargs = ["pos", "cell"]
         for key in replace_kwargs:
             out[key] = out[key].detach().requires_grad_(True) if self[key] is not None else None
-        
+
         return out
+
 
 # Retrieve a pointer for the DynamicInheritance-based PYG Batch class.
 # For typing reasons only, use isinstance(pyg_data.Batch) for runtime checks.

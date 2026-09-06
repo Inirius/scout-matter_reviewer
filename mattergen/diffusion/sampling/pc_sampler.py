@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
-from typing import Generic, Mapping, Tuple, TypeVar, Callable
+import json
+from typing import Callable, Generic, Mapping, Tuple, TypeVar
 
 import torch
 from tqdm.auto import tqdm
-import json
 
 from mattergen.diffusion.corruption.multi_corruption import MultiCorruption, apply
 from mattergen.diffusion.data.batched_data import BatchedData
@@ -36,9 +36,9 @@ def _prepare_guidance_grad(
     if batch_idx is None:
         n = squared_norm.clamp_min(threshold**2).sqrt()
     else:
-        squared_norm = torch.zeros(
-            batch_size, dtype=g.dtype, device=g.device
-        ).scatter_add(0, batch_idx, squared_norm)
+        squared_norm = torch.zeros(batch_size, dtype=g.dtype, device=g.device).scatter_add(
+            0, batch_idx, squared_norm
+        )
         n = squared_norm.clamp_min(threshold**2).sqrt()[batch_idx]
 
     n = n.view(g.shape[0], *([1] * (g.ndim - 1)))
@@ -83,7 +83,10 @@ class PredictorCorrector(Generic[Diffusable]):
         eps_t: float = 1e-3,
         max_t: float | None = None,
         diffusion_loss_fn: Callable[[Diffusable, torch.Tensor], torch.Tensor] | None = None,
-        diffusion_loss_weight: list[float] = [1.0,1.0],  # Weight for the diffusion loss (theoretically should be 1.0)
+        diffusion_loss_weight: list[float] = [
+            1.0,
+            1.0,
+        ],  # Weight for the diffusion loss (theoretically should be 1.0)
         self_rec_steps: int = 1,
         back_step: int = 0,  # Number of steps to go back in the predictor-corrector loop
         print_loss_history: bool = False,  # Flag to control printing of loss history
@@ -133,9 +136,9 @@ class PredictorCorrector(Generic[Diffusable]):
         self._eps_t = eps_t
         self._n_steps_corrector = n_steps_corrector
         self._device = device
-        self.diffusion_loss_fn = diffusion_loss_fn  
-        self.diffusion_loss_weight = diffusion_loss_weight 
-        self.diffusion_loss_history = [] # To keep track of diffusion loss values
+        self.diffusion_loss_fn = diffusion_loss_fn
+        self.diffusion_loss_weight = diffusion_loss_weight
+        self.diffusion_loss_history = []  # To keep track of diffusion loss values
         self.print_loss_history = print_loss_history  # Flag to control printing of loss history
         self.self_rec_steps = self_rec_steps
         self.back_step = back_step  # Number of steps to go back in the predictor-corrector loop
@@ -230,25 +233,28 @@ class PredictorCorrector(Generic[Diffusable]):
             self.diffusion_loss_weight.append(True)  # If not mentionned, use the normalization
 
     def _backward_guidance(self, x0: Diffusable, t: torch.Tensor, score) -> Diffusable:
-            """Update the score with the backward universal guidance function."""
-            with torch.set_grad_enabled(True):
-                diffusion_loss = self.diffusion_loss_fn(x0, t)
-            if self.print_loss_history:
-                self.diffusion_loss_history.append(diffusion_loss.cpu().tolist())
-            grad_dict = _compute_guidance_grads(diffusion_loss, x0)
-            #if grad_dict['pos'].sum() != 0 or grad_dict['cell'].sum() != 0:
-            #   print(grad_dict, diffusion_loss)
-            for k in grad_dict:
-                if k in score:
-                    g_scaled = _prepare_guidance_grad(
-                        grad_dict[k], batch_idx=x0.get_batch_idx(k),
-                        batch_size=x0.get_batch_size(),
-                        normalize=self.diffusion_loss_weight[2],
-                    )
-                    alpha_t, sigma_t = x0.alpha[k]
-                    score[k] = score[k] - self.diffusion_loss_weight[1] * alpha_t / (sigma_t**2) * g_scaled
-            del grad_dict  # Clean up the gradient dictionary
-            pass
+        """Update the score with the backward universal guidance function."""
+        with torch.set_grad_enabled(True):
+            diffusion_loss = self.diffusion_loss_fn(x0, t)
+        if self.print_loss_history:
+            self.diffusion_loss_history.append(diffusion_loss.cpu().tolist())
+        grad_dict = _compute_guidance_grads(diffusion_loss, x0)
+        # if grad_dict['pos'].sum() != 0 or grad_dict['cell'].sum() != 0:
+        #   print(grad_dict, diffusion_loss)
+        for k in grad_dict:
+            if k in score:
+                g_scaled = _prepare_guidance_grad(
+                    grad_dict[k],
+                    batch_idx=x0.get_batch_idx(k),
+                    batch_size=x0.get_batch_size(),
+                    normalize=self.diffusion_loss_weight[2],
+                )
+                alpha_t, sigma_t = x0.alpha[k]
+                score[k] = (
+                    score[k] - self.diffusion_loss_weight[1] * alpha_t / (sigma_t**2) * g_scaled
+                )
+        del grad_dict  # Clean up the gradient dictionary
+        pass
 
     def _forward_guidance(self, batch: Diffusable, t: torch.Tensor, score) -> Diffusable:
         """Update the score with the forward universal guidance function."""
@@ -257,7 +263,9 @@ class PredictorCorrector(Generic[Diffusable]):
         with torch.set_grad_enabled(True):
             x0 = self.diffusion_module._predict_x0(
                 x=batch_,
-                atomic_numbers=self._predictors['atomic_numbers'].corruption._to_non_zero_based(torch.distributions.Categorical(logits=score["atomic_numbers"]).sample()),
+                atomic_numbers=self._predictors["atomic_numbers"].corruption._to_non_zero_based(
+                    torch.distributions.Categorical(logits=score["atomic_numbers"]).sample()
+                ),
                 t=t,
             )
         with torch.set_grad_enabled(True):
@@ -265,12 +273,13 @@ class PredictorCorrector(Generic[Diffusable]):
         if self.print_loss_history:
             self.diffusion_loss_history.append(diffusion_loss.cpu().tolist())
         grad_dict = _compute_guidance_grads(diffusion_loss, batch_)
-        #if grad_dict['pos'].sum() != 0 or grad_dict['cell'].sum() != 0:
+        # if grad_dict['pos'].sum() != 0 or grad_dict['cell'].sum() != 0:
         #        print(grad_dict, diffusion_loss)
         for k in grad_dict:
             if k in score:
                 g_scaled = _prepare_guidance_grad(
-                    grad_dict[k], batch_idx=batch_.get_batch_idx(k),
+                    grad_dict[k],
+                    batch_idx=batch_.get_batch_idx(k),
                     batch_size=batch_.get_batch_size(),
                     normalize=self.diffusion_loss_weight[2],
                 )
@@ -278,14 +287,23 @@ class PredictorCorrector(Generic[Diffusable]):
         del batch_  # Clean up the temporary batch with gradients
         del grad_dict  # Clean up the gradient dictionary
         pass
-    
-    def forward_corruption(self, batch_k: Diffusable, t: torch.Tensor, s: torch.Tensor, k: str, batch_idx: torch.Tensor | None = None) -> Tuple[Diffusable, torch.Tensor]:
+
+    def forward_corruption(
+        self,
+        batch_k: Diffusable,
+        t: torch.Tensor,
+        s: torch.Tensor,
+        k: str,
+        batch_idx: torch.Tensor | None = None,
+    ) -> Tuple[Diffusable, torch.Tensor]:
         """Forward pass for a corruption from s to t."""
         return (
-        self._multi_corruption.corruptions[k].sample_from_s(batch_k, t, s, batch_idx=batch_idx),
-        self._multi_corruption.corruptions[k].marginal_prob_from_s(batch_k, t, s, batch_idx=batch_idx)[0]
-                        )
-    
+            self._multi_corruption.corruptions[k].sample_from_s(batch_k, t, s, batch_idx=batch_idx),
+            self._multi_corruption.corruptions[k].marginal_prob_from_s(
+                batch_k, t, s, batch_idx=batch_idx
+            )[0],
+        )
+
     @torch.no_grad()
     def _denoise(
         self,
@@ -311,7 +329,6 @@ class PredictorCorrector(Generic[Diffusable]):
             # Set the timestep
             t = torch.full((batch.get_batch_size(),), timesteps[i], device=self._device)
 
-            
             # Corrector updates.
             if self._correctors and self.algo < 3:
                 for _ in range(self._n_steps_corrector):
@@ -331,41 +348,45 @@ class PredictorCorrector(Generic[Diffusable]):
                     batch, mean_batch = _mask_replace(
                         samples_means=samples_means, batch=batch, mean_batch=mean_batch, mask=mask
                     )
-            
+
             score = self._score_fn(batch, t)
 
             if self.diffusion_loss_fn is not None and (t < self._multi_corruption.T * 0.9).all():
-                    self._forward_guidance(batch, t, score)
-                    for _ in range(self.back_step):
-                        # Update the score with the backward universal guidance function
-                        x0 = self._diffusion_module._predict_x0(
-                            x=batch,
-                            atomic_numbers=self._predictors['atomic_numbers'].corruption._to_non_zero_based(torch.distributions.Categorical(logits=score["atomic_numbers"]).sample()),
-                            t=t,
-                            score=score,
-                            get_alpha=True
-                        )
-                        self._backward_guidance(x0, t, score)
+                self._forward_guidance(batch, t, score)
+                for _ in range(self.back_step):
+                    # Update the score with the backward universal guidance function
+                    x0 = self._diffusion_module._predict_x0(
+                        x=batch,
+                        atomic_numbers=self._predictors[
+                            "atomic_numbers"
+                        ].corruption._to_non_zero_based(
+                            torch.distributions.Categorical(logits=score["atomic_numbers"]).sample()
+                        ),
+                        t=t,
+                        score=score,
+                        get_alpha=True,
+                    )
+                    self._backward_guidance(x0, t, score)
 
-                # Predictor updates to predict z_t-1
+            # Predictor updates to predict z_t-1
             predictor_fns = {
-                    k: predictor.update_given_score for k, predictor in self._predictors.items()
-                }
+                k: predictor.update_given_score for k, predictor in self._predictors.items()
+            }
             samples_means = apply(
-                    fns=predictor_fns,
-                    x=batch,
-                    score=score,
-                    broadcast=dict(t=t, batch=batch, dt=dt),
-                    batch_idx=self._multi_corruption._get_batch_indices(batch),
-                )
+                fns=predictor_fns,
+                x=batch,
+                score=score,
+                broadcast=dict(t=t, batch=batch, dt=dt),
+                batch_idx=self._multi_corruption._get_batch_indices(batch),
+            )
             if record:
-                    recorded_samples.append(batch.clone().to("cpu"))
-            
-            for _ in range((self.self_rec_steps-1)*(t < self._multi_corruption.T * 0.9).all()):
+                recorded_samples.append(batch.clone().to("cpu"))
+
+            for _ in range((self.self_rec_steps - 1) * (t < self._multi_corruption.T * 0.9).all()):
                 # Compute unconditionnal score
                 batch_, mean_batch_ = _mask_replace(
                     samples_means=samples_means, batch=batch, mean_batch=mean_batch, mask=mask
-                ) #z_t-1
+                )  # z_t-1
 
                 ############## Algorithm 1 ############
                 # Corrector updates.
@@ -373,7 +394,8 @@ class PredictorCorrector(Generic[Diffusable]):
                     for _ in range(self._n_steps_corrector):
                         score = self._score_fn(batch_, t)
                         fns = {
-                            k: corrector.step_given_score for k, corrector in self._correctors.items()
+                            k: corrector.step_given_score
+                            for k, corrector in self._correctors.items()
                         }
                         samples_means: dict[str, Tuple[torch.Tensor, torch.Tensor]] = apply(
                             fns=fns,
@@ -385,10 +407,13 @@ class PredictorCorrector(Generic[Diffusable]):
                         if record:
                             recorded_samples.append(batch_.clone().to("cpu"))
                         batch_, mean_batch_ = _mask_replace(
-                            samples_means=samples_means, batch=batch_, mean_batch=mean_batch_, mask=mask
+                            samples_means=samples_means,
+                            batch=batch_,
+                            mean_batch=mean_batch_,
+                            mask=mask,
                         )
                 ############## Algorithm 1 ############
-                
+
                 # Renoise the batch fieldwise
                 fns = {
                     k: self.forward_corruption
@@ -399,7 +424,7 @@ class PredictorCorrector(Generic[Diffusable]):
                     fns=fns,
                     batch_k=batch_,
                     broadcast={"t": t, "s": t + dt},
-                    k = {u:u for u in self._multi_corruption.corrupted_fields if u in batch_ },
+                    k={u: u for u in self._multi_corruption.corrupted_fields if u in batch_},
                     batch_idx=self._multi_corruption._get_batch_indices(batch_),
                 )
                 batch = batch_.replace(**{k: v[0] for k, v in samples_means.items()})
@@ -411,7 +436,8 @@ class PredictorCorrector(Generic[Diffusable]):
                     for _ in range(self._n_steps_corrector):
                         score = self._score_fn(batch, t)
                         fns = {
-                            k: corrector.step_given_score for k, corrector in self._correctors.items()
+                            k: corrector.step_given_score
+                            for k, corrector in self._correctors.items()
                         }
                         samples_means: dict[str, Tuple[torch.Tensor, torch.Tensor]] = apply(
                             fns=fns,
@@ -423,23 +449,35 @@ class PredictorCorrector(Generic[Diffusable]):
                         if record:
                             recorded_samples.append(batch.clone().to("cpu"))
                         batch, mean_batch = _mask_replace(
-                            samples_means=samples_means, batch=batch, mean_batch=mean_batch, mask=mask
+                            samples_means=samples_means,
+                            batch=batch,
+                            mean_batch=mean_batch,
+                            mask=mask,
                         )
 
                 ############## Algorithm 2 ############
 
                 score = self._score_fn(batch, t)
 
-                if self.diffusion_loss_fn is not None and (t < self._multi_corruption.T * 0.9).all():
+                if (
+                    self.diffusion_loss_fn is not None
+                    and (t < self._multi_corruption.T * 0.9).all()
+                ):
                     self._forward_guidance(batch, t, score)
                     for _ in range(self.back_step):
                         # Update the score with the backward universal guidance function
                         x0 = self._diffusion_module._predict_x0(
                             x=batch,
-                            atomic_numbers=self._predictors['atomic_numbers'].corruption._to_non_zero_based(torch.distributions.Categorical(logits=score["atomic_numbers"]).sample()),
+                            atomic_numbers=self._predictors[
+                                "atomic_numbers"
+                            ].corruption._to_non_zero_based(
+                                torch.distributions.Categorical(
+                                    logits=score["atomic_numbers"]
+                                ).sample()
+                            ),
                             t=t,
                             score=score,
-                            get_alpha=True
+                            get_alpha=True,
                         )
                         self._backward_guidance(x0, t, score)
                         del x0  # Clean up the temporary x0
@@ -459,8 +497,8 @@ class PredictorCorrector(Generic[Diffusable]):
                     recorded_samples.append(batch.clone().to("cpu"))
 
             batch, mean_batch = _mask_replace(
-                    samples_means=samples_means, batch=batch, mean_batch=mean_batch, mask=mask
-                ) # Update batch and mean_batch ie z_t (the previous z_{t-1}finalise)
+                samples_means=samples_means, batch=batch, mean_batch=mean_batch, mask=mask
+            )  # Update batch and mean_batch ie z_t (the previous z_{t-1}finalise)
 
         return batch, mean_batch, recorded_samples
 

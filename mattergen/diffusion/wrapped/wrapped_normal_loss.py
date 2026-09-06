@@ -75,7 +75,7 @@ def wrapped_normal_loss(
     noisy_x: torch.Tensor,
     reduce: Literal["sum", "mean"],
     batch: BatchedData,
-    **_
+    **_,
 ) -> torch.Tensor:
     """Compute the loss for a wrapped normal distribution.
     Compares the score of the wrapped normal distribution to the score of the score model.

@@ -1,20 +1,25 @@
-import os
 import glob
-import pandas as pd
-from ase.io import read
-from mattersim.forcefield import MatterSimCalculator
-from pymatgen.core import Composition
-from pymatgen.analysis.phase_diagram import PhaseDiagram, PDEntry
-import torch
-from loguru import logger
+import os
 import sys
+
+import pandas as pd
+import torch
+from ase.io import read
+from loguru import logger
+from mattersim.forcefield import MatterSimCalculator
+from pymatgen.analysis.phase_diagram import PDEntry, PhaseDiagram
+from pymatgen.core import Composition
 
 # Check if the output is being redirected to a file
 is_redirected = not sys.stdout.isatty()
 
 # Configure loguru
 logger.remove()  # Remove the default logger
-logger.add(sys.stdout, colorize=not is_redirected, format="<green>{time}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>")
+logger.add(
+    sys.stdout,
+    colorize=not is_redirected,
+    format="<green>{time}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+)
 
 
 # Set device for MatterSim
@@ -26,10 +31,13 @@ base_dir = "/path/to/results-root/results/Li-Co-O_f"
 extxyz_files = glob.glob(os.path.join(base_dir, "generated_crystals*.extxyz"), recursive=True)
 
 # Initialize MatterSimCalculator
-calculator = MatterSimCalculator(device=device, load_path="/path/to/mattersim_torch/pretrained_models/mattersim-v1.0.0-5M.pth")
+calculator = MatterSimCalculator(
+    device=device, load_path="/path/to/mattersim_torch/pretrained_models/mattersim-v1.0.0-5M.pth"
+)
 
 # Global variable for the phase diagram
 PDIAG = None
+
 
 def _energy_hull(composition, energy):
     """
@@ -57,15 +65,16 @@ def _energy_hull(composition, energy):
     energy_above_hull = energy - hull_energy
     return energy_above_hull
 
+
 for extxyz_file in extxyz_files:
     logger.info(f"Processing file: {extxyz_file}")
     ext_dir = os.path.dirname(extxyz_file)
     ext_base = os.path.basename(extxyz_file)
-    
+
     # Replace 'generated_crystals' with 'energy' and change extension to .csv
     csv_name = ext_base.replace("generated_crystals", "energy").replace(".extxyz", ".csv")
     output_csv = os.path.join(ext_dir, csv_name)
-    
+
     # Skip if the CSV already exists
     if os.path.exists(output_csv):
         logger.info(f"Skipping {output_csv} (already exists)")
@@ -79,22 +88,24 @@ for extxyz_file in extxyz_files:
         try:
             # Assign the calculator to the atoms object
             atoms.calc = calculator
-            
+
             # Compute energy and energy per atom
             energy = atoms.get_potential_energy()
             energy_per_atom = energy / len(atoms)
-            
+
             # Compute energy above the hull
             composition = atoms.get_chemical_formula(empirical=True)
             energy_above_hull = _energy_hull(composition, energy)
-            
+
             # Append results
-            results.append({
-                "structure_idx": idx,
-                "energy (eV)": energy,
-                "energy_per_atom (eV/atom)": energy_per_atom,
-                "energy_above_hull (eV)": energy_above_hull
-            })
+            results.append(
+                {
+                    "structure_idx": idx,
+                    "energy (eV)": energy,
+                    "energy_per_atom (eV/atom)": energy_per_atom,
+                    "energy_above_hull (eV)": energy_above_hull,
+                }
+            )
         except Exception as e:
             logger.error(f"Error processing structure {idx} in file {extxyz_file}: {e}")
 

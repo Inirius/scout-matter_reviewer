@@ -69,7 +69,8 @@ class BaseAggregateMetric(BaseMetric):
     """Abstract base class for aggregate metrics."""
 
     aggregation_method: Literal[
-        "mean", "nanmean",
+        "mean",
+        "nanmean",
     ] = "not implemented"
 
     @property

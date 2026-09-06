@@ -5,9 +5,9 @@ Licensed under the MIT License.
 Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/basis_utils.py.
 """
 
+import math
 from typing import Any, List
 
-import math
 import numpy as np
 import sympy as sym
 from scipy import special as sp

@@ -17,7 +17,11 @@ logger.level("ERROR")
 
 
 def relax_atoms(
-    atoms: list[Atoms], device: str = str(get_device()), potential_load_path: str = None, output_path: str | None = None, **kwargs
+    atoms: list[Atoms],
+    device: str = str(get_device()),
+    potential_load_path: str = None,
+    output_path: str | None = None,
+    **kwargs,
 ) -> tuple[list[Atoms], np.ndarray]:
     potential = Potential.from_checkpoint(
         device=device, load_path=potential_load_path, load_training_state=False
@@ -36,12 +40,18 @@ def relax_structures(
     structures: Structure | list[Structure],
     device: str = str(get_device()),
     potential_load_path: str = None,
-    output_path : str | None = None,
-    **kwargs
+    output_path: str | None = None,
+    **kwargs,
 ) -> tuple[list[Structure], np.ndarray]:
     if isinstance(structures, Structure):
         structures = [structures]
     atoms = [AseAtomsAdaptor.get_atoms(s) for s in structures]
-    relaxed_atoms, total_energies = relax_atoms(atoms, device=device, potential_load_path=potential_load_path, output_path=output_path, **kwargs)
+    relaxed_atoms, total_energies = relax_atoms(
+        atoms,
+        device=device,
+        potential_load_path=potential_load_path,
+        output_path=output_path,
+        **kwargs,
+    )
     relaxed_structures = [AseAtomsAdaptor.get_structure(a) for a in relaxed_atoms]
     return relaxed_structures, total_energies

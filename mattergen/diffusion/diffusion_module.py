@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+import json
 from typing import Callable, Generic, TypeVar
 
 import torch
-import json
 
+from mattergen.common.data.chemgraph import ChemGraph, ChemGraphBatch
 from mattergen.diffusion.corruption.multi_corruption import MultiCorruption, apply
 from mattergen.diffusion.data.batched_data import BatchedData
 from mattergen.diffusion.losses import Loss
@@ -13,7 +14,6 @@ from mattergen.diffusion.model_target import ModelTarget
 from mattergen.diffusion.model_utils import convert_model_out_to_score
 from mattergen.diffusion.score_models.base import ScoreModel
 from mattergen.diffusion.timestep_samplers import TimestepSampler, UniformTimestepSampler
-from mattergen.common.data.chemgraph import ChemGraph, ChemGraphBatch
 
 T = TypeVar("T", bound=BatchedData)
 BatchTransform = Callable[[T], T]
@@ -21,6 +21,7 @@ BatchTransform = Callable[[T], T]
 
 def identity(x: T) -> T:
     return x
+
 
 # Example: 1 atom, cell is identity
 cell = torch.eye(3).unsqueeze(0)  # shape [1, 3, 3]
@@ -31,14 +32,14 @@ g = ChemGraph(
     atomic_numbers=atomic_numbers,
     pos=pos,
     cell=cell,
-    pbc=torch.tensor([1, 1, 1], dtype=torch.bool)  # periodic in all directions
+    pbc=torch.tensor([1, 1, 1], dtype=torch.bool),  # periodic in all directions
 )
 
 
 class DiffusionModule(torch.nn.Module, Generic[T]):
     """Denoising diffusion model for a multi-part state
     diffusion_loss_fn: Loss function that is used for the universal diffusion guidance
-    diffusion_loss_weight: Weight for the diffusion loss (theorelically should be 1.0)  
+    diffusion_loss_weight: Weight for the diffusion loss (theorelically should be 1.0)
     """
 
     def __init__(
@@ -47,7 +48,7 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
         corruption: MultiCorruption[T],
         loss_fn: Loss,
         pre_corruption_fn: BatchTransform | None = None,
-        timestep_sampler: TimestepSampler | None = None,    
+        timestep_sampler: TimestepSampler | None = None,
     ) -> None:
         super().__init__()
         self.model = model
@@ -60,7 +61,7 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
             min_t=1e-5,
             max_t=corruption.T,
         )
-                
+
         # Check corruption for nn.Modules and register them here.
         self._register_corruption_modules()
 
@@ -133,7 +134,14 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
 
         return noisy_batch, t
 
-    def _predict_x0(self, x: T, atomic_numbers: torch.Tensor, t: torch.Tensor, score: T | None = None, get_alpha : bool = False) -> T:
+    def _predict_x0(
+        self,
+        x: T,
+        atomic_numbers: torch.Tensor,
+        t: torch.Tensor,
+        score: T | None = None,
+        get_alpha: bool = False,
+    ) -> T:
         """Predict the x_0 from a batch of data at a given timestep
         Args:
             x: batch of data
@@ -141,7 +149,7 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
             t: timestep
             score: score of the batch of data at the given timestep, if None, it will be calculated (it is modified in the self-rec steps)
             get_alpha: whether to return alpha values for each field
-        
+
         Returns:
             x_0: predicted x_0 for the batch of data at the given timestep
         """
@@ -155,20 +163,20 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
         # Estimate x_0_hat for pos and cell using the Ancestral Sampling Formula
         x0_hat = {}
         for field in replace_kwargs:
-            # Get SDE for the relevant field 
+            # Get SDE for the relevant field
             sde = getattr(self.corruption.sdes, field)
             # Get alpha_t and sigma_t for the current t
             alpha_t, sigma_t = sde.mean_coeff_and_std(
-            x=getattr(x, field),
-            t=t,
-            batch_idx=self.corruption._get_batch_indices(x)[field],
-            batch=x
+                x=getattr(x, field),
+                t=t,
+                batch_idx=self.corruption._get_batch_indices(x)[field],
+                batch=x,
             )
             if get_alpha:
-                alpha_dict[field] = (alpha_t,sigma_t)
+                alpha_dict[field] = (alpha_t, sigma_t)
             x0_hat[field] = (getattr(x, field) + sigma_t**2 * score[field]) / alpha_t
 
-        # Create a new ChemGraphBatch estimating x0 with requires_grad=True for pos and cell    
+        # Create a new ChemGraphBatch estimating x0 with requires_grad=True for pos and cell
         if get_alpha:
             x0 = ChemGraphBatch(
                 atomic_numbers=atomic_numbers,
@@ -187,7 +195,7 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
                 batch=x.batch,
             )
         return x0
-        
+
     def score_fn(self, x: T, t: torch.Tensor) -> T:
         """Calculate the score of a batch of data at a given timestep
 
@@ -211,8 +219,8 @@ class DiffusionModule(torch.nn.Module, Generic[T]):
         )
 
         # --- NEW: Diffusion loss gradient modification ---
-        #if self.diffusion_loss_fn is not None and (t<self.corruption.T*0.9).all():
-                        
+        # if self.diffusion_loss_fn is not None and (t<self.corruption.T*0.9).all():
+
         # --- END NEW ---
 
         return model_out.replace(**scores)

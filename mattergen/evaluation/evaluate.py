@@ -47,7 +47,10 @@ def evaluate(
         raise ValueError("Cannot accept energies if relax is True.")
     if relax:
         relaxed_structures, energies = relax_structures(
-            structures, device=device, potential_load_path=potential_load_path, output_path=structures_output_path
+            structures,
+            device=device,
+            potential_load_path=potential_load_path,
+            output_path=structures_output_path,
         )
     else:
         relaxed_structures = structures

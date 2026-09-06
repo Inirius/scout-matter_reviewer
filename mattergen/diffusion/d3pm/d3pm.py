@@ -199,10 +199,10 @@ class DiscreteDiffusionMatrixBase(DiscreteDiffusionBase):
         for i in range(0, t):
             val = product_fn(i, val)
         return val
-    
+
     def get_qt_matrix_from_s(self, s, t):
         """Returns the matrix Q = q(x_t | x_s) materialized over all x_s."""
-        val = torch.eye(self.dim, device=s.device if isinstance(s, torch.Tensor) else 'cpu')
+        val = torch.eye(self.dim, device=s.device if isinstance(s, torch.Tensor) else "cpu")
         for i in range(int(s[0]), int(t[0])):
             val = torch.matmul(self.get(torch.tensor(i, device=val.device)), val)
         return val
@@ -708,6 +708,7 @@ def q_sample(x_start, t, diffusion, return_logits=False):
     if return_logits:
         return sample, logits
     return sample
+
 
 def q_sample_from_s(x, t, s, diffusion, return_logits=False, batch_idx=None):
     """Sample marginal for x(t) given x(s) with s < t.

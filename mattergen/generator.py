@@ -5,8 +5,8 @@ import io
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from zipfile import ZipFile
 from typing import Callable
+from zipfile import ZipFile
 
 import ase.io
 import hydra
@@ -76,10 +76,8 @@ def draw_samples_from_sampler(
 
     # Save and print the diffusion loss history
     if print_loss:
-        sampler.save_diffusion_loss_history(
-            output_path / "diffusion_loss_history.txt"
-        )
-        
+        sampler.save_diffusion_loss_history(output_path / "diffusion_loss_history.txt")
+
     generated_strucs = structure_from_model_output(
         all_samples["pos"].reshape(-1, 3),
         all_samples["atomic_numbers"].reshape(-1),
@@ -199,14 +197,13 @@ class CrystalGenerator:
     diffusion_guidance_factor: float = 0.0
     properties_to_condition_on: TargetProperty | None = None
 
-    # Loss function for universal diffusion guidance 
+    # Loss function for universal diffusion guidance
     diffusion_loss_fn: Callable | None = None  # NEW
     diffusion_loss_weight: list[float] = field(default_factory=lambda: [1.0, 2.0])  # NEW
-    print_loss: bool = False # NEW
+    print_loss: bool = False  # NEW
     self_rec_steps: int = 1  # NEW
-    back_step: int = 0, # NEW
+    back_step: int = (0,)  # NEW
     algo: int = 0  # NEW
-
 
     # Additional overrides, only has an effect when using a diffusion-codebase model
     sampling_config_overrides: list[str] | None = None
@@ -358,7 +355,9 @@ class CrystalGenerator:
         if self._model is not None:
             return
         model = load_model_diffusion(self.checkpoint_info)
-        model = model.to(get_device(min_gpu_mem_gb=self.gpu_memory_gb, force_gpu=self.force_gpu))  # NEW
+        model = model.to(
+            get_device(min_gpu_mem_gb=self.gpu_memory_gb, force_gpu=self.force_gpu)
+        )  # NEW
         self._model = model
         self._cfg = self.checkpoint_info.config
 
@@ -369,14 +368,20 @@ class CrystalGenerator:
         target_compositions_dict: list[dict[str, float]] | None = None,
         output_dir: str = "outputs",
         diffusion_loss_fn: Callable | None = None,  # NEW
-        diffusion_loss_weight: list[float] | None = None,         # NEW
+        diffusion_loss_weight: list[float] | None = None,  # NEW
     ) -> list[Structure]:
         # Prioritize the runtime provided batch_size, num_batches and target_compositions_dict
         batch_size = batch_size or self.batch_size
         num_batches = num_batches or self.num_batches
         target_compositions_dict = target_compositions_dict or self.target_compositions_dict
-        diffusion_loss_fn = diffusion_loss_fn if diffusion_loss_fn is not None else self.diffusion_loss_fn # NEW
-        diffusion_loss_weight = diffusion_loss_weight if diffusion_loss_weight is not None else self.diffusion_loss_weight # NEW
+        diffusion_loss_fn = (
+            diffusion_loss_fn if diffusion_loss_fn is not None else self.diffusion_loss_fn
+        )  # NEW
+        diffusion_loss_weight = (
+            diffusion_loss_weight
+            if diffusion_loss_weight is not None
+            else self.diffusion_loss_weight
+        )  # NEW
         assert batch_size is not None
         assert num_batches is not None
 
@@ -397,10 +402,10 @@ class CrystalGenerator:
         sampler_partial = instantiate(sampling_config.sampler_partial)
         sampler = sampler_partial(pl_module=self.model)
 
-        #---NEW
+        # ---NEW
         if diffusion_loss_fn is not None:
             sampler.set_diffusion_loss(diffusion_loss_fn, diffusion_loss_weight)
-        #---END NEW
+        # ---END NEW
 
         generated_structures = draw_samples_from_sampler(
             sampler=sampler,

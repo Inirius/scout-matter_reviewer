@@ -16,6 +16,7 @@ class TqdmLoggingHandler(logging.StreamHandler):
         except Exception:
             self.handleError(record)
 
+
 # Idea borrowed from
 # https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/utils/logging.py
 def get_logger(name=None, level=logging.INFO) -> logging.Logger:

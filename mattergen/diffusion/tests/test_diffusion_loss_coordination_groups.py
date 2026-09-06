@@ -86,8 +86,7 @@ def _ranked_coordination_system(
 ) -> ChemGraph:
     cell = torch.eye(3).unsqueeze(0) * 10.0
     frac = torch.tensor(
-        [[0.0, 0.0, 0.0]]
-        + [[distance / 10.0, 0.0, 0.0] for distance in oxygen_distances],
+        [[0.0, 0.0, 0.0]] + [[distance / 10.0, 0.0, 0.0] for distance in oxygen_distances],
         dtype=torch.float32,
         requires_grad=requires_grad,
     )
@@ -134,19 +133,18 @@ def test_ranked_coordination_sums_softplus_terms_over_all_neighbors() -> None:
     oxygen_frac = x.pos[1:]
     oxygen_images = (oxygen_frac.unsqueeze(1) + shifts.unsqueeze(0)).reshape(-1, 3)
     distances = torch.sort(torch.matmul(-oxygen_images, x.cell[0]).norm(dim=-1)).values
-    expected = temperature * torch.nn.functional.softplus(
-        (distances[:2] - (2.5 - margin)) / temperature
-    ).sum() + temperature * torch.nn.functional.softplus(
-        ((2.5 + margin) - distances[2:]) / temperature
-    ).sum()
+    expected = (
+        temperature
+        * torch.nn.functional.softplus((distances[:2] - (2.5 - margin)) / temperature).sum()
+        + temperature
+        * torch.nn.functional.softplus(((2.5 + margin) - distances[2:]) / temperature).sum()
+    )
 
     torch.testing.assert_close(actual, expected.unsqueeze(0))
 
 
 def test_center_satisfaction_prefers_one_completed_environment() -> None:
-    from mattergen.diffusion.coordination_loss import (
-        _mean_ranked_coordination_objective,
-    )
+    from mattergen.diffusion.coordination_loss import _mean_ranked_coordination_objective
 
     one_completed = _mean_ranked_coordination_objective(
         penalties=torch.tensor([0.0, 0.4]),
@@ -192,9 +190,7 @@ def test_zero_satisfaction_weight_recovers_group_softplus() -> None:
         satisfaction_weight=0.0,
     )
 
-    torch.testing.assert_close(
-        ranked_coordination_loss(x, t=None, target=target), expected
-    )
+    torch.testing.assert_close(ranked_coordination_loss(x, t=None, target=target), expected)
 
 
 def test_ranked_coordination_is_a_separate_objective() -> None:
@@ -223,9 +219,7 @@ def test_ranked_coordination_is_a_separate_objective() -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "loss_fn", [mean_coordination_loss, target_coordination_loss]
-)
+@pytest.mark.parametrize("loss_fn", [mean_coordination_loss, target_coordination_loss])
 def test_soft_count_objectives_reject_ranked_coordination_mode(loss_fn) -> None:
     x = _ranked_coordination_system()
     with pytest.raises(ValueError, match="ranked_coordination"):
@@ -275,9 +269,7 @@ def test_ranked_coordination_gradients_engage_all_misclassified_neighbors() -> N
 
 
 def test_ranked_coordination_supports_zero_target() -> None:
-    x = _ranked_coordination_system(
-        oxygen_distances=(1.0, 1.5, 4.0), requires_grad=True
-    )
+    x = _ranked_coordination_system(oxygen_distances=(1.0, 1.5, 4.0), requires_grad=True)
     loss = ranked_coordination_loss(
         x,
         t=None,
@@ -310,8 +302,7 @@ def test_group_mean_coordination_uses_max_pair_cutoff() -> None:
     type_a = Element("H").Z
     type_bs = tuple(Element(symbol).Z for symbol in ("Pd", "Ni", "Pt"))
     max_r_cut = max(
-        INTER_ATOMIC_CUTOFF[type_a] + INTER_ATOMIC_CUTOFF[type_b] + 0.5
-        for type_b in type_bs
+        INTER_ATOMIC_CUTOFF[type_a] + INTER_ATOMIC_CUTOFF[type_b] + 0.5 for type_b in type_bs
     )
 
     grouped = compute_mean_coordination(

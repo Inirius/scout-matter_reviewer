@@ -7,9 +7,7 @@ from pymatgen.analysis.phase_diagram import PDEntry, PhaseDiagram
 from pymatgen.core import Composition
 
 from mattergen.common.data.chemgraph import ChemGraph
-from mattergen.diffusion.coordination_loss import (
-    # Public compatibility re-exports; coordination implementations live in
-    # coordination_loss.py.
+from mattergen.diffusion.coordination_loss import (  # Public compatibility re-exports; coordination implementations live in; coordination_loss.py.
     COORDINATION_CONFIG_KEYS,
     DEFAULT_COORDINATION_ALPHA,
     DEFAULT_COORDINATION_CN_TEMPERATURE,
@@ -32,7 +30,6 @@ from mattergen.diffusion.coordination_loss import (
     target_coordination_loss,
     target_coordination_share_loss,
 )
-
 
 __all__ = [
     "COORDINATION_CONFIG_KEYS",
@@ -69,7 +66,6 @@ __all__ = [
 ]
 
 
-
 PDIAG = None
 calc = None
 converter = None
@@ -77,6 +73,7 @@ species_pairs = None
 target_values = None
 r_cuts = None
 target_tensor = None
+
 
 def clear_globals():
     global PDIAG, calc, converter, species_pairs, target_values, r_cuts, target_tensor
@@ -87,7 +84,6 @@ def clear_globals():
     target_values = None
     r_cuts = None
     target_tensor = None
-
 
 
 def volume(x, t):
@@ -121,7 +117,8 @@ def volume_loss(x, t, target):
     # Ensure target is broadcastable
     target_tensor = torch.as_tensor(target, dtype=vol.dtype, device=vol.device)
     loss = torch.abs(vol - target_tensor)
-    return 10 ** -5 * loss
+    return 10**-5 * loss
+
 
 def volume_pa(x, t):
     """
@@ -129,11 +126,12 @@ def volume_pa(x, t):
     """
     return volume(x, t) / x.num_atoms
 
+
 def volume_pa_loss(x, t, target):
     """
     Batched computatuion of volume per atom.
     """
-    vol_pa = volume_pa(x,t)
+    vol_pa = volume_pa(x, t)
     target_tensor = torch.as_tensor(target, dtype=vol_pa.dtype, device=vol_pa.device)
     loss = torch.abs(vol_pa - target_tensor)
     return loss
@@ -157,12 +155,17 @@ def energy(x, t, target=None):
     """
     from mattersim.datasets.utils.convertor import ChemGraphBatchConvertor
     from mattersim.forcefield.m3gnet.m3gnet import M3Gnet
+
     global calc
     global converter
     if calc is None:
-        checkpoint = torch.load("/path/to/mattersim_torch/pretrained_models/mattersim-v1.0.0-1M.pth",
-                                map_location="cuda")
-        model = M3Gnet(**checkpoint["model_args"], device="cuda")  # Add arguments as needed for your configuration
+        checkpoint = torch.load(
+            "/path/to/mattersim_torch/pretrained_models/mattersim-v1.0.0-1M.pth",
+            map_location="cuda",
+        )
+        model = M3Gnet(
+            **checkpoint["model_args"], device="cuda"
+        )  # Add arguments as needed for your configuration
         model.load_state_dict(checkpoint["model"])  # Load the model state dict, ensure it's on cuda
         model.eval()  # Set to evaluation mode for inference
         model = model.to(x.pos.device)  # Move model to the same device as x
@@ -199,10 +202,15 @@ def _energy_hull(x):
     if PDIAG is None:
         # Load the CSV file only once
         csv = pd.read_csv(dir + "LiCoO.csv")
-        li = [PDEntry(composition=Composition(csv["Formula"][i]), energy=csv["Energy"][i]) for i in range(len(csv))]
+        li = [
+            PDEntry(composition=Composition(csv["Formula"][i]), energy=csv["Energy"][i])
+            for i in range(len(csv))
+        ]
         PDIAG = PhaseDiagram(li)
         del csv, li
-    x_ = PDEntry(composition=Composition(x[0]), energy=x[1])  # Assuming x has composition and energy attributes
+    x_ = PDEntry(
+        composition=Composition(x[0]), energy=x[1]
+    )  # Assuming x has composition and energy attributes
     above_hull = PDIAG.get_e_above_hull(x_)
     return above_hull
 
@@ -229,7 +237,7 @@ def make_combined_loss(guidance_dict: dict) -> callable:
         if loss_name not in LOSS_REGISTRY:
             raise ValueError(
                 f"Loss '{loss_name}' not found in LOSS_REGISTRY.",
-                f"Available losses: {list(LOSS_REGISTRY.keys())}"
+                f"Available losses: {list(LOSS_REGISTRY.keys())}",
             )
         base_loss = LOSS_REGISTRY[loss_name]
         partial_losses.append(partial(base_loss, target=target))

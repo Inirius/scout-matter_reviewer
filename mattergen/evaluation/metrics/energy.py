@@ -289,7 +289,8 @@ class FracSuccessfulJobs(BaseEnergyMetric):
     @cached_property
     def value(self) -> float:
         return (
-            len(self.energy_capability._structure_summaries) / self.energy_capability.total_submitted_jobs
+            len(self.energy_capability._structure_summaries)
+            / self.energy_capability.total_submitted_jobs
         )
 
 
@@ -303,7 +304,9 @@ class AvgRMSDFromRelaxation(BaseEnergyMetric, BaseAggregateMetric):
         return "root mean square displacements of atoms (Angstrom) from initial to final DFT relaxation steps in sampled data."
 
     def compute_pre_aggregation_values(self) -> numpy.typing.NDArray:
-        return np.array([d.rmsd_from_relaxation for d in self.energy_capability._structure_summaries])
+        return np.array(
+            [d.rmsd_from_relaxation for d in self.energy_capability._structure_summaries]
+        )
 
 
 class AvgEnergyAboveHullPerAtom(BaseEnergyMetric, BaseAggregateMetric):

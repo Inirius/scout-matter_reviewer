@@ -29,9 +29,9 @@ from mattergen.diffusion.wrapped.wrapped_sde import WrappedVESDE, WrappedVPSDE
 D3PM_SAMPLERS = [
     D3PMAncestralSamplingPredictor,
 ]
-INCOMPATIBLE_SAMPLERS: Dict[
-    Type[SDE], List[Type[Union[Predictor, pc.LangevinCorrector]]]
-] = defaultdict(list)
+INCOMPATIBLE_SAMPLERS: Dict[Type[SDE], List[Type[Union[Predictor, pc.LangevinCorrector]]]] = (
+    defaultdict(list)
+)
 INCOMPATIBLE_SAMPLERS[VPSDE] = [
     WrappedLangevinCorrector,
     WrappedAncestralSamplingPredictor,
@@ -62,9 +62,11 @@ def test_predictor(make_state_batch: Callable, predictor_type: Type, sde_type, E
     """
     tiny_state_batch = make_state_batch(sde_type)
 
-    with pytest.raises(IncompatibleSampler) if predictor_type in INCOMPATIBLE_SAMPLERS[
-        sde_type
-    ] else nullcontext():
+    with (
+        pytest.raises(IncompatibleSampler)
+        if predictor_type in INCOMPATIBLE_SAMPLERS[sde_type]
+        else nullcontext()
+    ):
         sde = sde_type()
         batch_size = tiny_state_batch.get_batch_size()
         t = torch.rand(batch_size) * (sde.T - EPS) + EPS
@@ -97,9 +99,11 @@ def test_corrector(make_state_batch: Callable, corrector_type: Type, sde_type, E
     """
     tiny_state_batch = make_state_batch(sde_type)
 
-    with pytest.raises(IncompatibleSampler) if corrector_type in INCOMPATIBLE_SAMPLERS[
-        sde_type
-    ] else nullcontext():
+    with (
+        pytest.raises(IncompatibleSampler)
+        if corrector_type in INCOMPATIBLE_SAMPLERS[sde_type]
+        else nullcontext()
+    ):
         sde = sde_type()
         t = torch.rand(tiny_state_batch.get_batch_size()) * (sde.T - EPS) + EPS
         old_x: torch.Tensor = tiny_state_batch["foo"]

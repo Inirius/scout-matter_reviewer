@@ -4,13 +4,12 @@
 import os
 from pathlib import Path
 from typing import Literal
-from mattergen.diffusion.diffusion_loss import make_combined_loss
-
 
 import fire
 
 from mattergen.common.data.types import TargetProperty
 from mattergen.common.utils.data_classes import PRETRAINED_MODEL_NAME, MatterGenCheckpointInfo
+from mattergen.diffusion.diffusion_loss import make_combined_loss
 from mattergen.generator import CrystalGenerator
 
 
@@ -31,7 +30,7 @@ def main(
     strict_checkpoint_loading: bool = True,
     target_compositions: list[dict[str, int]] | None = None,
     guidance: dict | str | None = None,
-    diffusion_loss_weight: float | list[float] = 1.0 ,
+    diffusion_loss_weight: float | list[float] = 1.0,
     print_loss: bool = False,
     self_rec_steps: int = 1,
     back_step: int = 0,
@@ -113,7 +112,8 @@ def main(
     if guidance is not None:
         # Ensure guidance is a dictionary with string keys and numeric values
         if not isinstance(guidance, dict) or not all(
-            isinstance(k, str) and (isinstance(v, (int, float)) or isinstance(v, list) or isinstance(v,dict))
+            isinstance(k, str)
+            and (isinstance(v, (int, float)) or isinstance(v, list) or isinstance(v, dict))
             for k, v in guidance.items()
         ):
             raise ValueError(
@@ -121,7 +121,7 @@ def main(
             )
         # Create the combined loss function based on the provided guidance
         loss_fn = make_combined_loss(guidance)
-    
+
     if isinstance(diffusion_loss_weight, (float)):
         diffusion_loss_weight = [diffusion_loss_weight] * 2
 
@@ -138,12 +138,12 @@ def main(
             diffusion_guidance_factor if diffusion_guidance_factor is not None else 0.0
         ),
         target_compositions_dict=target_compositions,
-        diffusion_loss_fn=loss_fn,           # NEW
-        diffusion_loss_weight=diffusion_loss_weight,   # NEW
+        diffusion_loss_fn=loss_fn,  # NEW
+        diffusion_loss_weight=diffusion_loss_weight,  # NEW
         print_loss=print_loss,  # NEW
-        self_rec_steps=self_rec_steps, # NEW
-        back_step=back_step, # NEW
-        gpu_memory_gb=gpu_memory_gb, # NEW
+        self_rec_steps=self_rec_steps,  # NEW
+        back_step=back_step,  # NEW
+        gpu_memory_gb=gpu_memory_gb,  # NEW
         algo=algo,  # NEW
         force_gpu=force_gpu,  # NEW
     )
@@ -154,11 +154,12 @@ def main(
 def _main():
     # use fire instead of argparse to allow for the specification of dictionary values via the CLI
     fire.Fire(main)
-    #this line is for debugging purposes, to run the script directly
-    #fire.Fire(main, command='"results/Li-Co-O_test"   --pretrained-name=chemical_system   --batch_size=2   --properties_to_condition_on="{\'chemical_system\':\'Li-Co-O\'}"   --record_trajectories=False   --diffusion_guidance_factor=2.0  --guidance="{\'environment\': {\'mode\':huber, \'Co-O\':6}}" --diffusion_loss_weight=[0.01,0.01,True]   --print_loss=False --self_rec_steps=3 --back_step=2 --algo=False' )
+    # this line is for debugging purposes, to run the script directly
+    # fire.Fire(main, command='"results/Li-Co-O_test"   --pretrained-name=chemical_system   --batch_size=2   --properties_to_condition_on="{\'chemical_system\':\'Li-Co-O\'}"   --record_trajectories=False   --diffusion_guidance_factor=2.0  --guidance="{\'environment\': {\'mode\':huber, \'Co-O\':6}}" --diffusion_loss_weight=[0.01,0.01,True]   --print_loss=False --self_rec_steps=3 --back_step=2 --algo=False' )
+
 
 if __name__ == "__main__":
     _main()
-#mattergen-generate "results/chemical_system/Pd-Ni-H_env"   --pretrained-name=chemical_system   --batch_size=1   --properties_to_condition_on="{'chemical_system':'Li-Co-O'}"   --record_trajectories=False   --diffusion_guidance_factor=2.0   --guidance="{'environment': {'Co-O':6}}"   --diffusion_loss_weight=1.0   --print_loss=True
+# mattergen-generate "results/chemical_system/Pd-Ni-H_env"   --pretrained-name=chemical_system   --batch_size=1   --properties_to_condition_on="{'chemical_system':'Li-Co-O'}"   --record_trajectories=False   --diffusion_guidance_factor=2.0   --guidance="{'environment': {'Co-O':6}}"   --diffusion_loss_weight=1.0   --print_loss=True
 
-#mattergen-generate "results/Li-Co-O_guided_env_3-2_3"   --pretrained-name=chemical_system   --batch_size=50   --properties_to_condition_on="{\'chemical_system\':\'Li-Co-O\'}"   --record_trajectories=False   --diffusion_guidance_factor=2.0  --guidance="{\'environment\': {\'Co-O\':6}}" --diffusion_loss_weight=1.0   --print_loss=False --self_rec_steps=3 --back_step=2'
+# mattergen-generate "results/Li-Co-O_guided_env_3-2_3"   --pretrained-name=chemical_system   --batch_size=50   --properties_to_condition_on="{\'chemical_system\':\'Li-Co-O\'}"   --record_trajectories=False   --diffusion_guidance_factor=2.0  --guidance="{\'environment\': {\'Co-O\':6}}" --diffusion_loss_weight=1.0   --print_loss=False --self_rec_steps=3 --back_step=2'

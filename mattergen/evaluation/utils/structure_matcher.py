@@ -307,8 +307,10 @@ def try_make_structure_disordered(
         electronegativity_difference_threshold=electronegativity_difference_threshold,
     )
     return (
-        make_structure_disordered(structure, substitution_species)
-        if can_be_disordered
-        else structure,
+        (
+            make_structure_disordered(structure, substitution_species)
+            if can_be_disordered
+            else structure
+        ),
         can_be_disordered,
     )

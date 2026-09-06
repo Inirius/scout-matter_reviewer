@@ -110,9 +110,9 @@ class SDE(Corruption):
         return mean + std * z
 
     def sample_from_s(
-        self, 
+        self,
         x: torch.Tensor,
-        t: torch.Tensor, 
+        t: torch.Tensor,
         s: torch.Tensor,
         batch_idx: B = None,
         batch: Optional[BatchedData] = None,
@@ -125,9 +125,7 @@ class SDE(Corruption):
         Returns:
           sampled x(t)
         """
-        mean, std = self.marginal_prob_from_s(
-            x=x, t=t, s=s, batch_idx=batch_idx, batch=batch
-        )
+        mean, std = self.marginal_prob_from_s(x=x, t=t, s=s, batch_idx=batch_idx, batch=batch)
         z = torch.randn_like(x, dtype=torch.float32)
 
         return mean + std * z
@@ -287,7 +285,7 @@ class VESDE(SDE):
         std = maybe_expand(self.sigma_min * (self.sigma_max / self.sigma_min) ** t, batch_idx, x)
         mean = x
         return mean, std
-    
+
     def marginal_prob_from_s(
         self,
         x: torch.Tensor,
@@ -300,7 +298,13 @@ class VESDE(SDE):
         # This is the same as marginal_prob, but with a different time t.
         # We assume that s < t.
         assert torch.all(s < t), "s must be less than t"
-        std = maybe_expand(self.sigma_min * (self.sigma_max / self.sigma_min) ** s *np.sqrt( (self.sigma_max / self.sigma_min) ** (2*(t-s)) - 1), batch_idx, x)
+        std = maybe_expand(
+            self.sigma_min
+            * (self.sigma_max / self.sigma_min) ** s
+            * np.sqrt((self.sigma_max / self.sigma_min) ** (2 * (t - s)) - 1),
+            batch_idx,
+            x,
+        )
         mean = x
         return mean, std
 

@@ -68,8 +68,9 @@ class StructureMetricsCapability(BaseMetricsCapability):
         self,
         structure_summaries: list[MetricsStructureSummary],
         reference_dataset: ReferenceDataset,
-        structure_matcher: OrderedStructureMatcher
-        | DisorderedStructureMatcher,  # how are uniqueness and novelty computed
+        structure_matcher: (
+            OrderedStructureMatcher | DisorderedStructureMatcher
+        ),  # how are uniqueness and novelty computed
         n_failed_jobs: int = 0,
     ) -> None:
         super().__init__(structure_summaries=structure_summaries, n_failed_jobs=n_failed_jobs)
@@ -88,7 +89,9 @@ class StructureMetricsCapability(BaseMetricsCapability):
         self.reference_dataset = reference_dataset  # note: not all metrics use this, so it could be a separate capability
         self.structure_matcher = structure_matcher
         self.ensure_reference_dataset_has_material_ids()
-        self.uniqueness_computer: OrderedDatasetUniquenessComputer | DisorderedDatasetUniquenessComputer = (
+        self.uniqueness_computer: (
+            OrderedDatasetUniquenessComputer | DisorderedDatasetUniquenessComputer
+        ) = (
             OrderedDatasetUniquenessComputer(structure_matcher)
             if all_structures_ordered
             else DisorderedDatasetUniquenessComputer(structure_matcher)

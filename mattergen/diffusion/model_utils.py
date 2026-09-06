@@ -20,7 +20,7 @@ def convert_model_out_to_score(
     model_out: torch.Tensor,
     batch_idx: torch.LongTensor,
     t: torch.Tensor,
-    batch: Any
+    batch: Any,
 ) -> torch.Tensor:
     """
     Convert a model output to a score, according to the specified model_target.

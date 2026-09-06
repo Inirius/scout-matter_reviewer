@@ -74,7 +74,11 @@ class D3PMCorruption(Corruption):
         t_discrete = maybe_expand(to_discrete_time(t, N=self.N, T=self.T), batch_idx) + 1
         s_discrete = maybe_expand(to_discrete_time(s, N=self.N, T=self.T), batch_idx) + 1
         _, logits = d3pm.q_sample_from_s(
-            self._to_zero_based(x.long()), t_discrete, s_discrete, diffusion=self.d3pm, return_logits=True
+            self._to_zero_based(x.long()),
+            t_discrete,
+            s_discrete,
+            diffusion=self.d3pm,
+            return_logits=True,
         )
         return logits, None
 
@@ -133,10 +137,12 @@ class D3PMCorruption(Corruption):
         batch: Optional[BatchedData] = None,
     ) -> torch.Tensor:
         """Sample from the corruption process, $p_t(x | x_0)$."""
-       # Discretize t and s
+        # Discretize t and s
         t_discrete = maybe_expand(to_discrete_time(t, N=self.N, T=self.T), batch_idx) + 1
         s_discrete = maybe_expand(to_discrete_time(s, N=self.N, T=self.T), batch_idx) + 1
         # sample and then add offset to convert to non-zero-based class labels
         return self._to_non_zero_based(
-            d3pm.q_sample_from_s(self._to_zero_based(x.long()), t_discrete, s_discrete, diffusion=self.d3pm)
+            d3pm.q_sample_from_s(
+                self._to_zero_based(x.long()), t_discrete, s_discrete, diffusion=self.d3pm
+            )
         )

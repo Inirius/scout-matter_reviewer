@@ -88,9 +88,12 @@ def test_reverse_sampling(corruption_type: Type, predictor_type: Type, corrector
 
     multi_corruption: MultiCorruption = MultiCorruption(sdes={f: corruption_type() for f in fields})
 
-    with pytest.raises(IncompatibleSampler) if predictor_type in INCOMPATIBLE_SAMPLERS[
-        corruption_type
-    ] or corrector_type in INCOMPATIBLE_SAMPLERS[corruption_type] else nullcontext():
+    with (
+        pytest.raises(IncompatibleSampler)
+        if predictor_type in INCOMPATIBLE_SAMPLERS[corruption_type]
+        or corrector_type in INCOMPATIBLE_SAMPLERS[corruption_type]
+        else nullcontext()
+    ):
         multi_sampler = PredictorCorrector(
             diffusion_module=get_diffusion_module(
                 multi_corruption=multi_corruption, x0_mean=x0_mean, x0_std=x0_std

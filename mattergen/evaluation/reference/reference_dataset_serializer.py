@@ -44,7 +44,7 @@ class LmdbNotFoundError(Exception):
     pass
 
 
-class LMDBGZSerializer():
+class LMDBGZSerializer:
     def __init__(
         self,
     ):
@@ -251,7 +251,7 @@ class WeakRefImplMixin:
         impl = self._impl()
         assert impl is not None
         return impl
-    
+
 
 class LMDBBackedChemicalSystemLookup(WeakRefImplMixin, Mapping[str, list[ComputedStructureEntry]]):
     """A lazy immutable mapping from chemical system to entries. It is

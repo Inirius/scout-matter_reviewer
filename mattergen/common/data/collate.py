@@ -21,13 +21,11 @@ IterPyTree = list[PyTree[T]] | tuple[PyTree[T], ...] | dict[Any, PyTree[T]]
 
 
 @overload
-def collate(x: PyTree[T]) -> T:
-    ...
+def collate(x: PyTree[T]) -> T: ...
 
 
 @overload
-def collate(x: PyTree[T], depth: int | None) -> PyTree[T]:
-    ...
+def collate(x: PyTree[T], depth: int | None) -> PyTree[T]: ...
 
 
 def collate(x: PyTree[T], depth: int | None = None) -> T | PyTree[T]:
