@@ -21,13 +21,11 @@ IterPyTree = list[PyTree[T]] | tuple[PyTree[T], ...] | dict[Any, PyTree[T]]
 
 
 @overload
-def collate(x: PyTree[T]) -> T:
-    ...
+def collate(x: PyTree[T]) -> T: ...
 
 
 @overload
-def collate(x: PyTree[T], depth: int | None) -> PyTree[T]:
-    ...
+def collate(x: PyTree[T], depth: int | None) -> PyTree[T]: ...
 
 
 def collate(x: PyTree[T], depth: int | None = None) -> T | PyTree[T]:
@@ -124,11 +122,9 @@ def _flatten_iterable(
 def iter_leaves(x: PyTree[T]) -> Iterator[T]:
     """Iterate over the leaves of a `DataTree`.
 
-    Args:
-        x (PyTree[T]): The data structure to iterate over.
+    Args:     x (PyTree[T]): The data structure to iterate over.
 
-    Yields:
-        T: The leaves of `x`.
+    Yields:     T: The leaves of `x`.
     """
     if isinstance(x, (list, tuple)):
         for y in x:
@@ -143,11 +139,9 @@ def iter_leaves(x: PyTree[T]) -> Iterator[T]:
 def len_tree(x: PyTree[T]) -> int:
     """Number of nodes in a `PyTree`.
 
-    Args:
-        x (PyTree[T]): The data structure to iterate over.
+    Args:     x (PyTree[T]): The data structure to iterate over.
 
-    Returns:
-        int: Number of nodes in `x`.
+    Returns:     int: Number of nodes in `x`.
     """
     total = 0
     if isinstance(x, (list, tuple)):
@@ -280,27 +274,24 @@ def separate(
     x: PyTree[T],
     structure: PyTree[int] | None = None,
 ) -> PyTree[T]:
-    """Inverse of :func:`collate`. This function guarantees that the following is true for every
-    value of `depth`::
+    """Inverse of :func:`collate`.
 
-        separate(collate(x, depth)) == x
+    This function guarantees that the following is true for every value of `depth`::
 
-    Args:
-        x (PyTree[Data] or PyTree[Tensor]): Data structure which is structured like the output of
-            :func:`collate`.
-        structure (PyTree[int], optional): If `x` is a `PyTree[Data]`, then this argument can
-            be ignored (usually). If `x` is a `PyTree[Tensor]`, then :func:`separate` needs to be
-            told how the result should be separated into the original `PyTree`. In this case, you
-            should run :func:`find_structure` on the output of :func:`collate` and pass the result
-            as this argument.
+    separate(collate(x, depth)) == x
 
-    Raises:
-        RuntimeError: If :func:`separate` cannot automatically infer how to separate `x`.
-        ValueError: If `x` is not a `PyTree[Data]` or `PyTree[Tensor]`.
+    Args:     x (PyTree[Data] or PyTree[Tensor]): Data structure which is structured like the output
+    of         :func:`collate`.     structure (PyTree[int], optional): If `x` is a `PyTree[Data]`,
+    then this argument can         be ignored (usually). If `x` is a `PyTree[Tensor]`, then
+    :func:`separate` needs to be         told how the result should be separated into the original
+    `PyTree`. In this case, you         should run :func:`find_structure` on the output of
+    :func:`collate` and pass the result         as this argument.
 
-    Returns:
-        PyTree[Data] or PyTree[Tensor]: `x` separated into the `PyTree` originally given to
-            :func:`collate`.
+    Raises:     RuntimeError: If :func:`separate` cannot automatically infer how to separate `x`.
+    ValueError: If `x` is not a `PyTree[Data]` or `PyTree[Tensor]`.
+
+    Returns:     PyTree[Data] or PyTree[Tensor]: `x` separated into the `PyTree` originally given to
+    :func:`collate`.
     """
     if structure is None:
         structure = find_structure(x)
@@ -314,13 +305,10 @@ def tree_map(
 ) -> PyTree[T]:
     """Apply `func` to every leaf in `x`.
 
-     Args:
-        x (PyTree[T]): `PyTree`s to map over.
-        *x2 (PyTree[Any]): additional matching `PyTree`s possibly of different type to map over.
-        func (function): Function to apply.
+    Args:    x (PyTree[T]): `PyTree`s to map over.    *x2 (PyTree[Any]): additional matching
+    `PyTree`s possibly of different type to map over.    func (function): Function to apply.
 
-    Returns:
-        PyTree[T]: `x`, but with `func` applied to every leaf.
+    Returns:     PyTree[T]: `x`, but with `func` applied to every leaf.
     """
 
     # Nested function to prevent recursively defining of generic T.
@@ -354,15 +342,12 @@ def find_structure(x: PyTree[T]) -> IterPyTree[int]:
     to :func:`collate`. The output of this function can be given as the second argument to
     :func:`separate`.
 
-    Args:
-        x (PyTree[Data] or PyTree[Tensor]): Collated data structure. This is usually the output of
-            :func:`collate`.
+    Args:     x (PyTree[Data] or PyTree[Tensor]): Collated data structure. This is usually the
+    output of         :func:`collate`.
 
-    Raises:
-        RuntimeError: If `x` does not contain the necessary structure information.
+    Raises:     RuntimeError: If `x` does not contain the necessary structure information.
 
-    Returns:
-        PyTree[int]: Structure information.
+    Returns:     PyTree[int]: Structure information.
     """
     if isinstance(x, Data):
         if not hasattr(x, "_collate_structure"):

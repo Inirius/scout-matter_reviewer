@@ -1,7 +1,5 @@
-"""
-Copyright 2020 The Google Research Authors.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
+"""Copyright 2020 The Google Research Authors. Copyright (c) Microsoft Corporation. Licensed under
+the MIT License.
 
 Based on code from https://github.com/yang-song/score_sde_pytorch/blob/main/sde_lib.py
 which is released under Apache licence.
@@ -25,24 +23,20 @@ B = Optional[torch.LongTensor]
 
 
 def _broadcast_like(x, like):
-    """
-    add broadcast dimensions to x so that it can be broadcast over ``like``
-    """
+    """Add broadcast dimensions to x so that it can be broadcast over ``like``"""
     if like is None:
         return x
     return x[(...,) + (None,) * (like.ndim - x.ndim)]
 
 
 def maybe_expand(x: torch.Tensor, batch: B, like: torch.Tensor = None) -> torch.Tensor:
-    """
+    """Args: x: shape (batch_size, ...) batch: shape (num_thingies,) with integer entries in the
+    range [0, batch_size), indicating which sample each thingy belongs to like: shape x.shape +
+    potential additional dimensions Returns: expanded x with shape (num_thingies,), or if given
+    like.shape, containing value of x for each thingy.
 
-    Args:
-        x: shape (batch_size, ...)
-        batch: shape (num_thingies,) with integer entries in the range [0, batch_size), indicating which sample each thingy belongs to
-        like: shape x.shape + potential additional dimensions
-    Returns:
-        expanded x with shape (num_thingies,), or if given like.shape, containing value of x for each thingy.
-        If `batch` is None, just returns `x` unmodified, to avoid pointless work if you have exactly one thingy per sample.
+    If `batch` is None, just returns `x` unmodified, to avoid pointless work if you have exactly one
+    thingy per sample.
     """
     x = _broadcast_like(x, like)
     if batch is None:
@@ -50,13 +44,13 @@ def maybe_expand(x: torch.Tensor, batch: B, like: torch.Tensor = None) -> torch.
     else:
         if x.shape[0] == batch.shape[0]:
             logging.warning(
-                "Warning: batch shape is == x shape, are you trying to expand something that is already expanded?"
+                "Warning: batch shape is == x shape, are you trying to expand something that is already expanded?"  # noqa: E501
             )
         return x[batch]
 
 
 class Corruption(abc.ABC):
-    """Abstract base class for corruption processes"""
+    """Abstract base class for corruption processes."""
 
     @property
     @abc.abstractmethod
@@ -80,7 +74,7 @@ class Corruption(abc.ABC):
         self,
         shape: Union[torch.Size, Tuple],
         conditioning_data: Optional[BatchedData] = None,
-        batch_idx: B = None,  # This is normally unused but is needed for special cases such as sample-wise zero-centering.
+        batch_idx: B = None,  # This is normally unused but is needed for special cases such as sample-wise zero-centering.  # noqa: E501
     ) -> torch.Tensor:
         """Generate one sample from the prior distribution, $p_T(x)$."""
         pass
@@ -96,10 +90,7 @@ class Corruption(abc.ABC):
 
         Useful for computing the log-likelihood via probability flow ODE.
 
-        Args:
-          z: latent code
-        Returns:
-          log probability density
+        Args:   z: latent code Returns:   log probability density
         """
         pass  # prior_logp: (batch_size,)
 
@@ -112,8 +103,8 @@ class Corruption(abc.ABC):
         batch: Optional[BatchedData] = None,
     ) -> torch.Tensor:
         """Sample marginal for x(t) given x(0).
-        Returns:
-          sampled x(t) (same shape as input x).
+
+        Returns:   sampled x(t) (same shape as input x).
         """
         pass
 
@@ -127,13 +118,11 @@ class Corruption(abc.ABC):
         batch: Optional[BatchedData] = None,
     ) -> torch.Tensor:
         """Sample marginal for x(t) given x(s) with s<t.
-        Args:
-          x: shape (batch_size, ...)
-          t: shape (batch_size,)
-          s: shape (batch_size,)
-          batch_idx: shape (num_thingies,) with integer entries in the range [0, batch_size), indicating which sample each thingy belongs to
-        Returns:
-          sampled x(t) (same shape as input x).
+
+        Args:   x: shape (batch_size, ...)   t: shape (batch_size,)   s: shape (batch_size,)
+        batch_idx: shape (num_thingies,) with integer entries in the range [0, batch_size),
+        indicating which sample each thingy belongs to Returns:   sampled x(t) (same shape as input
+        x).
         """
         pass
 

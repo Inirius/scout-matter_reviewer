@@ -18,26 +18,22 @@ _USE_UNCONDITIONAL_EMBEDDING = "_USE_UNCONDITIONAL_EMBEDDING"
 def replace_use_unconditional_embedding(
     batch: ChemGraph, use_unconditional_embedding: Dict[PropertySourceId, torch.BoolTensor]
 ) -> ChemGraph:
-    """
-    Set the use of conditional or unconditional embeddings for each conditional field in the batch.
-    This utility will overwrite any batch._USE_CONDITIONAL_EMBEDDING keys included in use_unconditional_embedding
-    but will keep the value of any keys in batch._USE_CONDITIONAL_EMBEDDING that are not in
-    use_unconditional_embedding.
+    """Set the use of conditional or unconditional embeddings for each conditional field in the
+    batch. This utility will overwrite any batch._USE_CONDITIONAL_EMBEDDING keys included in
+    use_unconditional_embedding but will keep the value of any keys in
+    batch._USE_CONDITIONAL_EMBEDDING that are not in use_unconditional_embedding.
 
-    Keyword arguments
-    -----------------
-    batch: ChemGraph -- the batch of data to be modified.
+    Keyword arguments ----------------- batch: ChemGraph -- the batch of data to be modified.
     use_unconditional_embedding: Dict[PropertyName, torch.BoolTensor] -- a dictionary whose values
-        are torch.BoolTensors of shape (n_structures_in_batch, 1) stating whether to use the unconditional embedding for
-        each conditional field. The keys are the names of the conditional fields in the batch.
+    are torch.BoolTensors of shape (n_structures_in_batch, 1) stating whether to use the
+    unconditional embedding for     each conditional field. The keys are the names of the
+    conditional fields in the batch.
 
-
-    Returns
-    -------
-    ChemGraph -- the modified batch of data containing
-        ChemGraph._USE_CONDITIONAL_EMBEDDING: Dict[PropertyName, torch.BoolTensor]. When
-        ChemGraph[_USE_UNCONDITIONAL_EMBEDDING][cond_field][ii] is True, the iith data point will
-        use its unconditional embedding for cond_field. When False, the conditional embedding will be used.
+     Returns ------- ChemGraph -- the modified batch of data containing
+    ChemGraph._USE_CONDITIONAL_EMBEDDING: Dict[PropertyName, torch.BoolTensor]. When
+    ChemGraph[_USE_UNCONDITIONAL_EMBEDDING][cond_field][ii] is True, the iith data point will
+    use its unconditional embedding for cond_field. When False, the conditional embedding will be
+    used.
     """
     try:
         existing_use_unconditional_embedding = batch[_USE_UNCONDITIONAL_EMBEDDING]
@@ -54,16 +50,13 @@ def replace_use_unconditional_embedding(
 def get_use_unconditional_embedding(
     batch: ChemGraph, cond_field: PropertySourceId
 ) -> torch.BoolTensor:
-    """
-    Returns
-    -------
-    torch.BoolTensor, shape=(n_structures_in_batch, 1) -- whether to use the unconditional embedding for cond_field.
-        When True, we use unconditional embedding.
+    """Returns ------- torch.BoolTensor, shape=(n_structures_in_batch, 1) -- whether to use the
+    unconditional embedding for cond_field. When True, we use unconditional embedding.
 
-    NOTE: When _USE_UNCONDITIONAL_EMBEDDING is not in ChemGraph or cond_field is not
-        in ChemGraph[_USE_UNCONDITIONAL_EMBEDDING] we return a torch.BoolTensor with False
-        values. This allows a model trained conditional data to evaluate an unconditional score
-        without having to specify any conditional data in ChemGraph.
+    NOTE: When _USE_UNCONDITIONAL_EMBEDDING is not in ChemGraph or cond_field is not     in
+    ChemGraph[_USE_UNCONDITIONAL_EMBEDDING] we return a torch.BoolTensor with False     values. This
+    allows a model trained conditional data to evaluate an unconditional score     without having to
+    specify any conditional data in ChemGraph.
     """
     try:
         return batch[_USE_UNCONDITIONAL_EMBEDDING][cond_field]
@@ -96,17 +89,15 @@ def tensor_is_not_nan(x: torch.Tensor) -> torch.BoolTensor:
 
 
 def data_is_not_nan(
-    x: Union[torch.Tensor, list[str | None], list[list[str] | None]]
+    x: Union[torch.Tensor, list[str | None], list[list[str] | None]],
 ) -> torch.BoolTensor:
-    """
-    Returns (n_structures_in_batch,) torch.BoolTensor of whether the conditional values
-    for a given property are not nan.
+    """Returns (n_structures_in_batch,) torch.BoolTensor of whether the conditional values for a
+    given property are not nan.
 
     NOTE: Currently we enforce no restriction on the data type that properties can have in
-    ChemGraph. The intent is that ChemGraph always contains property values in their
-    representation and type seen by the user. This means however that we have to distribute
-    handling of different types throughout the code, this function is one such place.
-
+    ChemGraph. The intent is that ChemGraph always contains property values in their representation
+    and type seen by the user. This means however that we have to distribute handling of different
+    types throughout the code, this function is one such place.
     """
     if isinstance(x, torch.Tensor):
         return tensor_is_not_nan(x=x)
@@ -115,10 +106,8 @@ def data_is_not_nan(
 
 
 def get_cond_field_names_in_batch(x: ChemGraph) -> list[str]:
-    """
-    Returns a list of field names that are known to be conditional properties in
-    PROPERTY_SOURCE_IDS, which are present in x.
-    """
+    """Returns a list of field names that are known to be conditional properties in
+    PROPERTY_SOURCE_IDS, which are present in x."""
     return [str(k) for k in x.keys() if k in PROPERTY_SOURCE_IDS]
 
 
@@ -162,7 +151,7 @@ class SetEmbeddingType:
             conditional fields have data present. If no single data point has data present for all conditional
             fields, then the score model will only be exposed to the unconditional embedding state p(x) and the
             joint p(x|y1,y2,...) will not be learned.
-        """
+        """  # noqa: E501
         self.p_unconditional = p_unconditional
         self.dropout_fields_iid = dropout_fields_iid
 
@@ -180,14 +169,14 @@ class SetEmbeddingType:
             device = x["num_atoms"].device
 
             # get dictionary of which conditional fields are present (not nan)
-            # values are torch.BoolTensors of shape (batch_size, ) - when element 'i' is True, a label exists for this data point for this field
+            # values are torch.BoolTensors of shape (batch_size, ) - when element 'i' is True, a label exists for this data point for this field  # noqa: E501
             data_is_not_nan_dict: Dict[PropertySourceId, torch.BoolTensor] = {
                 cond_field: data_is_not_nan(x=x[cond_field]).to(device=device)  # type: ignore
                 for cond_field in cond_fields
             }
 
             # element `i` is True when all conditional fields have data present for this data point
-            # this is useful for when we want to use the (un)conditional embedding for all conditional
+            # this is useful for when we want to use the (un)conditional embedding for all conditional  # noqa: E501
             # fields per data point simultaneously
             alldata_is_not_nan: torch.BoolTensor = torch.all(
                 torch.cat(
@@ -208,19 +197,19 @@ class SetEmbeddingType:
                 embedding_type = torch.ones((batch_size, 1), device=device, dtype=torch.bool)
 
                 if self.dropout_fields_iid:
-                    # torch.BoolTensor, shape = (n_structures_in_batch, 1) -- True when conditional field is not nan
+                    # torch.BoolTensor, shape = (n_structures_in_batch, 1) -- True when conditional field is not nan  # noqa: E501
                     cond_data_is_not_nan = data_is_not_nan_dict[cond_field]  # type: ignore
                 else:
-                    # torch.BoolTensor, shape = (n_structures_in_batch, 1) -- True when all conditional fields are not nan
+                    # torch.BoolTensor, shape = (n_structures_in_batch, 1) -- True when all conditional fields are not nan  # noqa: E501
                     cond_data_is_not_nan = alldata_is_not_nan
 
-                # assign conditional embedding to (1-self.p_unconditional) of values where cond_data_is_not_nan=True
+                # assign conditional embedding to (1-self.p_unconditional) of values where cond_data_is_not_nan=True  # noqa: E501
                 embedding_type[cond_data_is_not_nan] = (  # type: ignore
                     torch.rand((cond_data_is_not_nan.sum(), 1), device=device)  # type: ignore
                     <= self.p_unconditional
                 )
 
-                # torch.BoolTensor, shape=(n_structures_in_batch,1) -- when True use the unconditional embedding
+                # torch.BoolTensor, shape=(n_structures_in_batch,1) -- when True use the unconditional embedding  # noqa: E501
                 use_unconditional_embedding[cond_field] = embedding_type  # type: ignore
 
             return replace_use_unconditional_embedding(
@@ -229,22 +218,21 @@ class SetEmbeddingType:
 
 
 class SetUnconditionalEmbeddingType:
-    """
-    In PropertyEmbedding.forward we choose to concatenate either an unconditional embedding
-    (ignores the value of a property) or a conditional embedding (depends on the value of a property)
-    to the tensor that is input to the first node layer of each atom. This utility sets the internal state
-    of ChemGraph to use the unconditional embedding for all structures for all conditional fields present
-    in the batch. Note that conditional fields in the batch are automatically determined by the presence
-    of any PropertyName in ChemGraph.
+    """In PropertyEmbedding.forward we choose to concatenate either an unconditional embedding
+    (ignores the value of a property) or a conditional embedding (depends on the value of a
+    property) to the tensor that is input to the first node layer of each atom. This utility sets
+    the internal state of ChemGraph to use the unconditional embedding for all structures for all
+    conditional fields present in the batch. Note that conditional fields in the batch are
+    automatically determined by the presence of any PropertyName in ChemGraph.
 
-    ChemGraph.[_USE_UNCONDITIONAL_EMBEDDING]: boolTensor, shape=(n_structures_in_batch, 1) stores True
-    for all structures for all conditional properties present in ChemGraph.
+    ChemGraph.[_USE_UNCONDITIONAL_EMBEDDING]: boolTensor, shape=(n_structures_in_batch, 1) stores
+    True for all structures for all conditional properties present in ChemGraph.
 
-    NOTE: If a conditional property was trained on by the model but is not
-    specified in the batch, then it will be attributed an unconditional embedding
-    in mattergen.property_embeddings.PropertyEmbedding.forward.
-    This behaviour allows unconditional samples to be drawn from a model that was trained
-    on certain conditions, without having to set any conditional values in ChemGraph.
+    NOTE: If a conditional property was trained on by the model but is not specified in the batch,
+    then it will be attributed an unconditional embedding in
+    mattergen.property_embeddings.PropertyEmbedding.forward. This behaviour allows unconditional
+    samples to be drawn from a model that was trained on certain conditions, without having to set
+    any conditional values in ChemGraph.
     """
 
     def __call__(self, x: ChemGraph) -> ChemGraph:
@@ -263,22 +251,21 @@ class SetUnconditionalEmbeddingType:
 
 
 class SetConditionalEmbeddingType:
-    """
-    In PropertyEmbedding.forward we choose to concatenate either an unconditional embedding
-    (ignores the value of a property) or a conditional embedding (depends on the value of a property)
-    to the tensor that is input to the first node layer of each atom. This utility sets the internal state
-    of ChemGraph to use the unconditional embedding for all structures for all conditional fields present
-    in the batch. Note that conditional fields in the batch are automatically determined by the presence
-    of any PropertyName on in ChemGraph.
+    """In PropertyEmbedding.forward we choose to concatenate either an unconditional embedding
+    (ignores the value of a property) or a conditional embedding (depends on the value of a
+    property) to the tensor that is input to the first node layer of each atom. This utility sets
+    the internal state of ChemGraph to use the unconditional embedding for all structures for all
+    conditional fields present in the batch. Note that conditional fields in the batch are
+    automatically determined by the presence of any PropertyName on in ChemGraph.
 
-    ChemGraph.[_USE_UNCONDITIONAL_EMBEDDING]: boolTensor, shape=(n_structures_in_batch, 1) stores False
-    for all structures for all conditional properties present in ChemGraph.
+    ChemGraph.[_USE_UNCONDITIONAL_EMBEDDING]: boolTensor, shape=(n_structures_in_batch, 1) stores
+    False for all structures for all conditional properties present in ChemGraph.
 
-    NOTE: If a conditional property was trained on by the model but is not
-    specified in the batch, then it will be attributed an unconditional embedding
-    in mattergen.property_embeddings.PropertyEmbedding.forward.
-    This behaviour allows unconditional samples to be drawn from a model that was trained
-    on certain conditions, without having to set any conditional values in ChemGraph.
+    NOTE: If a conditional property was trained on by the model but is not specified in the batch,
+    then it will be attributed an unconditional embedding in
+    mattergen.property_embeddings.PropertyEmbedding.forward. This behaviour allows unconditional
+    samples to be drawn from a model that was trained on certain conditions, without having to set
+    any conditional values in ChemGraph.
     """
 
     def __call__(self, x: ChemGraph) -> ChemGraph:
@@ -298,7 +285,8 @@ class SetConditionalEmbeddingType:
             )
 
         return replace_use_unconditional_embedding(
-            batch=x, use_unconditional_embedding=use_unconditional_embedding  # type: ignore
+            batch=x,
+            use_unconditional_embedding=use_unconditional_embedding,  # type: ignore
         )
 
 
@@ -324,9 +312,7 @@ class EmbeddingVector(BaseUnconditionalEmbeddingModule):
         self.hidden_dim = hidden_dim
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        This forward depends only on the shape of x and returns a tensor of zeros.
-        """
+        """This forward depends only on the shape of x and returns a tensor of zeros."""
         return self.embedding(
             torch.zeros(len(x), dtype=torch.long, device=self.embedding.weight.device)
         )
@@ -343,18 +329,17 @@ class SpaceGroupEmbeddingVector(BaseUnconditionalEmbeddingModule):
         self.hidden_dim = hidden_dim
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """
-        Return embedding of the space group, 1 is subtracted from the space group number to
-        make it zero-indexed.
-        """
+        """Return embedding of the space group, 1 is subtracted from the space group number to make
+        it zero-indexed."""
         return self.embedding(x.long() - 1)
 
 
 class ZerosEmbedding(BaseUnconditionalEmbeddingModule):
-    """
-    Return a [n_crystals_in_batch, self.hidden_dim] tensor of zeros. This is helpfuln as the unconditional embedding
-    for a property included in the adapter module if we do not want to change the unconditional score
-    of the base model when properties are added in the adapter module.
+    """Return a [n_crystals_in_batch, self.hidden_dim] tensor of zeros.
+
+    This is helpfuln as the unconditional embedding for a property included in the adapter module if
+    we do not want to change the unconditional score of the base model when properties are added in
+    the adapter module.
     """
 
     # If True, we don't need conditional values to evaluate an unconditional score
@@ -366,9 +351,7 @@ class ZerosEmbedding(BaseUnconditionalEmbeddingModule):
         self.hidden_dim = hidden_dim
 
     def forward(self, x: torch.Tensor | list[str]) -> torch.Tensor:
-        """
-        This forward depends only on the shape of x.
-        """
+        """This forward depends only on the shape of x."""
         return torch.zeros(len(x), self.hidden_dim)
 
 
@@ -411,7 +394,7 @@ class ChemicalSystemMultiHotEmbedding(torch.nn.Module):
         Returns
         -------
         torch.Tensor, shape = (n_structures_in_batch, MAX_ATOMIC_NUM + 1)
-        """
+        """  # noqa: E501
         return torch.cat(
             [ChemicalSystemMultiHotEmbedding._sequence_to_multi_hot(_x, device=device) for _x in x],
             dim=0,
@@ -419,12 +402,9 @@ class ChemicalSystemMultiHotEmbedding(torch.nn.Module):
 
     @staticmethod
     def convert_to_list_of_str(x: list[str] | list[list[str]]) -> list[list[str]]:
-        """
-        Returns
-        -------
-        list[list[str]] -- a list of length n_structures_in_batch of chemical systems for each structure
-            where the chemical system is specified as a list of unique elements in the structure.
-        """
+        """Returns ------- list[list[str]] -- a list of length n_structures_in_batch of chemical
+        systems for each structure where the chemical system is specified as a list of unique
+        elements in the structure."""
         if isinstance(x[0], str):
             # list[Sequence[str]]
             x = [_x.split("-") for _x in x if isinstance(_x, str)]
@@ -432,19 +412,19 @@ class ChemicalSystemMultiHotEmbedding(torch.nn.Module):
         return x  # type: ignore
 
     def forward(self, x: list[str] | list[list[str]]) -> torch.Tensor:
-        """
-        Keyword arguments
-        -----------------
-        x: Union[list[str], list[Sequence[str]]] -- if elements are a string, they are assumed to be
-            a '-' delimited list of unique elements. If a sequence of strings, it is assumed to be a list of
-            unique elements in the structure.
+        """Keyword arguments ----------------- x: Union[list[str], list[Sequence[str]]] -- if
+        elements are a string, they are assumed to be a '-' delimited list of unique elements.
+
+        If a sequence of strings, it is assumed to be a list of unique elements in the structure.
         """
         # make sure each chemical system is specified as a list of unique elements in the structure
         # list[list[str]]
         x = self.convert_to_list_of_str(x=x)
 
         # shape=(n_structures_in_batch, MAX_ATOMIC_NUM + 1)
-        multi_hot_representation: torch.Tensor = self.sequences_to_multi_hot(x=x, device=self.device)  # type: ignore
+        multi_hot_representation: torch.Tensor = self.sequences_to_multi_hot(
+            x=x, device=self.device
+        )  # type: ignore
 
         return self.embedding(multi_hot_representation)
 
@@ -468,11 +448,10 @@ class PropertyEmbedding(torch.nn.Module):
         )
 
     def forward(self, batch: ChemGraph) -> torch.Tensor:
-        """
-        ChemGraph[_USE_UNCONDITIONAL_EMBEDDING]: Dict[str, torch.BoolTensor]
-        has values torch.BoolTensor, shape=(n_structures_in_batch, 1) that when True, denote that
-        we should use the unconditional embedding (instead of the conditional embedding) as input
-        for that property to the input nodes of each atom in the structure.
+        """ChemGraph[_USE_UNCONDITIONAL_EMBEDDING]: Dict[str, torch.BoolTensor] has values
+        torch.BoolTensor, shape=(n_structures_in_batch, 1) that when True, denote that we should use
+        the unconditional embedding (instead of the conditional embedding) as input for that
+        property to the input nodes of each atom in the structure.
 
         In this forward, we return a torch.Tensor, shape=(n_structures_in_batch, hidden_dim) of
         embedding values for this property for each structure in the batch. Based on the state of
@@ -498,10 +477,10 @@ class PropertyEmbedding(torch.nn.Module):
             torch.all(use_unconditional_embedding)
             and self.unconditional_embedding_module.only_depends_on_shape_of_input
         ):
-            # this allows evaluation of the unconditional score without having to supply conditional values for this property
+            # this allows evaluation of the unconditional score without having to supply conditional values for this property  # noqa: E501
             return self.unconditional_embedding_module(x=batch["num_atoms"]).to(batch.pos.device)
         else:
-            # raw values for the conditional data as seen by the user, eg dft_bulk_modulus=torch.tensor([300]*n_structures_in_batch)
+            # raw values for the conditional data as seen by the user, eg dft_bulk_modulus=torch.tensor([300]*n_structures_in_batch)  # noqa: E501
             data = batch[self.name]
             if isinstance(data, torch.Tensor) and data.dim() == 2:
                 # [B, 1] => [B,]
@@ -527,18 +506,18 @@ class PropertyEmbedding(torch.nn.Module):
 def get_property_embeddings(
     batch: ChemGraph, property_embeddings: torch.nn.ModuleDict
 ) -> torch.Tensor:
-    """
-    Keyword arguments
-    -----------------
-    property_embeddings: torch.nn.ModuleDict[PropertyToConditonOn, PropertyEmbedding] -- a dictionary
-        of property embeddings. The keys are the names of the conditional fields in the batch.
+    """Keyword arguments ----------------- property_embeddings:
+    torch.nn.ModuleDict[PropertyToConditonOn, PropertyEmbedding] -- a dictionary of property
+    embeddings.
+
+    The keys are the names of the conditional fields in the batch.
     """
     # we need a consistent order for the embeddings that does not depend on the order
     # specified by the user
     ordered_keys = sorted(property_embeddings.keys())
 
     if len(ordered_keys) > 0:
-        # shape = (n_structures_in_batch, sum(embedding_dims)) for embedding_dims: list[int] a list of the output dimension for each embedding
+        # shape = (n_structures_in_batch, sum(embedding_dims)) for embedding_dims: list[int] a list of the output dimension for each embedding  # noqa: E501
         return torch.cat(
             [property_embeddings[k].forward(batch=batch) for k in ordered_keys], dim=-1
         )

@@ -3,14 +3,13 @@
 
 import gzip
 import os
-import pickle
 import shutil
 import weakref
 from collections import defaultdict
 from functools import cached_property
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import Any, DefaultDict, Iterator, Mapping
+from typing import DefaultDict, Iterator, Mapping
 
 import lmdb  # type: ignore [import]
 from monty.json import MontyDecoder
@@ -23,7 +22,10 @@ from mattergen.evaluation.utils.lmdb_utils import lmdb_get, lmdb_open, lmdb_put,
 
 
 def gzip_compress(file_path: str | os.PathLike, output_dir: str | os.PathLike) -> Path:
-    """Compresses a file using gzip. Returns the compressed file path."""
+    """Compresses a file using gzip.
+
+    Returns the compressed file path.
+    """
     output_path = Path(output_dir) / (Path(file_path).name + ".gz")
     with open(file_path, "rb") as fin:
         with gzip.open(output_path, "wb") as fout:
@@ -32,7 +34,10 @@ def gzip_compress(file_path: str | os.PathLike, output_dir: str | os.PathLike) -
 
 
 def gzip_decompress(gzip_file_path: str | os.PathLike, output_dir: str | os.PathLike) -> Path:
-    """Decompresses a gzipped file. Returns the decompressed file path."""
+    """Decompresses a gzipped file.
+
+    Returns the decompressed file path.
+    """
     output_path = Path(output_dir) / Path(gzip_file_path).name[:-3]  # remove .gz
     with gzip.open(gzip_file_path, "rb") as fin:
         with open(output_path, "wb") as fout:
@@ -44,7 +49,7 @@ class LmdbNotFoundError(Exception):
     pass
 
 
-class LMDBGZSerializer():
+class LMDBGZSerializer:
     def __init__(
         self,
     ):
@@ -111,28 +116,19 @@ class LMDBGZSerializer():
 class LMDBBackedReferenceDatasetImpl(ReferenceDatasetImpl):
     """Implementation of ReferenceDataset backed by LMDB.
 
-    Expected LMDB structure:
-        {
-            "chemical_systems": ["Li-P", "Li-S", ...],
-            "Li-P.reduced_formulas": ["LiP", "LiP2", ...],
-            "Li-P.LiP.length": 4,
-            "Li-P.LiP.0": "<pickled dictionary representation of a ComputedStructureEntry>",
-            ...
-            "Li-P.LiP.3": "<pickled dictionary representation of a ComputedStructureEntry>",
-            "Li-P.LiP2.length": 1,
-            ...
-            "Li-S.Li2S.length": 2,
-            ...
-        }
+    Expected LMDB structure:     {         "chemical_systems": ["Li-P", "Li-S", ...],
+    "Li-P.reduced_formulas": ["LiP", "LiP2", ...],         "Li-P.LiP.length": 4,
+    "Li-P.LiP.0": "<pickled dictionary representation of a ComputedStructureEntry>",         ...
+    "Li-P.LiP.3": "<pickled dictionary representation of a ComputedStructureEntry>",
+    "Li-P.LiP2.length": 1,         ...         "Li-S.Li2S.length": 2,         ...     }
     """
 
     def __init__(self, lmdb_path: Path, cleanup_dir: bool = False):
         """Initializes the LMDB-backed reference dataset.
 
-        Args:
-            lmdb_path: path to the LMDB database.
-            cleanup_dir: whether to delete the directory containing the database when this object
-                is garbage collected (default: False).
+        Args:     lmdb_path: path to the LMDB database.     cleanup_dir: whether to delete the
+        directory containing the database when this object         is garbage collected (default:
+        False).
         """
         self.env = lmdb_open(lmdb_path, readonly=True)
         self.num_entries_by_chemsys_reduced_formulas = (
@@ -180,7 +176,7 @@ class LMDBBackedReferenceDatasetImpl(ReferenceDatasetImpl):
         return tuple(
             [
                 reduced_formula
-                for num_entries_by_reduced_formula in self.num_entries_by_chemsys_reduced_formulas.values()
+                for num_entries_by_reduced_formula in self.num_entries_by_chemsys_reduced_formulas.values()  # noqa: E501
                 for reduced_formula in num_entries_by_reduced_formula
             ]
         )
@@ -231,13 +227,14 @@ class LMDBBackedReferenceDatasetImpl(ReferenceDatasetImpl):
             shutil.rmtree(database_dir)
 
     def cleanup(self, cleanup_dir: bool = False) -> None:
-        """Closes the LMDB environment and optionally cleanup the directory containing the database."""
+        """Closes the LMDB environment and optionally cleanup the directory containing the
+        database."""
         self._cleanup(self.env, cleanup_dir)
 
 
 class WeakRefImplMixin:
-    """A mixin class that makes the reference to the underlying
-    LMDBBackedReferenceDatasetImpl object weak."""
+    """A mixin class that makes the reference to the underlying LMDBBackedReferenceDatasetImpl
+    object weak."""
 
     def __init__(self, impl: LMDBBackedReferenceDatasetImpl):
         # We need to use a weak reference to avoid cyclic reference that
@@ -251,12 +248,14 @@ class WeakRefImplMixin:
         impl = self._impl()
         assert impl is not None
         return impl
-    
+
 
 class LMDBBackedChemicalSystemLookup(WeakRefImplMixin, Mapping[str, list[ComputedStructureEntry]]):
-    """A lazy immutable mapping from chemical system to entries. It is
-    lazy in the sense that the entries are read from the disk only when
-    the user requests them."""
+    """A lazy immutable mapping from chemical system to entries.
+
+    It is lazy in the sense that the entries are read from the disk only when the user requests
+    them.
+    """
 
     def __init__(self, impl: LMDBBackedReferenceDatasetImpl):
         super().__init__(impl)
@@ -277,9 +276,11 @@ class LMDBBackedChemicalSystemLookup(WeakRefImplMixin, Mapping[str, list[Compute
 
 
 class LMDBBackedReducedFormulaLookup(WeakRefImplMixin, Mapping[str, list[ComputedStructureEntry]]):
-    """A lazy immutable mapping from reduced formula to entries. It is
-    lazy in the sense that the entries are read from the disk only when
-    the user requests them."""
+    """A lazy immutable mapping from reduced formula to entries.
+
+    It is lazy in the sense that the entries are read from the disk only when the user requests
+    them.
+    """
 
     def __init__(self, impl: LMDBBackedReferenceDatasetImpl):
         super().__init__(impl)

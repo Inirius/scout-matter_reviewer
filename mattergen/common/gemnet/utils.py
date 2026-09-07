@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/utils.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/utils.py.
 """
 
 import json
@@ -123,7 +123,7 @@ def repeat_blocks(
     """
     assert sizes.dim() == 1
     assert all(sizes >= 0)
- 
+
     # Remove 0 sizes
     sizes_nonzero = sizes > 0
     if not torch.all(sizes_nonzero):
@@ -268,10 +268,8 @@ def calculate_interatomic_vectors(
 
 
 def inner_product_normalized(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-    """
-    Calculate the inner product between the given normalized vectors,
-    giving a result between -1 and 1.
-    """
+    """Calculate the inner product between the given normalized vectors, giving a result between -1
+    and 1."""
     return torch.sum(x * y, dim=-1).clamp(min=-1, max=1)
 
 

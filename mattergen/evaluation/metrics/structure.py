@@ -16,7 +16,6 @@ from pandas import DataFrame
 from pymatgen.core.composition import Element
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-from scipy.stats import wasserstein_distance
 from smact.screening import pauling_test
 from tqdm import tqdm
 
@@ -60,16 +59,19 @@ class StructureMetricsCapability(BaseMetricsCapability):
     name: str = "structure_capability"
 
     """Capability for computing structure metrics.
-    The `structure_matcher` class determines how uniqueness and novelty are computed.
-        atoms that could substitute for each other (via the Hume-Rothery rules) and then using the default pymatgen structure matching.
+
+    The `structure_matcher` class determines how uniqueness and novelty are computed.     atoms that
+    could substitute for each other (via the Hume-Rothery rules) and then using the default pymatgen
+    structure matching.
     """
 
     def __init__(
         self,
         structure_summaries: list[MetricsStructureSummary],
         reference_dataset: ReferenceDataset,
-        structure_matcher: OrderedStructureMatcher
-        | DisorderedStructureMatcher,  # how are uniqueness and novelty computed
+        structure_matcher: (
+            OrderedStructureMatcher | DisorderedStructureMatcher
+        ),  # how are uniqueness and novelty computed
         n_failed_jobs: int = 0,
     ) -> None:
         super().__init__(structure_summaries=structure_summaries, n_failed_jobs=n_failed_jobs)
@@ -85,10 +87,12 @@ class StructureMetricsCapability(BaseMetricsCapability):
             logger.info(
                 "At least one structure is disordered. Using DisorderedDatasetUniquenessComputer."
             )
-        self.reference_dataset = reference_dataset  # note: not all metrics use this, so it could be a separate capability
+        self.reference_dataset = reference_dataset  # note: not all metrics use this, so it could be a separate capability  # noqa: E501
         self.structure_matcher = structure_matcher
         self.ensure_reference_dataset_has_material_ids()
-        self.uniqueness_computer: OrderedDatasetUniquenessComputer | DisorderedDatasetUniquenessComputer = (
+        self.uniqueness_computer: (
+            OrderedDatasetUniquenessComputer | DisorderedDatasetUniquenessComputer
+        ) = (
             OrderedDatasetUniquenessComputer(structure_matcher)
             if all_structures_ordered
             else DisorderedDatasetUniquenessComputer(structure_matcher)
@@ -96,17 +100,17 @@ class StructureMetricsCapability(BaseMetricsCapability):
         self.dataset_matcher = get_dataset_matcher(all_structures_ordered, structure_matcher)
 
     def ensure_reference_dataset_has_material_ids(self) -> None:
-        """
-        We're using material_ids to match structures between the reference dataset and the data.
-        If the reference dataset doesn't have material_ids, we add them here and set them
-        to the index of the entry in the reference dataset.
+        """We're using material_ids to match structures between the reference dataset and the data.
+
+        If the reference dataset doesn't have material_ids, we add them here and set them to the
+        index of the entry in the reference dataset.
         """
         if (
             len(self.reference_dataset) > 0
             and next(iter(self.reference_dataset)).data.get("material_id") is None
         ):
             logger.warning(
-                "Reference dataset does not have material_ids. Adding material_ids to reference dataset."
+                "Reference dataset does not have material_ids. Adding material_ids to reference dataset."  # noqa: E501
             )
             for i, entry in enumerate(self.reference_dataset):
                 if "material_id" in entry.data:
@@ -130,28 +134,21 @@ class StructureMetricsCapability(BaseMetricsCapability):
 
     @cached_property
     def is_unique(self) -> numpy.typing.NDArray[np.bool_]:
-        """
-        Returns a boolean mask of the same length as `data_entries` in which each item is True
-        for the first structure from a set of duplicates and otherwise False.
-        """
+        """Returns a boolean mask of the same length as `data_entries` in which each item is True
+        for the first structure from a set of duplicates and otherwise False."""
         return self.uniqueness_computer(self.dataset)
 
     @cached_property
     def is_novel(self) -> numpy.typing.NDArray[np.bool_]:
-        """
-        Returns a boolean mask of the same length as `data_entries` in which each item is True
-        for structures that are not present in the reference dataset and otherwise False.
-        """
+        """Returns a boolean mask of the same length as `data_entries` in which each item is True
+        for structures that are not present in the reference dataset and otherwise False."""
         novelty_mask = np.logical_not(self.is_in_reference)
         return novelty_mask
 
     @cached_property
     def is_in_reference(self) -> numpy.typing.NDArray[np.bool_]:
-        """
-        Returns a boolean mask of the same length as `data_entries` in which each item is True
-        for structures that are present in the reference dataset and otherwise False.
-        """
-
+        """Returns a boolean mask of the same length as `data_entries` in which each item is True
+        for structures that are present in the reference dataset and otherwise False."""
         return matches_to_mask(self.matches_in_reference.keys(), len(self.dataset))
 
     @cached_property
@@ -160,7 +157,8 @@ class StructureMetricsCapability(BaseMetricsCapability):
 
     @cached_property
     def is_explored(self) -> numpy.typing.NDArray[np.bool_]:
-        """Returns a mask of whether structures are in explored chemical systems (>1 entry in reference)."""
+        """Returns a mask of whether structures are in explored chemical systems (>1 entry in
+        reference)."""
         return np.array(
             [
                 structure.composition.chemical_system in self.reference_dataset.entries_by_chemsys
@@ -193,11 +191,9 @@ class StructureMetricsCapability(BaseMetricsCapability):
 
     @cached_property
     def substitution_aware_space_group_symbols(self) -> list[str]:
-        """
-        Returns a list of space group symbols for each structure in the dataset, once the
-        structures have been modified to account for possible substitutions of atoms that
-        could substitute for each other (via the Hume-Rothery rules).
-        """
+        """Returns a list of space group symbols for each structure in the dataset, once the
+        structures have been modified to account for possible substitutions of atoms that could
+        substitute for each other (via the Hume-Rothery rules)."""
         return [
             get_space_group(structure, DisorderedSpaceGroupAnalyzer)
             for structure in self.structures
@@ -209,9 +205,7 @@ class StructureMetricsCapability(BaseMetricsCapability):
         self,
         desc: str = "",
     ) -> float:
-        """
-        Returns the number of matches between the data and reference entries.
-        """
+        """Returns the number of matches between the data and reference entries."""
         num_matches = len(self.is_novel) - sum(self.is_novel)
         return num_matches
 
@@ -245,7 +239,7 @@ class FracUniqueSystems(BaseStructureMetric):
 
     @property
     def description(self) -> str:
-        return "Fraction of structures in sampled data that have a unique chemical system within this set."
+        return "Fraction of structures in sampled data that have a unique chemical system within this set."  # noqa: E501
 
     @cached_property
     def value(self) -> float:
@@ -263,14 +257,12 @@ class Precision(BaseStructureMetric):
 
     @property
     def description(self) -> str:
-        return f"Precision of structures in sampled data compared with {self.reference_dataset.name}. This is the fraction of structures in sampled data that have a matching structure in {self.reference_dataset.name}."
+        return f"Precision of structures in sampled data compared with {self.reference_dataset.name}. This is the fraction of structures in sampled data that have a matching structure in {self.reference_dataset.name}."  # noqa: E501
 
     @cached_property
     def value(self) -> float:
-        """
-        Returns the fraction of structures in self.data.data_structures that are present in
-        self.reference_structures.
-        """
+        """Returns the fraction of structures in self.data.data_structures that are present in
+        self.reference_structures."""
         return self.structure_capability.is_in_reference.mean()
 
 
@@ -279,13 +271,11 @@ class Recall(BaseStructureMetric):
 
     @property
     def description(self) -> str:
-        return f"Recall of structures in sampled data compared with structures in {self.reference_dataset.name}. This is the fraction of structures in sampled data that have a matching structure in {self.reference_dataset.name}."
+        return f"Recall of structures in sampled data compared with structures in {self.reference_dataset.name}. This is the fraction of structures in sampled data that have a matching structure in {self.reference_dataset.name}."  # noqa: E501
 
     @cached_property
     def value(self) -> float:
-        """
-        Fraction of reference_structures that are in data_structures
-        """
+        """Fraction of reference_structures that are in data_structures."""
         match_dict = self.structure_capability.matches_in_reference
         ref_points_with_at_least_one_match = set([val for v in match_dict.values() for val in v])
         return len(ref_points_with_at_least_one_match) / len(self.reference_dataset)
@@ -337,7 +327,7 @@ class AvgStructureValidity(BaseStructureMetric, BaseAggregateMetric):
 
     @property
     def description(self) -> str:
-        return "Average structural validity of structures in sampled data. Any atom-atom distances less than 0.5 Angstroms or a volume less than 0.1 Angstrom**3 are considered invalid ."
+        return "Average structural validity of structures in sampled data. Any atom-atom distances less than 0.5 Angstroms or a volume less than 0.1 Angstrom**3 are considered invalid ."  # noqa: E501
 
     def compute_pre_aggregation_values(self) -> numpy.typing.NDArray:
         return np.array(
@@ -377,7 +367,7 @@ class AvgStructureCompValidity(BaseStructureMetric, BaseAggregateMetric):
 
     @property
     def description(self) -> str:
-        return "Average number of structures in sampled data that are both valid structures and have a valid smact compositions."
+        return "Average number of structures in sampled data that are both valid structures and have a valid smact compositions."  # noqa: E501
 
     def compute_pre_aggregation_values(self) -> numpy.typing.NDArray:
         valid_comp = [
@@ -396,7 +386,7 @@ class FracNovelSystems(BaseStructureMetric):
 
     @property
     def description(self) -> str:
-        return f"Fraction of distinct chemical systems in sampled data and not in {self.reference_dataset.name}."
+        return f"Fraction of distinct chemical systems in sampled data and not in {self.reference_dataset.name}."  # noqa: E501
 
     @cached_property
     def value(self) -> float:
@@ -421,10 +411,7 @@ class FracNovelSystems(BaseStructureMetric):
 
 
 def is_smact_valid(structure: Structure) -> bool:
-    """
-    Returns True if the structure is valid according to the
-    smact validity checker else False.
-    """
+    """Returns True if the structure is valid according to the smact validity checker else False."""
     elem_counter = Counter(structure.atomic_numbers)
     composition = [(elem, elem_counter[elem]) for elem in sorted(elem_counter.keys())]
     elems, counts = list(zip(*composition))
@@ -435,9 +422,9 @@ def is_smact_valid(structure: Structure) -> bool:
         return smact_validity(comp=elems, count=comps, use_pauling_test=True, include_alloys=True)
     except TypeError:
         raise TypeError(
-            f"SMACT validity checker failed. Check that all elements {structure.composition} present in the structure are also present in smact.element_dictionary()."
+            f"SMACT validity checker failed. Check that all elements {structure.composition} present in the structure are also present in smact.element_dictionary()."  # noqa: E501
         )
-    # HOTFIX: decode error sometimes occurrs the first time the smact_validity function is called, but not after that
+    # HOTFIX: decode error sometimes occurrs the first time the smact_validity function is called, but not after that  # noqa: E501
     except UnicodeDecodeError:
         return smact_validity(comp=elems, count=comps, use_pauling_test=True, include_alloys=True)
 
@@ -452,19 +439,16 @@ def smact_validity(
 ) -> bool:
     """Computes SMACT validity.
 
-    Args:
-        comp: Tuple of atomic number or element names of elements in a crystal.
-        count: Tuple of counts of elements in a crystal.
-        use_pauling_test: Whether to use electronegativity test. That is, at least in one
-            combination of oxidation states, the more positive the oxidation state of a site,
-            the lower the electronegativity of the element for all pairs of sites.
-        include_alloys: if True, returns True without checking charge balance or electronegativity
-            if the crystal is an alloy (consisting only of metals) (default: True).
-        include_cutoff: assumes valid crystal if the combination of oxidation states is more
-            than 10^6 (default: False).
+    Args:     comp: Tuple of atomic number or element names of elements in a crystal.     count:
+    Tuple of counts of elements in a crystal.     use_pauling_test: Whether to use electronegativity
+    test. That is, at least in one         combination of oxidation states, the more positive the
+    oxidation state of a site,         the lower the electronegativity of the element for all pairs
+    of sites.     include_alloys: if True, returns True without checking charge balance or
+    electronegativity         if the crystal is an alloy (consisting only of metals) (default:
+    True).     include_cutoff: assumes valid crystal if the combination of oxidation states is more
+    than 10^6 (default: False).
 
-    Returns:
-        True if the crystal is valid, False otherwise.
+    Returns:     True if the crystal is valid, False otherwise.
     """
     assert len(comp) == len(count)
     if use_element_symbol:
@@ -485,7 +469,7 @@ def smact_validity(
     threshold = np.max(count)
     compositions = []
     n_comb = np.prod([len(ls) for ls in ox_combos])
-    # If the number of possible combinations is big, it'd take too much time to run the smact checker
+    # If the number of possible combinations is big, it'd take too much time to run the smact checker  # noqa: E501
     # In this case, we assume that at least one of the combinations is valid
     if n_comb > 1e6 and include_cutoff:
         return True

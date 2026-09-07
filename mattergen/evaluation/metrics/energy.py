@@ -37,9 +37,8 @@ def get_set_of_all_elements(structure_summaries: list[MetricsStructureSummary]) 
 
 @dataclass(frozen=True)
 class MissingTerminalsAndEnergy:
-    """
-    Class to store information about missing terminal systems and energy data in the reference dataset.
-    """
+    """Class to store information about missing terminal systems and energy data in the reference
+    dataset."""
 
     missing_terminals: list[str]
     missing_energy: list[str]
@@ -76,7 +75,7 @@ class MissingTerminalsAndEnergy:
 
 class EnergyMetricsCapability(BaseMetricsCapability):
     name: str = "energy_capability"
-    missing_terminals_error_str = "Reference dataset does not contain sufficient data to compute energy metrics for the given dataset."
+    missing_terminals_error_str = "Reference dataset does not contain sufficient data to compute energy metrics for the given dataset."  # noqa: E501
 
     """Capability for computing structure metrics."""
 
@@ -121,18 +120,14 @@ class EnergyMetricsCapability(BaseMetricsCapability):
 
     @property
     def is_stable(self) -> numpy.typing.NDArray[np.bool_]:
-        """
-        Returns a boolean mask of the same length as data_entries
-        indicating whether each entry is stable or not.
-        """
+        """Returns a boolean mask of the same length as data_entries indicating whether each entry
+        is stable or not."""
         return self.energy_above_hull <= self.stability_threshold
 
     @property
     def is_self_consistent_stable(self) -> numpy.typing.NDArray[np.bool_]:
-        """
-        Returns a boolean mask of the same length as data_entries
-        indicating whether each entry is self-consistently stable or not.
-        """
+        """Returns a boolean mask of the same length as data_entries indicating whether each entry
+        is self-consistently stable or not."""
         return self.self_consistent_energy_above_hull <= self.stability_threshold
 
     @cached_property
@@ -150,8 +145,8 @@ class EnergyMetricsCapability(BaseMetricsCapability):
 
     @cached_property
     def self_consistent_energy_above_hull(self) -> numpy.typing.NDArray:
-        """Returns the energy above hull (eV) per atom with respect to the convex hull that
-        combines the reference dataset and the samples."""
+        """Returns the energy above hull (eV) per atom with respect to the convex hull that combines
+        the reference dataset and the samples."""
         result = np.zeros(len(self.dataset))
         for chemsys, entries in tqdm(
             self.dataset.entries_by_chemsys.items(),
@@ -200,14 +195,16 @@ class EnergyMetricsCapability(BaseMetricsCapability):
         ]
         for e, ehull in zip(self.dataset.entries_by_chemsys[chemsys], e_above_hull):
             logger.debug(
-                f"{e.composition.reduced_formula}: energy above hull {ehull} (threshold {self.stability_threshold})"
+                f"{e.composition.reduced_formula}: energy above hull {ehull} (threshold {self.stability_threshold})"  # noqa: E501
             )
         return e_above_hull
 
     def _get_self_consistent_phase_diagram(self, chemical_system: str) -> PhaseDiagram:
         """Returns the internal phase diagram for a given chemical system.
-        This is comprised of all reference entries that do not exactly match the chemical system, and
-        of all entries belonging to the chemical system."""
+
+        This is comprised of all reference entries that do not exactly match the chemical system,
+        and of all entries belonging to the chemical system.
+        """
         subsys = expand_into_subsystems(chemical_system)
         reference_entries = [
             entry
@@ -225,8 +222,10 @@ class EnergyMetricsCapability(BaseMetricsCapability):
 
     def _get_full_phase_diagram(self, chemical_system: str) -> PhaseDiagram:
         """Returns the total phase diagram for a given chemical system.
-        This is comprised of all reference entries  and
-        of all entries belonging to the chemical system."""
+
+        This is comprised of all reference entries  and of all entries belonging to the chemical
+        system.
+        """
         subsys = expand_into_subsystems(chemical_system)
         reference_entries = [
             entry
@@ -243,7 +242,8 @@ class EnergyMetricsCapability(BaseMetricsCapability):
 
     @lru_cache
     def _get_self_consistent_energy_above_hull_per_atom_chemsys(self, chemsys: str) -> list[float]:
-        """Returns a list of self-consistent energies above hull per atom for a given chemical system."""
+        """Returns a list of self-consistent energies above hull per atom for a given chemical
+        system."""
         phase_diagram = self._get_self_consistent_phase_diagram(chemsys)
         e_above_hull = [
             phase_diagram.get_e_above_hull(entry=e, allow_negative=True)
@@ -260,8 +260,8 @@ class EnergyMetricsCapability(BaseMetricsCapability):
 @dataclass(frozen=True)
 class BaseEnergyMetric(BaseMetric):
     # Use for metrics that have access to structure and energy data.
-    # In principle, we could have two classes, one for energy-only capabilities and one for structure+energy capabilities;
-    # however, since the input data already contains both structure and energy data, we can use a single class for both.
+    # In principle, we could have two classes, one for energy-only capabilities and one for structure+energy capabilities;  # noqa: E501
+    # however, since the input data already contains both structure and energy data, we can use a single class for both.  # noqa: E501
     required_capabilities = (StructureMetricsCapability, EnergyMetricsCapability)
 
     @property
@@ -289,7 +289,8 @@ class FracSuccessfulJobs(BaseEnergyMetric):
     @cached_property
     def value(self) -> float:
         return (
-            len(self.energy_capability._structure_summaries) / self.energy_capability.total_submitted_jobs
+            len(self.energy_capability._structure_summaries)
+            / self.energy_capability.total_submitted_jobs
         )
 
 
@@ -300,10 +301,12 @@ class AvgRMSDFromRelaxation(BaseEnergyMetric, BaseAggregateMetric):
 
     @property
     def description(self) -> str:
-        return "root mean square displacements of atoms (Angstrom) from initial to final DFT relaxation steps in sampled data."
+        return "root mean square displacements of atoms (Angstrom) from initial to final DFT relaxation steps in sampled data."  # noqa: E501
 
     def compute_pre_aggregation_values(self) -> numpy.typing.NDArray:
-        return np.array([d.rmsd_from_relaxation for d in self.energy_capability._structure_summaries])
+        return np.array(
+            [d.rmsd_from_relaxation for d in self.energy_capability._structure_summaries]
+        )
 
 
 class AvgEnergyAboveHullPerAtom(BaseEnergyMetric, BaseAggregateMetric):
@@ -325,7 +328,7 @@ class FracStableStructures(BaseEnergyMetric, BaseAggregateMetric):
 
     @property
     def description(self) -> str:
-        return f"Fraction of stable structures in sampled data within {self.energy_capability.stability_threshold} (eV/atom) above convex hull of {self.reference_dataset.name}."
+        return f"Fraction of stable structures in sampled data within {self.energy_capability.stability_threshold} (eV/atom) above convex hull of {self.reference_dataset.name}."  # noqa: E501
 
     @cached_property
     def value(self) -> float:
@@ -342,7 +345,7 @@ class FracNovelUniqueStableStructures(BaseEnergyMetric, BaseAggregateMetric):
     @property
     def description(self) -> str:
         return (
-            f"Fraction of novel unique stable structures in sampled data within {self.energy_capability.stability_threshold} (eV/atom) "
+            f"Fraction of novel unique stable structures in sampled data within {self.energy_capability.stability_threshold} (eV/atom) "  # noqa: E501
             + f"above convex hull of {self.reference_dataset.name}."
         )
 

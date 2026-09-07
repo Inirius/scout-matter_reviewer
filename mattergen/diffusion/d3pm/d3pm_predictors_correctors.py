@@ -15,9 +15,7 @@ from mattergen.diffusion.sampling.predictors_correctors import SampleAndMean
 
 
 class D3PMAncestralSamplingPredictor(Predictor):
-    """
-    Ancestral sampling predictor for D3PM.
-    """
+    """Ancestral sampling predictor for D3PM."""
 
     def __init__(
         self,
@@ -49,12 +47,11 @@ class D3PMAncestralSamplingPredictor(Predictor):
         score: torch.Tensor,
         batch: Optional[BatchedData],
     ) -> SampleAndMean:
-        """
-        Takes the atom coordinates, cell vectors and atom types at time t and
-        returns the atom types at time t-1, sampled using the learned reverse
-        atom diffusion model.
+        """Takes the atom coordinates, cell vectors and atom types at time t and returns the atom
+        types at time t-1, sampled using the learned reverse atom diffusion model.
 
-        Look at https://github.com/google-research/google-research/blob/master/d3pm/text/diffusion.py
+        Look at
+        https://github.com/google-research/google-research/blob/master/d3pm/text/diffusion.py
 
         lines 3201-3229. NOTE: we do implement the taking the softmax of the initial
         sample as per 3226-3227. This could be to avoid weird behaving for picking

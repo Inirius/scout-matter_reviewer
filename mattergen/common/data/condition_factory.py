@@ -59,13 +59,11 @@ def get_composition_data_loader(
     num_structures_to_generate_per_composition: int,
     batch_size: int,
 ) -> ConditionLoader:
-    """
-    Given a list of target compositions, generate a dataset of chemgraphs
-    where each chemgraph contains atoms corresponding to the target composition
-    without positions or cell information.
+    """Given a list of target compositions, generate a dataset of chemgraphs where each chemgraph
+    contains atoms corresponding to the target composition without positions or cell information.
+
     Returns a torch dataloader equipped with the correct collate function containing such dataset.
     """
-
     dataset_ = []
     for compostion in target_compositions_dict:
         chemgraphs = [

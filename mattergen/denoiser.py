@@ -23,11 +23,9 @@ BatchTransform = Callable[[ChemGraph], ChemGraph]
 def atomic_numbers_to_mask(atomic_numbers: torch.LongTensor, max_atomic_num: int) -> torch.Tensor:
     """Convert atomic numbers to a mask.
 
-    Args:
-        atomic_numbers (torch.LongTensor): One-based atomic numbers of shape (batch_size, )
+    Args:     atomic_numbers (torch.LongTensor): One-based atomic numbers of shape (batch_size, )
 
-    Returns:
-        torch.Tensor: Mask of shape (batch_size, num_classes)
+    Returns:     torch.Tensor: Mask of shape (batch_size, num_classes)
     """
     k_hot_mask = torch.eye(max_atomic_num, device=atomic_numbers.device)[atomic_numbers - 1]
     return k_hot_mask
@@ -36,12 +34,10 @@ def atomic_numbers_to_mask(atomic_numbers: torch.LongTensor, max_atomic_num: int
 def mask_logits(logits: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
     """Mask logits by setting the logits for masked items to -inf.
 
-    Args:
-        logits (torch.Tensor): Logits of shape (batch_size, num_classes)
-        mask (torch.Tensor): Mask of shape (batch_size, num_classes). Values with zero are masked.
+    Args:     logits (torch.Tensor): Logits of shape (batch_size, num_classes)     mask
+    (torch.Tensor): Mask of shape (batch_size, num_classes). Values with zero are masked.
 
-    Returns:
-        torch.Tensor: Masked logits
+    Returns:     torch.Tensor: Masked logits
     """
     return logits + (1 - mask) * -1e10
 
@@ -52,16 +48,14 @@ def mask_disallowed_elements(
     batch_idx: torch.LongTensor | None = None,
     predictions_are_zero_based: bool = True,
 ):
-    """
-    Mask out atom types that are disallowed in general,
-    as well as potentially all elements not in the chemical system we condition on.
+    """Mask out atom types that are disallowed in general, as well as potentially all elements not
+    in the chemical system we condition on.
 
-    Args:
-        logits (torch.Tensor): Logits of shape (batch_size, num_classes)
-        x (ChemGraph)
-        batch_idx (torch.LongTensor, optional): Batch indices. Defaults to None. Must be provided if condition is not None.
-        predictions_are_zero_based (bool, optional): Whether the logits are zero-based. Defaults to True. Basically, if we're using D3PM,
-            the logits are zero-based (model predicts atomic number index)
+    Args:     logits (torch.Tensor): Logits of shape (batch_size, num_classes)     x (ChemGraph)
+    batch_idx (torch.LongTensor, optional): Batch indices. Defaults to None. Must be provided if
+    condition is not None.     predictions_are_zero_based (bool, optional): Whether the logits are
+    zero-based. Defaults to True. Basically, if we're using D3PM,         the logits are zero-based
+    (model predicts atomic number index)
     """
     # First, mask out generally undesired elements
     # (1, num_selected_elements)
@@ -80,7 +74,7 @@ def mask_disallowed_elements(
     # Optionally, also mask out elements that are not in the chemical system we condition on
     if x is not None and "chemical_system" in x and x["chemical_system"] is not None:
         try:
-            # torch.BoolTensor, shape (batch_size, 1)  -- do not mask logits when we use an unconditional embedding
+            # torch.BoolTensor, shape (batch_size, 1)  -- do not mask logits when we use an unconditional embedding  # noqa: E501
             do_not_mask_atom_logits = get_use_unconditional_embedding(
                 batch=x, cond_field="chemical_system"
             )
@@ -99,7 +93,7 @@ def mask_disallowed_elements(
         # 1 = keep logit, 0 = set logit to -inf, shape = (Nbatch, MAX_ATOMIC_NUM+1)
         keep_all_logits = torch.ones((len(x["chemical_system"]), 1), device=x["num_atoms"].device)
 
-        # torch.Tensor, shape=(Nbatch,MAX_ATOMIC_NUM+1) -- 1s where elements are present in chemical system condition, 0 elsewhere
+        # torch.Tensor, shape=(Nbatch,MAX_ATOMIC_NUM+1) -- 1s where elements are present in chemical system condition, 0 elsewhere  # noqa: E501
         multi_hot_chemical_system = ChemicalSystemMultiHotEmbedding.sequences_to_multi_hot(
             x=ChemicalSystemMultiHotEmbedding.convert_to_list_of_str(x=x["chemical_system"]),
             device=x["num_atoms"].device,
@@ -133,20 +127,17 @@ def get_chemgraph_from_denoiser_output(
     element_mask_func: Callable | None,
     x_input: ChemGraph,
 ) -> ChemGraph:
-    """
-    Convert raw denoiser output to ChemGraph and optionally apply masking to element logits.
+    """Convert raw denoiser output to ChemGraph and optionally apply masking to element logits.
 
-    Keyword arguments
-    -----------------
-    pred_atom_atoms: predicted logits for atom types
-    pred_lattice_eps: predicted lattice noise
-    pred_cart_pos_eps: predicted cartesian position noise
-    training: whether or not the model is in training mode - logit masking is only applied when sampling
-    element_mask_func: when not training, a function can be applied to mask logits for certain atom types
-    x_input: the nosiy state input to the score model, contains the lattice to convert cartesisan to fractional noise.
+    Keyword arguments ----------------- pred_atom_atoms: predicted logits for atom types
+    pred_lattice_eps: predicted lattice noise pred_cart_pos_eps: predicted cartesian position noise
+    training: whether or not the model is in training mode - logit masking is only applied when
+    sampling element_mask_func: when not training, a function can be applied to mask logits for
+    certain atom types x_input: the nosiy state input to the score model, contains the lattice to
+    convert cartesisan to fractional noise.
     """
     if not training and element_mask_func:
-        # when sampling we may want to mask logits for atom types depending on info in x['chemical_system'] and x['chemical_system_MASK']
+        # when sampling we may want to mask logits for atom types depending on info in x['chemical_system'] and x['chemical_system_MASK']  # noqa: E501
         pred_atom_types = element_mask_func(
             logits=pred_atom_types,
             x=x_input,
@@ -168,7 +159,7 @@ def get_chemgraph_from_denoiser_output(
 
 
 class GemNetTDenoiser(ScoreModel):
-    """Denoiser"""
+    """Denoiser."""
 
     def __init__(
         self,
@@ -186,12 +177,12 @@ class GemNetTDenoiser(ScoreModel):
     ):
         """Construct a GemNetTDenoiser object.
 
-        Args:
-            gemnet: a GNN module
-            hidden_dim (int, optional): Number of hidden dimensions in the GemNet. Defaults to 128.
-            denoise_atom_types (bool, optional): Whether to denoise the atom  types. Defaults to False.
-            atom_type_diffusion (str, optional): Which type of atom type diffusion to use. Defaults to "mask".
-            condition_on (Optional[List[str]], optional): Which aspects of the data to condition on. Strings must be in ["property", "chemical_system"]. If None (default), condition on ["chemical_system"].
+        Args:     gemnet: a GNN module     hidden_dim (int, optional): Number of hidden dimensions
+        in the GemNet. Defaults to 128.     denoise_atom_types (bool, optional): Whether to denoise
+        the atom  types. Defaults to False.     atom_type_diffusion (str, optional): Which type of
+        atom type diffusion to use. Defaults to "mask".     condition_on (Optional[List[str]],
+        optional): Which aspects of the data to condition on. Strings must be in ["property",
+        "chemical_system"]. If None (default), condition on ["chemical_system"].
         """
         super(GemNetTDenoiser, self).__init__()
 
@@ -272,9 +263,8 @@ class GemNetTDenoiser(ScoreModel):
 
     @property
     def cond_fields_model_was_trained_on(self) -> list[PropertySourceId]:
-        """
-        We adopt the convention that all property embeddings are stored in torch.nn.ModuleDicts of
-        name property_embeddings or property_embeddings_adapt in the case of a fine tuned model.
+        """We adopt the convention that all property embeddings are stored in torch.nn.ModuleDicts
+        of name property_embeddings or property_embeddings_adapt in the case of a fine tuned model.
 
         This function returns the list of all field names that a given score model was trained to
         condition on.

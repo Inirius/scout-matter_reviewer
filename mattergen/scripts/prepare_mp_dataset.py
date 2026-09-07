@@ -13,7 +13,6 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
-
 ELEMENTS = (
     "H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Sc Ti V Cr Mn Fe "
     "Co Ni Cu Zn Ga Ge As Se Br Kr Rb Sr Y Zr Nb Mo Tc Ru Rh Pd Ag Cd In Sn "
@@ -131,9 +130,7 @@ def structure_to_cif(document: dict[str, Any]) -> str:
     composition = document["composition"]
     material_id = document["material_id"]
 
-    formula_sum = " ".join(
-        f"{element}{amount:g}" for element, amount in composition.items()
-    )
+    formula_sum = " ".join(f"{element}{amount:g}" for element, amount in composition.items())
     lines = [
         "# generated from the Materials Project summary structure",
         f"data_{material_id}",
@@ -261,10 +258,7 @@ def main() -> None:
     n_val = int(0.20 * n_total)
     split_by_id = {
         **{material_id: "train" for material_id in selected_ids[:n_train]},
-        **{
-            material_id: "val"
-            for material_id in selected_ids[n_train : n_train + n_val]
-        },
+        **{material_id: "val" for material_id in selected_ids[n_train : n_train + n_val]},
         **{material_id: "test" for material_id in selected_ids[n_train + n_val :]},
     }
 
@@ -279,9 +273,7 @@ def main() -> None:
     train_density_sum = 0.0
     try:
         for split in ("train", "val", "test"):
-            handle = (args.output_dir / f"{split}.csv").open(
-                mode="w", encoding="utf-8", newline=""
-            )
+            handle = (args.output_dir / f"{split}.csv").open(mode="w", encoding="utf-8", newline="")
             handles[split] = handle
             writer = csv.DictWriter(handle, fieldnames=CSV_FIELDS)
             writer.writeheader()

@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/scaling.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/scaling.py.
 """
 
 import logging
@@ -13,9 +13,7 @@ from mattergen.common.gemnet.utils import read_value_json, update_json
 
 
 class AutomaticFit:
-    """
-    All added variables are processed in the order of creation.
-    """
+    """All added variables are processed in the order of creation."""
 
     activeVar = None
     queue = None
@@ -70,9 +68,7 @@ class AutomaticFit:
         AutomaticFit.queue += [self]
 
     def set_next_active(self):
-        """
-        Set the next variable in the queue that should be fitted.
-        """
+        """Set the next variable in the queue that should be fitted."""
         queue = AutomaticFit.queue
         if len(queue) == 0:
             logging.debug("Processed all variables.")
@@ -82,9 +78,7 @@ class AutomaticFit:
         AutomaticFit.activeVar = queue.pop(0)
 
     def load_maybe(self):
-        """
-        Load variable from file or set to initial value of the variable.
-        """
+        """Load variable from file or set to initial value of the variable."""
         value = read_value_json(self.scale_file, self._name)
         if value is None:
             logging.debug(f"Initialize variable {self._name}' to {self.variable.numpy():.3f}")
@@ -96,15 +90,12 @@ class AutomaticFit:
 
 
 class AutoScaleFit(AutomaticFit):
-    """
-    Class to automatically fit the scaling factors depending on the observed variances.
+    """Class to automatically fit the scaling factors depending on the observed variances.
 
-    Parameters
-    ----------
-        variable: torch.Tensor
-            Variable to fit.
-        scale_file: str
-            Path to the json file where to store/load from the scaling factors.
+    Parameters ----------     variable: torch.Tensor         Variable to fit.     scale_
+    file:
+    str
+    Path to the json file where to store/load from the scaling factors.
     """
 
     def __init__(self, variable, scale_file, name):
@@ -120,8 +111,8 @@ class AutoScaleFit(AutomaticFit):
 
     @torch.no_grad()
     def observe(self, x, y):
-        """
-        Observe variances for input x and output y.
+        """Observe variances for input x and output y.
+
         The scaling factor alpha is calculated s.t. Var(alpha * y) ~ Var(x)
         """
         if self._fitted:
@@ -136,13 +127,11 @@ class AutoScaleFit(AutomaticFit):
 
     @torch.no_grad()
     def fit(self):
-        """
-        Fit the scaling factor based on the observed variances.
-        """
+        """Fit the scaling factor based on the observed variances."""
         if AutomaticFit.activeVar == self:
             if self.variance_in == 0:
                 raise ValueError(
-                    f"Did not track the variable {self._name}. Add observe calls to track the variance before and after."
+                    f"Did not track the variable {self._name}. Add observe calls to track the variance before and after."  # noqa: E501
                 )
 
             # calculate variance preserving scaling factor
@@ -165,15 +154,15 @@ class AutoScaleFit(AutomaticFit):
 
 
 class ScalingFactor(torch.nn.Module):
-    """
-    Scale the output y of the layer s.t. the (mean) variance wrt. to the reference input x_ref is preserved.
+    """Scale the output y of the layer s.t.
 
-    Parameters
-    ----------
-        scale_file: str
-            Path to the json file where to store/load from the scaling factors.
-        name: str
-            Name of the scaling factor
+    the (mean) variance wrt. to the reference input x_ref is preserved.     Parameters
+    ----------         scale_
+    file:
+    str
+    Path to the json file where to store/load from the scaling factors.
+    name: str
+    Name of the scaling factor
     """
 
     def __init__(self, scale_file, name, device=None):

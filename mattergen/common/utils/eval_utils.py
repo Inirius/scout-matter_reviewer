@@ -59,7 +59,7 @@ def load_model_diffusion(
             config=cfg.lightning_module,
             strict=args.strict_checkpoint_loading,
         )
-    except hydra.errors.HydraException as e:
+    except hydra.errors.HydraException:
         raise
     if len(incompatible_keys.unexpected_keys) > 0:
         raise ValueError(f"Unexpected keys in checkpoint: {incompatible_keys.unexpected_keys}.")
@@ -72,14 +72,8 @@ def load_model_diffusion(
 def get_crystals_list(
     frac_coords, atom_types, lengths, angles, num_atoms
 ) -> list[dict[str, np.ndarray]]:
-    """
-    args:
-        frac_coords: (num_atoms, 3)
-        atom_types: (num_atoms)
-        lengths: (num_crystals)
-        angles: (num_crystals)
-        num_atoms: (num_crystals)
-    """
+    """Args: frac_coords: (num_atoms, 3) atom_types: (num_atoms) lengths: (num_crystals) angles:
+    (num_crystals) num_atoms: (num_crystals)"""
     assert frac_coords.size(0) == atom_types.size(0) == num_atoms.sum()
     assert lengths.size(0) == angles.size(0) == num_atoms.size(0)
 
@@ -106,9 +100,8 @@ def get_crystals_list(
 def save_structures(output_path: Path, structures: Sequence[Structure]) -> None:
     """Save structures to disk in a extxyz file and a compressed zip file containing cif files.
 
-    Args:
-        output_path: path to a directory where the results are written.
-        structures: sequence of structures.
+    Args:     output_path: path to a directory where the results are written.     structures:
+    sequence of structures.
     """
     ase_atoms = [AseAtomsAdaptor.get_atoms(x) for x in structures]
     try:
@@ -125,11 +118,9 @@ def save_structures(output_path: Path, structures: Sequence[Structure]) -> None:
 def load_structures(input_path: Path) -> Sequence[Structure]:
     """Load structures from disk.
 
-    Args:
-        output_path: path to a file or directory where the results are written.
+    Args:     output_path: path to a file or directory where the results are written.
 
-    Returns:
-        sequence of structures.
+    Returns:     sequence of structures.
     """
     # if the path is an xyz or extxyz file, read it directly
     if input_path.suffix == ".xyz" or input_path.suffix == ".extxyz":
@@ -162,6 +153,6 @@ def extract_structures_from_folder(dirname: str) -> Sequence[Structure]:
         elif filename.endswith(".extxyz") or filename.endswith(".xyz"):
             ase_atoms = ase.io.read(
                 f"{dirname}/{filename}", 0
-            )  #  We assume that the file contains only one structure
+            )  # We assume that the file contains only one structure
             structures.append(AseAtomsAdaptor.get_structure(ase_atoms))
     return structures

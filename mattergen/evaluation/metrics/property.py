@@ -42,10 +42,8 @@ class PropertyMetricsCapability(BaseMetricsCapability):
 
     @property
     def satisfies_property_constraints(self) -> numpy.typing.NDArray[np.bool_]:
-        """
-        Returns a boolean mask of the same length as structure_summaries
-        indicating whether each entry satisfies the property constraints.
-        """
+        """Returns a boolean mask of the same length as structure_summaries indicating whether each
+        entry satisfies the property constraints."""
 
         def _satisfies_property_constraint(
             values: np.array, constraint: PropertyConstraint
@@ -59,7 +57,7 @@ class PropertyMetricsCapability(BaseMetricsCapability):
 
         assert all(
             key in self.properties for key in self.property_constraints
-        ), f"Property data and constraints do not match: {list(self.properties)} vs. {list(self.property_constraints)}."
+        ), f"Property data and constraints do not match: {list(self.properties)} vs. {list(self.property_constraints)}."  # noqa: E501
 
         return np.all(
             np.array(
@@ -91,7 +89,7 @@ class PropertyMetricsCapability(BaseMetricsCapability):
 @dataclass(frozen=True)
 class BasePropertyMetric(BaseMetric):
     # Use for metrics that have access to structure, energy and property data.
-    # In principle, we could define metrics classes with fewer required capabilities, but this is not necessary for now.
+    # In principle, we could define metrics classes with fewer required capabilities, but this is not necessary for now.  # noqa: E501
     required_capabilities = (
         StructureMetricsCapability,
         EnergyMetricsCapability,
@@ -122,8 +120,8 @@ class FracStableStructuresWithProperties(BasePropertyMetric, BaseAggregateMetric
     @property
     def description(self) -> str:
         return (
-            f"Fraction of stable structures in sampled data within {self.energy_capability.stability_threshold} (eV/atom) "
-            + f"above convex hull of {self.reference_dataset.name} and that satisfy target property constraints."
+            f"Fraction of stable structures in sampled data within {self.energy_capability.stability_threshold} (eV/atom) "  # noqa: E501
+            + f"above convex hull of {self.reference_dataset.name} and that satisfy target property constraints."  # noqa: E501
         )
 
     @cached_property
@@ -144,8 +142,8 @@ class FracNovelUniqueStableStructuresWithProperties(BasePropertyMetric, BaseAggr
     @property
     def description(self) -> str:
         return (
-            f"Fraction of novel unique stable structures in sampled data within {self.energy_capability.stability_threshold} (eV/atom) "
-            + f"above convex hull of {self.reference_dataset.name} and that satisfy target property constraints."
+            f"Fraction of novel unique stable structures in sampled data within {self.energy_capability.stability_threshold} (eV/atom) "  # noqa: E501
+            + f"above convex hull of {self.reference_dataset.name} and that satisfy target property constraints."  # noqa: E501
         )
 
     @cached_property

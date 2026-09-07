@@ -7,9 +7,11 @@ from typing import Mapping, Union
 
 class ModelTarget(Enum):
     """Specifies what the score model is trained to predict.
-    Only relevant for fields that are corrupted with an SDE."""
 
-    score_times_std = "score_times_std"  # Predict -z where z is gaussian noise with unit variance used to corrupt the data
+    Only relevant for fields that are corrupted with an SDE.
+    """
+
+    score_times_std = "score_times_std"  # Predict -z where z is gaussian noise with unit variance used to corrupt the data  # noqa: E501
     logits = "logits"  # Predict logits for a categorical variable
 
 

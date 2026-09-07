@@ -14,13 +14,13 @@ def main():
         "--csv-folder",
         type=str,
         required=True,
-        help="Path to the folder containing the csv files. All csv files in the folder will be processed (e.g., 'train.csv', 'val.csv', 'test.csv') and the resulting datasets will be placed under {cache_path/dataset_name/filename_without_extension}, e.g, /path/to/project/dataset/mp_20/train.",
+        help="Path to the folder containing the csv files. All csv files in the folder will be processed (e.g., 'train.csv', 'val.csv', 'test.csv') and the resulting datasets will be placed under {cache_path/dataset_name/filename_without_extension}, e.g, /path/to/project/dataset/mp_20/train.",  # noqa: E501
     )
     parser.add_argument(
         "--dataset-name",
         type=str,
         required=True,
-        help="Name of the dataset (e.g. mp_20. Will be used to create a folder in the cache folder)",
+        help="Name of the dataset (e.g. mp_20. Will be used to create a folder in the cache folder)",  # noqa: E501
     )
     parser.add_argument(
         "--cache-folder",

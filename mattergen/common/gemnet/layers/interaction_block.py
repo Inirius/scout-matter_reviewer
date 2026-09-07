@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/interaction_block.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/interaction_block.py.
 """
 
 import math
@@ -17,37 +17,25 @@ from mattergen.common.gemnet.layers.scaling import ScalingFactor
 
 
 class InteractionBlockTripletsOnly(torch.nn.Module):
-    """
-    Interaction block for GemNet-T/dT.
+    """Interaction block for GemNet-T/dT.
 
-    Parameters
-    ----------
-        emb_size_atom: int
-            Embedding size of the atoms.
-        emb_size_edge: int
-            Embedding size of the edges.
-        emb_size_trip: int
-            (Down-projected) Embedding size in the triplet message passing block.
-        emb_size_rbf: int
-            Embedding size of the radial basis transformation.
-        emb_size_cbf: int
-            Embedding size of the circular basis transformation (one angle).
+    Parameters ----------     emb_size_atom: int         Embedding size of the atoms.
+    emb_size_edge: int         Embedding size of the edges.     emb_size_trip: int         (Down-
+    projected) Embedding size in the triplet message passing block.     emb_size_rbf: int
+    Embedding size of the radial basis transformation.     emb_size_cbf: int         Embedding size
+    of the circular basis transformation (one angle).
 
-        emb_size_bil_trip: int
-            Embedding size of the edge embeddings in the triplet-based message passing block after the bilinear layer.
-        num_before_skip: int
-            Number of residual blocks before the first skip connection.
-        num_after_skip: int
-            Number of residual blocks after the first skip connection.
-        num_concat: int
-            Number of residual blocks after the concatenation.
-        num_atom: int
-            Number of residual blocks in the atom embedding blocks.
+    emb_size_bil_trip: int     Embedding size of the edge embeddings in the triplet-based message
+    passing block after the bilinear layer. num_before_skip: int     Number of residual blocks
+    before the first skip connection. num_after_skip: int     Number of residual blocks after the
+    first skip connection. num_concat: int     Number of residual blocks after the concatenation.
+    num_atom: int     Number of residual blocks in the atom embedding blocks.
 
-        activation: str
-            Name of the activation function to use in the dense layers except for the final dense layer.
-        scale_file: str
-            Path to the json file containing the scaling factors.
+    activation: str     Name of the activation function to use in the dense layers except for the
+    final dense layer. scale_
+    file:
+    str
+    Path to the json file containing the scaling factors.
     """
 
     def __init__(
@@ -72,7 +60,7 @@ class InteractionBlockTripletsOnly(torch.nn.Module):
 
         block_nr = name.split("_")[-1]
 
-        # -------------------------------------------- Message Passing ------------------------------------------- ##
+        # -------------------------------------------- Message Passing ------------------------------------------- ##  # noqa: E501
         # Dense transformation of skip connection
         self.dense_ca = Dense(
             emb_size_edge,
@@ -93,7 +81,7 @@ class InteractionBlockTripletsOnly(torch.nn.Module):
             name=f"TripInteraction_{block_nr}",
         )
 
-        # ---------------------------------------- Update Edge Embeddings ---------------------------------------- ##
+        # ---------------------------------------- Update Edge Embeddings ---------------------------------------- ##  # noqa: E501
         # Residual layers before skip connection
         self.layers_before_skip = torch.nn.ModuleList(
             [
@@ -116,7 +104,7 @@ class InteractionBlockTripletsOnly(torch.nn.Module):
             ]
         )
 
-        # ---------------------------------------- Update Atom Embeddings ---------------------------------------- ##
+        # ---------------------------------------- Update Atom Embeddings ---------------------------------------- ##  # noqa: E501
         self.atom_update = AtomUpdateBlock(
             emb_size_atom=emb_size_atom,
             emb_size_edge=emb_size_edge,
@@ -127,7 +115,7 @@ class InteractionBlockTripletsOnly(torch.nn.Module):
             name=f"AtomUpdate_{block_nr}",
         )
 
-        # ------------------------------ Update Edge Embeddings with Atom Embeddings ----------------------------- ##
+        # ------------------------------ Update Edge Embeddings with Atom Embeddings ----------------------------- ##  # noqa: E501
         self.concat_layer = EdgeEmbedding(
             emb_size_atom,
             emb_size_edge,
@@ -154,15 +142,10 @@ class InteractionBlockTripletsOnly(torch.nn.Module):
         idx_s,
         idx_t,
     ):
-        """
-        Returns
-        -------
-            h: torch.Tensor, shape=(nEdges, emb_size_atom)
-                Atom embeddings.
-            m: torch.Tensor, shape=(nEdges, emb_size_edge)
-                Edge embeddings (c->a).
-        """
+        """Returns ------- h: torch.Tensor, shape=(nEdges, emb_size_atom) Atom embeddings.
 
+        m: torch.Tensor, shape=(nEdges, emb_size_edge)     Edge embeddings (c->a).
+        """
         # Initial transformation
         x_ca_skip = self.dense_ca(m)  # (nEdges, emb_size_edge)
 
@@ -176,11 +159,11 @@ class InteractionBlockTripletsOnly(torch.nn.Module):
             id3_ca,
         )
 
-        # ----------------------------- Merge Embeddings after Triplet Interaction ------------------------------ ##
+        # ----------------------------- Merge Embeddings after Triplet Interaction ------------------------------ ##  # noqa: E501
         x = x_ca_skip + x3  # (nEdges, emb_size_edge)
         x = x * self.inv_sqrt_2
 
-        # ---------------------------------------- Update Edge Embeddings --------------------------------------- ##
+        # ---------------------------------------- Update Edge Embeddings --------------------------------------- ##  # noqa: E501
         # Transformations before skip connection
         for i, layer in enumerate(self.layers_before_skip):
             x = layer(x)  # (nEdges, emb_size_edge)
@@ -193,14 +176,14 @@ class InteractionBlockTripletsOnly(torch.nn.Module):
         for i, layer in enumerate(self.layers_after_skip):
             m = layer(m)  # (nEdges, emb_size_edge)
 
-        # ---------------------------------------- Update Atom Embeddings --------------------------------------- ##
+        # ---------------------------------------- Update Atom Embeddings --------------------------------------- ##  # noqa: E501
         h2 = self.atom_update(h, m, rbf_h, idx_t)
 
         # Skip connection
         h = h + h2  # (nAtoms, emb_size_atom)
         h = h * self.skip_connection_factor
 
-        # ----------------------------- Update Edge Embeddings with Atom Embeddings ----------------------------- ##
+        # ----------------------------- Update Edge Embeddings with Atom Embeddings ----------------------------- ##  # noqa: E501
         m2 = self.concat_layer(h, m, idx_s, idx_t)  # (nEdges, emb_size_edge)
 
         for i, layer in enumerate(self.residual_m):
@@ -213,26 +196,20 @@ class InteractionBlockTripletsOnly(torch.nn.Module):
 
 
 class TripletInteraction(torch.nn.Module):
-    """
-    Triplet-based message passing block.
+    """Triplet-based message passing block.
 
-    Parameters
-    ----------
-        emb_size_edge: int
-            Embedding size of the edges.
-        emb_size_trip: int
-            (Down-projected) Embedding size of the edge embeddings after the hadamard product with rbf.
-        emb_size_bilinear: int
-            Embedding size of the edge embeddings after the bilinear layer.
-        emb_size_rbf: int
-            Embedding size of the radial basis transformation.
-        emb_size_cbf: int
-            Embedding size of the circular basis transformation (one angle).
+    Parameters ----------     emb_size_edge: int         Embedding size of the edges.
+    emb_size_trip: int         (Down-projected) Embedding size of the edge embeddings after the
+    hadamard product with rbf.     emb_size_bilinear: int         Embedding size of the edge
+    embeddings after the bilinear layer.     emb_size_rbf: int         Embedding size of the radial
+    basis transformation.     emb_size_cbf: int         Embedding size of the circular basis
+    transformation (one angle).
 
-        activation: str
-            Name of the activation function to use in the dense layers except for the final dense layer.
-        scale_file: str
-            Path to the json file containing the scaling factors.
+    activation: str     Name of the activation function to use in the dense layers except for the
+    final dense layer. scale_
+    file:
+    str
+    Path to the json file containing the scaling factors.
     """
 
     def __init__(
@@ -304,13 +281,7 @@ class TripletInteraction(torch.nn.Module):
         id3_ba,
         id3_ca,
     ):
-        """
-        Returns
-        -------
-            m: torch.Tensor, shape=(nEdges, emb_size_edge)
-                Edge embeddings (c->a).
-        """
-
+        """Returns ------- m: torch.Tensor, shape=(nEdges, emb_size_edge) Edge embeddings (c->a)."""
         # Dense transformation
         x_ba = self.dense_ba(m)  # (nEdges, emb_size_edge)
 

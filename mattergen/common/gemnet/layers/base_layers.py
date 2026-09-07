@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/base_layers.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/base_layers.py.
 """
 
 import math
@@ -15,17 +15,10 @@ from mattergen.common.gemnet.initializers import he_orthogonal_init
 
 
 class Dense(torch.nn.Module):
-    """
-    Combines dense layer with scaling for swish activation.
+    """Combines dense layer with scaling for swish activation.
 
-    Parameters
-    ----------
-        units: int
-            Output embedding size.
-        activation: str
-            Name of the activation function to use.
-        bias: bool
-            True if use bias.
+    Parameters ----------     units: int         Output embedding size.     activation: str
+    Name of the activation function to use.     bias: bool         True if use bias.
     """
 
     def __init__(
@@ -82,17 +75,11 @@ class SiQU(torch.nn.Module):
 
 
 class ResidualLayer(torch.nn.Module):
-    """
-    Residual block with output scaled by 1/sqrt(2).
+    """Residual block with output scaled by 1/sqrt(2).
 
-    Parameters
-    ----------
-        units: int
-            Output embedding size.
-        nLayers: int
-            Number of dense layers.
-        layer_kwargs: str
-            Keyword arguments for initializing the layers.
+    Parameters ----------     units: int         Output embedding size.     nLayers: int
+    Number of dense layers.     layer_kwargs: str         Keyword arguments for initializing the
+    layers.
     """
 
     def __init__(self, units: int, nLayers: int = 2, layer: Callable = Dense, **layer_kwargs):

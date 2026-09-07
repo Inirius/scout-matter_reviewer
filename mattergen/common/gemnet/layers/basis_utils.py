@@ -1,13 +1,13 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/basis_utils.py.
-"""
+"""Copyright (c) Facebook, Inc.
 
-from typing import Any, List
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/basis_utils.py.
+"""
 
 import math
+from typing import Any, List
+
 import numpy as np
 import sympy as sym
 from scipy import special as sp
@@ -15,16 +15,12 @@ from scipy.optimize import brentq
 
 
 def Jn(r: np.array, n: int) -> np.array:
-    """
-    numerical spherical bessel functions of order n
-    """
+    """Numerical spherical bessel functions of order n."""
     return sp.spherical_jn(n, r)
 
 
 def Jn_zeros(n: int, k: int) -> np.array:
-    """
-    Compute the first k zeros of the spherical bessel functions up to order n (excluded)
-    """
+    """Compute the first k zeros of the spherical bessel functions up to order n (excluded)"""
     zerosj = np.zeros((n, k), dtype="float32")
     zerosj[0] = np.arange(1, k + 1) * np.pi
     points = np.arange(1, k + n) * np.pi
@@ -40,9 +36,7 @@ def Jn_zeros(n: int, k: int) -> np.array:
 
 
 def spherical_bessel_formulas(n: int) -> List[Any]:
-    """
-    Computes the sympy formulas for the spherical bessel functions up to order n (excluded)
-    """
+    """Computes the sympy formulas for the spherical bessel functions up to order n (excluded)"""
     x = sym.symbols("x")
     # j_i = (-x)^i * (1/x * d/dx)^î * sin(x)/x
     j = [sym.sin(x) / x]  # j_0
@@ -55,14 +49,11 @@ def spherical_bessel_formulas(n: int) -> List[Any]:
 
 
 def bessel_basis(n: int, k: int) -> List[Any]:
-    """
-    Compute the sympy formulas for the normalized and rescaled spherical bessel functions up to
+    """Compute the sympy formulas for the normalized and rescaled spherical bessel functions up to
     order n (excluded) and maximum frequency k (excluded).
 
-    Returns:
-        bess_basis: list
-            Bessel basis formulas taking in a single argument x.
-            Has length n where each element has length k. -> In total n*k many.
+    Returns:     bess_basis: list         Bessel basis formulas taking in a single argument x.
+    Has length n where each element has length k. -> In total n*k many.
     """
     zeros = Jn_zeros(n, k)
     normalizer = []
@@ -91,17 +82,10 @@ def bessel_basis(n: int, k: int) -> List[Any]:
 def sph_harm_prefactor(l_degree: int, m_order: int) -> float:
     """Computes the constant pre-factor for the spherical harmonic of degree l and order m.
 
-    Parameters
-    ----------
-        l_degree: int
-            Degree of the spherical harmonic. l >= 0
-        m_order: int
-            Order of the spherical harmonic. -l <= m <= l
+    Parameters ----------     l_degree: int         Degree of the spherical harmonic. l >= 0
+    m_order: int         Order of the spherical harmonic. -l <= m <= l
 
-    Returns
-    -------
-        factor: float
-
+    Returns -------     factor: float
     """
     # sqrt((2*l+1)/4*pi * (l-m)!/(l+m)! )
     return (
@@ -117,19 +101,13 @@ def associated_legendre_polynomials(
 ) -> List[List[Any]]:
     """Computes string formulas of the associated legendre polynomials up to degree L (excluded).
 
-    Parameters
-    ----------
-        L_maxdegree: int
-            Degree up to which to calculate the associated legendre polynomials (degree L is excluded).
-        zero_m_only: bool
-            If True only calculate the polynomials for the polynomials where m=0.
-        pos_m_only: bool
-            If True only calculate the polynomials for the polynomials where m>=0. Overwritten by zero_m_only.
+    Parameters ----------     L_maxdegree: int         Degree up to which to calculate the
+    associated legendre polynomials (degree L is excluded).     zero_m_only: bool         If True
+    only calculate the polynomials for the polynomials where m=0.     pos_m_only: bool         If
+    True only calculate the polynomials for the polynomials where m>=0. Overwritten by zero_m_only.
 
-    Returns
-    -------
-        polynomials: list
-            Contains the sympy functions of the polynomials (in total L many if zero_m_only is True else L^2 many).
+    Returns -------     polynomials: list         Contains the sympy functions of the polynomials
+    (in total L many if zero_m_only is True else L^2 many).
     """
     # calculations from http://web.cmb.usc.edu/people/alber/Software/tomominer/docs/cpp/group__legendre__polynomials.html
     z = sym.symbols("z")
@@ -189,31 +167,22 @@ def associated_legendre_polynomials(
 def real_sph_harm(
     L_maxdegree: int, use_theta: bool, use_phi: bool = True, zero_m_only: bool = True
 ) -> List[List[Any]]:
-    """
-    Computes formula strings of the real part of the spherical harmonics up to degree L (excluded).
-    Variables are either spherical coordinates phi and theta (or cartesian coordinates x,y,z) on the UNIT SPHERE.
+    """Computes formula strings of the real part of the spherical harmonics up to degree L
+    (excluded). Variables are either spherical coordinates phi and theta (or cartesian coordinates
+    x,y,z) on the UNIT SPHERE.
 
-    Parameters
-    ----------
-        L_maxdegree: int
-            Degree up to which to calculate the spherical harmonics (degree L is excluded).
-        use_theta: bool
-            - True: Expects the input of the formula strings to contain theta.
-            - False: Expects the input of the formula strings to contain z.
-        use_phi: bool
-            - True: Expects the input of the formula strings to contain phi.
-            - False: Expects the input of the formula strings to contain x and y.
-            Does nothing if zero_m_only is True
-        zero_m_only: bool
-            If True only calculate the harmonics where m=0.
+    Parameters ----------     L_maxdegree: int         Degree up to which to calculate the spherical
+    harmonics (degree L is excluded).     use_theta: bool         - True: Expects the input of the
+    formula strings to contain theta.         - False: Expects the input of the formula strings to
+    contain z.     use_phi: bool         - True: Expects the input of the formula strings to contain
+    phi.         - False: Expects the input of the formula strings to contain x and y.         Does
+    nothing if zero_m_only is True     zero_m_only: bool         If True only calculate the
+    harmonics where m=0.
 
-    Returns
-    -------
-        Y_lm_real: list
-            Computes formula strings of the real part of the spherical harmonics up
-            to degree L (where degree L is not excluded).
-            In total L^2 many sph harm exist up to degree L (excluded). However, if zero_m_only only is True then
-            the total count is reduced to be only L many.
+    Returns -------     Y_lm_real: list         Computes formula strings of the real part of the
+    spherical harmonics up         to degree L (where degree L is not excluded).         In total
+    L^2 many sph harm exist up to degree L (excluded). However, if zero_m_only only is True then
+    the total count is reduced to be only L many.
     """
     z = sym.symbols("z")
     P_l_m = associated_legendre_polynomials(L_maxdegree, zero_m_only)

@@ -7,7 +7,7 @@ from mattergen.diffusion.data.batched_data import collate_fn
 
 
 def test_collate_fn():
-    """Collate two pieces of data"""
+    """Collate two pieces of data."""
     data1 = {"a": torch.tensor([1, 2, 3, 4]), "b": torch.tensor([[1, 2, 3]]), "name": "data1"}
     data2 = {"a": torch.tensor([10, 11]), "b": torch.tensor([[10, 11, 12]]), "name": "data2"}
     collated = collate_fn([data1, data2], dense_field_names=["b"])

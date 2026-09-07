@@ -1,7 +1,5 @@
-"""
-Copyright 2020 The Google Research Authors.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
+"""Copyright 2020 The Google Research Authors. Copyright (c) Microsoft Corporation. Licensed under
+the MIT License.
 
 Based on code from https://github.com/yang-song/score_sde_pytorch
 which is released under Apache licence.
@@ -35,11 +33,9 @@ class ScoreFunction(Protocol):
     ) -> torch.Tensor:
         """Calculate score.
 
-        Args:
-            x: Samples at which the score should be calculated. Shape [num_nodes, ...]
-            t: Timestep for each sample. Shape [num_samples,]
-            batch_idx: Indicates which sample each row of x belongs to. Shape [num_nodes,]
-
+        Args:     x: Samples at which the score should be calculated. Shape [num_nodes, ...]     t:
+        Timestep for each sample. Shape [num_samples,]     batch_idx: Indicates which sample each
+        row of x belongs to. Shape [num_nodes,]
         """
         pass
 
@@ -55,7 +51,10 @@ class SDE(Corruption):
         batch_idx: B = None,
         batch: Optional[BatchedData] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Returns drift f and diffusion coefficient g such that dx = f * dt + g * sqrt(dt) * standard Gaussian"""
+        """Return drift ``f`` and diffusion coefficient ``g``.
+
+        The SDE update is ``dx = f * dt + g * sqrt(dt) * standard Gaussian``.
+        """
         pass  # drift: (nodes_per_sample * batch_size, num_features), diffusion (batch_size,)
 
     @abc.abstractmethod
@@ -67,7 +66,9 @@ class SDE(Corruption):
         batch: Optional[BatchedData] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Returns mean and standard deviation of the marginal distribution of the SDE, $p_t(x)$."""
-        pass  # mean: (nodes_per_sample * batch_size, num_features), std: (nodes_per_sample * batch_size, 1)
+        # mean: (nodes_per_sample * batch_size, num_features)
+        # std: (nodes_per_sample * batch_size, 1)
+        pass
 
     @abc.abstractmethod
     def marginal_prob_from_s(
@@ -78,7 +79,8 @@ class SDE(Corruption):
         batch_idx: B = None,
         batch: Optional[BatchedData] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Returns mean and standard deviation of the marginal distribution of the SDE, $p_t(x|x_s)$."""
+        """Returns mean and standard deviation of the marginal distribution of the SDE,
+        $p_t(x|x_s)$."""
         pass
 
     def mean_coeff_and_std(
@@ -101,8 +103,8 @@ class SDE(Corruption):
         batch: Optional[BatchedData] = None,
     ) -> torch.Tensor:
         """Sample marginal for x(t) given x(0).
-        Returns:
-          sampled x(t)
+
+        Returns:   sampled x(t)
         """
         mean, std = self.marginal_prob(x=x, t=t, batch_idx=batch_idx, batch=batch)
         z = torch.randn_like(x)
@@ -110,24 +112,19 @@ class SDE(Corruption):
         return mean + std * z
 
     def sample_from_s(
-        self, 
+        self,
         x: torch.Tensor,
-        t: torch.Tensor, 
+        t: torch.Tensor,
         s: torch.Tensor,
         batch_idx: B = None,
         batch: Optional[BatchedData] = None,
     ) -> torch.Tensor:
         """Sample marginal for x(t) given x(s) with s<t.
-        Args:
-          x: samples at time s
-          t: time t
-          s: time s, must be less than t
-        Returns:
-          sampled x(t)
+
+        Args:   x: samples at time s   t: time t   s: time s, must be less than t Returns:   sampled
+        x(t)
         """
-        mean, std = self.marginal_prob_from_s(
-            x=x, t=t, s=s, batch_idx=batch_idx, batch=batch
-        )
+        mean, std = self.marginal_prob_from_s(x=x, t=t, s=s, batch_idx=batch_idx, batch=batch)
         z = torch.randn_like(x, dtype=torch.float32)
 
         return mean + std * z
@@ -146,7 +143,10 @@ class BaseVPSDE(SDE):
 
     @abc.abstractmethod
     def _marginal_mean_coeff(self, t: torch.Tensor) -> torch.Tensor:
-        """This should be implemented to compute exp(-0.5 * int_0^t beta(s) ds). See equation (29) of Song et al."""
+        """This should be implemented to compute exp(-0.5 * int_0^t beta(s) ds).
+
+        See equation (29) of Song et al.
+        """
         ...
 
     @property
@@ -173,7 +173,8 @@ class BaseVPSDE(SDE):
         batch_idx: B = None,
         batch: Optional[BatchedData] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Returns mean and standard deviation of the marginal distribution of the SDE, $p_t(x|x_s)$."""
+        """Returns mean and standard deviation of the marginal distribution of the SDE,
+        $p_t(x|x_s)$."""
         # This is the same as marginal_prob, but with a different time t.
         # We assume that s < t.
         assert torch.all(s < t), "s must be less than t"
@@ -246,9 +247,7 @@ class VESDE(SDE):
 
         The marginal standard deviation grows exponentially from sigma_min to sigma_max.
 
-        Args:
-          sigma_min: smallest sigma.
-          sigma_max: largest sigma.
+        Args:   sigma_min: smallest sigma.   sigma_max: largest sigma.
         """
         super().__init__()
         self.sigma_min = sigma_min
@@ -287,7 +286,7 @@ class VESDE(SDE):
         std = maybe_expand(self.sigma_min * (self.sigma_max / self.sigma_min) ** t, batch_idx, x)
         mean = x
         return mean, std
-    
+
     def marginal_prob_from_s(
         self,
         x: torch.Tensor,
@@ -296,11 +295,18 @@ class VESDE(SDE):
         batch_idx: B = None,
         batch: Optional[BatchedData] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Returns mean and standard deviation of the marginal distribution of the SDE, $p_t(x|x_s)$."""
+        """Returns mean and standard deviation of the marginal distribution of the SDE,
+        $p_t(x|x_s)$."""
         # This is the same as marginal_prob, but with a different time t.
         # We assume that s < t.
         assert torch.all(s < t), "s must be less than t"
-        std = maybe_expand(self.sigma_min * (self.sigma_max / self.sigma_min) ** s *( (self.sigma_max / self.sigma_min) ** (t-s) - 1), batch_idx, x)
+        std = maybe_expand(
+            self.sigma_min
+            * (self.sigma_max / self.sigma_min) ** s
+            * np.sqrt((self.sigma_max / self.sigma_min) ** (2 * (t - s)) - 1),
+            batch_idx,
+            x,
+        )
         mean = x
         return mean, std
 
@@ -331,8 +337,12 @@ class VESDE(SDE):
 
 
 def check_score_fn_defined(score_fn: Optional[Callable], fn_name_given_score: str):
-    """Check that a reverse SDE has a score_fn. Give a useful error message if not."""
+    """Check that a reverse SDE has a score_fn.
+
+    Give a useful error message if not.
+    """
     if score_fn is None:
         raise ValueError(
-            f"This reverse SDE does not know its score_fn. You must either a) pass a score_fn when you construct this reverse SDE or b) call {fn_name_given_score} instead."
+            "This reverse SDE does not know its score_fn. You must either pass a score_fn "
+            f"when you construct this reverse SDE or call {fn_name_given_score} instead."
         )

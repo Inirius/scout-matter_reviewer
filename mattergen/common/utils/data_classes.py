@@ -27,18 +27,15 @@ PRETRAINED_MODEL_NAME = Literal[
 
 
 def find_local_files(local_path: str, glob: str = "*", relative: bool = False) -> list[str]:
-    """
-    Find files in the given directory or blob storage path, and return the list of files
-    matching the given glob pattern. If relative is True, the returned paths are relative
-    to the given directory or blob storage path.
+    """Find files in the given directory or blob storage path, and return the list of files matching
+    the given glob pattern. If relative is True, the returned paths are relative to the given
+    directory or blob storage path.
 
-    Args:
-        blob_or_local_path: path to the directory or blob storage path
-        glob: glob pattern to match. By default, all files are returned.
-        relative: whether to return relative paths. By default, absolute paths are returned.
+    Args:     blob_or_local_path: path to the directory or blob storage path     glob: glob pattern
+    to match. By default, all files are returned.     relative: whether to return relative paths. By
+    default, absolute paths are returned.
 
-    Returns:
-        list of paths to files matching the given glob pattern.
+    Returns:     list of paths to files matching the given glob pattern.
     """
     # list all files here, filtering happens in the `fnmatch.filter` step
     local_files = [x for x in Path(local_path).rglob("*") if os.path.isfile(x)]
@@ -61,10 +58,8 @@ class MatterGenCheckpointInfo:
         repository_name: str = "microsoft/mattergen",
         config_overrides: list[str] = None,
     ):
-        """
-        Instantiate a MatterGenCheckpointInfo object from a model hosted on the Hugging Face Hub.
-
-        """
+        """Instantiate a MatterGenCheckpointInfo object from a model hosted on the Hugging Face
+        Hub."""
         hf_hub_download(
             repo_id=repository_name, filename=f"checkpoints/{model_name}/checkpoints/last.ckpt"
         )
@@ -99,14 +94,12 @@ class MatterGenCheckpointInfo:
 
     @cached_property
     def checkpoint_path(self) -> str:
-        """
-        Search for checkpoint files in the given directory, and return the path
-        to the checkpoint with the given epoch number or the best checkpoint if load_epoch is "best".
-        "Best" is selected via the lowest validation loss, which is stored in the checkpoint filename.
-        Assumes that the checkpoint filenames are of the form "epoch=1-val_loss=0.1234.ckpt" or 'last.ckpt'.
+        """Search for checkpoint files in the given directory, and return the path to the checkpoint
+        with the given epoch number or the best checkpoint if load_epoch is "best". "Best" is
+        selected via the lowest validation loss, which is stored in the checkpoint filename. Assumes
+        that the checkpoint filenames are of the form "epoch=1-val_loss=0.1234.ckpt" or 'last.ckpt'.
 
-        Returns:
-            Path to the checkpoint file to load.
+        Returns:     Path to the checkpoint file to load.
         """
         # look for checkpoints recursively in the given directory or blob storage path.
         # I.e., if the path is '/path/', we will find .ckpt files in '/path/version_0/checkpoints'

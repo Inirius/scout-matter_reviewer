@@ -45,16 +45,12 @@ def lmdb_read_metadata(db_path: str | os.PathLike, key: str, default=None) -> An
 
 
 def lmdb_put(txn: lmdb.Transaction, key: str, value: Any) -> bool:
-    """
-    Stores a record in a database.
+    """Stores a record in a database.
 
-    Args:
-        txn: LMDB transaction (use env.begin())
-        key: key of the data to be stored.
-        value: value of the data to be stored (needs to be picklable).
+    Args:     txn: LMDB transaction (use env.begin())     key: key of the data to be stored.
+    value: value of the data to be stored (needs to be picklable).
 
-    Returns:
-        True if it was written.
+    Returns:     True if it was written.
     """
     return txn.put(
         key.encode("ascii"),
@@ -69,18 +65,13 @@ class LmdbNotFoundError(Exception):
 def lmdb_get(
     txn: lmdb.Transaction, key: str, default: Any = None, raise_if_missing: bool = True
 ) -> Any:
-    """
-    Fetches a record from a database.
+    """Fetches a record from a database.
 
-    Args:
-        txn: LMDB transaction (use env.begin())
-        key: key of the data to be fetched.
-        default: default value to be used if the record doesn't exist.
-        raise_if_missing: raise LmdbNotFoundError if the record doesn't exist
-            and no default value was given.
+    Args:     txn: LMDB transaction (use env.begin())     key: key of the data to be fetched.
+    default: default value to be used if the record doesn't exist.     raise_if_missing: raise
+    LmdbNotFoundError if the record doesn't exist         and no default value was given.
 
-    Returns:
-        the value of the retrieved data.
+    Returns:     the value of the retrieved data.
     """
     value = txn.get(key.encode("ascii"))
     if value is None:
@@ -93,14 +84,11 @@ def lmdb_get(
 
 
 def get_length(env: lmdb.Environment) -> int:
-    """
-    Returns the value of the special record "length".
+    """Returns the value of the special record "length".
 
-    Args:
-        env: LMDB environment (use lmdb.open())
+    Args:     env: LMDB environment (use lmdb.open())
 
-    Returns:
-        the value of the "length" record or zero if the record does not exist.
+    Returns:     the value of the "length" record or zero if the record does not exist.
     """
     with env.begin() as txn:
         return lmdb_get(txn, "length", default=0)
@@ -111,24 +99,19 @@ def list_db_paths(data_dir: str | os.PathLike) -> list[Path]:
 
 
 def get_envs(data_dir: str | os.PathLike) -> Iterator[lmdb.Environment]:
-    """
-    Creates LMDB environments stored in a directory.
+    """Creates LMDB environments stored in a directory.
 
-    Args:
-        data_dir: directory where the .lmdb files are stored.
+    Args:     data_dir: directory where the .lmdb files are stored.
 
-    Returns:
-        an iterator over LMDB environments.
+    Returns:     an iterator over LMDB environments.
     """
     for lmdb_path in list_db_paths(data_dir):
         yield lmdb_open(lmdb_path, readonly=True)
 
 
 def get_indices(cum_lengths: Sequence[int], index: int) -> tuple[int, int]:
-    """
-    Given a sequence of cumulative sequence lengths and a linear index over a sequence
-    of variable length databases, returns a pair of (db_index, el_index).
-    """
+    """Given a sequence of cumulative sequence lengths and a linear index over a sequence of
+    variable length databases, returns a pair of (db_index, el_index)."""
     db_index = bisect.bisect(cum_lengths, index)
     el_index = index - cum_lengths[db_index - 1] if db_index > 0 else index
     return (db_index, el_index)
@@ -137,7 +120,7 @@ def get_indices(cum_lengths: Sequence[int], index: int) -> tuple[int, int]:
 class Metadata(Generic[DataPoint]):
     @abstractmethod
     def __init__(self, value=None):
-        """Initialize with an optional value"""
+        """Initialize with an optional value."""
 
     @classmethod
     def from_value(cls, value):
@@ -146,7 +129,7 @@ class Metadata(Generic[DataPoint]):
     @property
     @abstractmethod
     def name(self):
-        """The name of the metadata"""
+        """The name of the metadata."""
 
     @property
     def is_frozen(self):
@@ -154,15 +137,15 @@ class Metadata(Generic[DataPoint]):
 
     @property
     def value(self):
-        """The value of the metadata"""
+        """The value of the metadata."""
         return self._value
 
     def check(self, num_points: int):
-        """Check consistency of the metadata"""
+        """Check consistency of the metadata."""
         pass
 
     def update(self, index: int, sample: DataPoint):
-        """Update the metadata with the new datapoint"""
+        """Update the metadata with the new datapoint."""
         pass
 
 
@@ -173,19 +156,15 @@ def write_data_points_to_lmdb(
     pid: int | None = None,
     metadata: list[Metadata] | None = None,
 ) -> int:
-    """
-    Creates or appends to a database of data points keyed by the string representation of linear
+    """Creates or appends to a database of data points keyed by the string representation of linear
     index over the data points.
 
-    Args:
-        start_index: start index for this group of samples. Should match the length of the existing database.
-        db_path: path to store the database.
-        samples: iterable over the data points to be stored.
-        metadata: (optional) list of metadata objects implementing
-            `check` and `update` methods.
+    Args:     start_index: start index for this group of samples. Should match the length of the
+    existing database.     db_path: path to store the database.     samples: iterable over the data
+    points to be stored.     metadata: (optional) list of metadata objects implementing
+    `check` and `update` methods.
 
-    Returns:
-        the number of samples stored in the database.
+    Returns:     the number of samples stored in the database.
     """
     with lmdb_open(db_path) as db:
         start_index = get_length(db)
@@ -235,7 +214,7 @@ def check_and_init_metadata(
                     print(f"stored value for {meta.name} is {stored_value}")
                 assert (
                     meta.value == stored_value
-                ), f"Expected metadata {meta.name} to have value {meta.value}, but got {stored_value} in database {db}."
+                ), f"Expected metadata {meta.name} to have value {meta.value}, but got {stored_value} in database {db}."  # noqa: E501
             else:
                 if verbose:
                     print(f"checking {meta.name}")
@@ -256,18 +235,14 @@ def check_and_put_metadata(db: lmdb.Environment, metadata: list[Metadata], lengt
 
 
 def ensure_metadata(db_path: str, metadata: list[Metadata]) -> int:
-    """Checks the metadata values stored in the database and compute missing ones to
-    ensure that all metadata are present.
+    """Checks the metadata values stored in the database and compute missing ones to ensure that all
+    metadata are present.
 
-    Args:
-        db_path: path to the database .lmdb file.
-        metadata: list of metadata.
+    Args:     db_path: path to the database .lmdb file.     metadata: list of metadata.
 
-    Returns:
-        the length of the database.
+    Returns:     the length of the database.
     """
     with lmdb_open(db_path) as db:
-
         length = get_length(db)
 
         metadata = check_and_init_metadata(db, metadata, length, return_all=False)  # only new ones

@@ -28,8 +28,8 @@ class MetricsStructureSummary:
         original_structure: Structure | None = None,
         energy_correction_scheme: Compatibility = MaterialsProject2020Compatibility(),
     ) -> "MetricsStructureSummary":
-        """
-        Instantiates a MetricsStructureSummary from a JobStoreTaskDoc.
+        """Instantiates a MetricsStructureSummary from a JobStoreTaskDoc.
+
         Useful for computing DFT-based metrics (or any compatible MLFF).
         """
         vasprun_like = VasprunLike(structure=structure, energy=energy)
@@ -50,8 +50,9 @@ class MetricsStructureSummary:
         structure: Structure,
         properties: dict[str, float] | None = None,
     ) -> "MetricsStructureSummary":
-        """
-        Instantiates a MetricsStructureSummary from a Structure with an energy value of np.nan and initial_structure=None.
+        """Instantiates a MetricsStructureSummary from a Structure with an energy value of np.nan
+        and initial_structure=None.
+
         Useful for computing structure-based metrics.
         """
         return MetricsStructureSummary(

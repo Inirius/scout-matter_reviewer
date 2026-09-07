@@ -15,8 +15,7 @@ from mattergen.common.utils.globals import MAX_ATOMIC_NUM
 
 
 class Transform(Protocol):
-    def __call__(self, sample: ChemGraph) -> ChemGraph:
-        ...
+    def __call__(self, sample: ChemGraph) -> ChemGraph: ...
 
 
 def symmetrize_lattice(sample: ChemGraph) -> ChemGraph:

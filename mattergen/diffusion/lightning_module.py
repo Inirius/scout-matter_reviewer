@@ -3,10 +3,8 @@
 
 from __future__ import annotations
 
-from collections import deque
 from typing import Any, Dict, Generic, Optional, Protocol, Sequence, TypeVar, Union
 
-import numpy as np
 import pytorch_lightning as pl
 import torch
 from hydra.errors import InstantiationException
@@ -14,7 +12,6 @@ from hydra.utils import instantiate
 from omegaconf import DictConfig
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 from torch.optim import AdamW, Optimizer
-from tqdm import tqdm
 
 from mattergen.diffusion.config import Config
 from mattergen.diffusion.data.batched_data import BatchedData
@@ -52,10 +49,8 @@ class DiffusionLightningModule(pl.LightningModule, Generic[T]):
     ):
         """_summary_
 
-        Args:
-            diffusion_module: The diffusion module to use.
-            optimizer_partial: Used to instantiate optimizer.
-            scheduler_partials: used to instantiate learning rate schedulers
+        Args:     diffusion_module: The diffusion module to use.     optimizer_partial: Used to
+        instantiate optimizer.     scheduler_partials: used to instantiate learning rate schedulers
         """
         super().__init__()
         scheduler_partials = scheduler_partials or []
@@ -75,8 +70,11 @@ class DiffusionLightningModule(pl.LightningModule, Generic[T]):
         map_location: Optional[str] = None,
         **kwargs,
     ) -> DiffusionLightningModule:
-        """Load model from checkpoint. kwargs are passed to hydra's instantiate and can override
-        arguments from the checkpoint config."""
+        """Load model from checkpoint.
+
+        kwargs are passed to hydra's instantiate and can override arguments from the checkpoint
+        config.
+        """
         checkpoint = torch.load(checkpoint_path, map_location=map_location)
 
         # The config should have been saved in the checkpoint by AddConfigCallback in run.py
@@ -86,7 +84,7 @@ class DiffusionLightningModule(pl.LightningModule, Generic[T]):
         except InstantiationException as e:
             print("Could not instantiate model from the checkpoint.")
             print(
-                "If the error is due to an unexpected argument because the checkpoint and the code have diverged, try using load_from_checkpoint_and_config instead."
+                "If the error is due to an unexpected argument because the checkpoint and the code have diverged, try using load_from_checkpoint_and_config instead."  # noqa: E501
             )
             raise e
         assert isinstance(lightning_module, cls)
@@ -103,9 +101,12 @@ class DiffusionLightningModule(pl.LightningModule, Generic[T]):
         map_location: Optional[str] = None,
         strict: bool = True,
     ) -> tuple[DiffusionLightningModule, torch.nn.modules.module._IncompatibleKeys]:
-        """Load model from checkpoint, but instead of using the config stored in the checkpoint,
-        use the config passed in as an argument. This is useful when, e.g., an unused argument was
-        removed in the code but is still present in the checkpoint config."""
+        """Load model from checkpoint, but instead of using the config stored in the checkpoint, use
+        the config passed in as an argument.
+
+        This is useful when, e.g., an unused argument was removed in the code but is still present
+        in the checkpoint config.
+        """
         checkpoint = torch.load(checkpoint_path, map_location=map_location)
 
         lightning_module = instantiate(config)

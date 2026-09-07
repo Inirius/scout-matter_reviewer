@@ -20,20 +20,14 @@ def convert_model_out_to_score(
     model_out: torch.Tensor,
     batch_idx: torch.LongTensor,
     t: torch.Tensor,
-    batch: Any
+    batch: Any,
 ) -> torch.Tensor:
-    """
-    Convert a model output to a score, according to the specified model_target.
+    """Convert a model output to a score, according to the specified model_target.
 
-    model_target: says what the model predicts.
-        For example, in RFDiffusion the model predicts clean coordinates;
-        in EDM the model predicts the raw noise.
-    sde: corruption process
-    model_out: model output
-    batch_idx: indicates which sample each row of model_out belongs to
-    noisy_x: noisy data
-    t: diffusion timestep
-    batch: noisy batch, ignored except by strange SDEs
+    model_target: says what the model predicts.     For example, in RFDiffusion the model predicts
+    clean coordinates;     in EDM the model predicts the raw noise. sde: corruption process
+    model_out: model output batch_idx: indicates which sample each row of model_out belongs to
+    noisy_x: noisy data t: diffusion timestep batch: noisy batch, ignored except by strange SDEs
     """
     _, std = sde.marginal_prob(
         x=torch.ones_like(model_out),
@@ -41,7 +35,7 @@ def convert_model_out_to_score(
         batch_idx=batch_idx,
         batch=batch,
     )
-    # Note the slack tolerances in test_model_utils.py: the choice of ModelTarget does make a difference.
+    # Note the slack tolerances in test_model_utils.py: the choice of ModelTarget does make a difference.  # noqa: E501
     if model_target == ModelTarget.score_times_std:
         return model_out / std
     elif model_target == ModelTarget.logits:
@@ -52,9 +46,7 @@ def convert_model_out_to_score(
 
 
 class NoiseLevelEncoding(torch.nn.Module):
-    """
-    From: https://pytorch.org/tutorials/beginner/transformer_tutorial.html
-    """
+    """From: https://pytorch.org/tutorials/beginner/transformer_tutorial.html."""
 
     def __init__(self, d_model: int, dropout: float = 0.0):
         super().__init__()
@@ -64,10 +56,7 @@ class NoiseLevelEncoding(torch.nn.Module):
         self.register_buffer("div_term", div_term)
 
     def forward(self, t: torch.Tensor) -> torch.Tensor:
-        """
-        Args:
-            t: Tensor, shape [batch_size]
-        """
+        """Args: t: Tensor, shape [batch_size]"""
         x = torch.zeros((t.shape[0], self.d_model), device=self.div_term.device)
         x[:, 0::2] = torch.sin(t[:, None] * self.div_term[None])
         x[:, 1::2] = torch.cos(t[:, None] * self.div_term[None])

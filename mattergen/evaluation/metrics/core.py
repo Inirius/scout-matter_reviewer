@@ -32,9 +32,10 @@ class BaseMetricsCapability:
 
     @cached_property
     def dataset(self) -> ReferenceDataset:
-        """
-        Returns a ReferenceDataset. While not all capabilities require energies,
-        the entry IDs are useful to keep track of entry IDs.
+        """Returns a ReferenceDataset.
+
+        While not all capabilities require energies, the entry IDs are useful to keep track of entry
+        IDs.
         """
         data_entries = [deepcopy(s.entry) for s in self._structure_summaries]
         for i, e in enumerate(data_entries):
@@ -69,7 +70,8 @@ class BaseAggregateMetric(BaseMetric):
     """Abstract base class for aggregate metrics."""
 
     aggregation_method: Literal[
-        "mean", "nanmean",
+        "mean",
+        "nanmean",
     ] = "not implemented"
 
     @property
