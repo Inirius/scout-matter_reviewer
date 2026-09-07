@@ -1,8 +1,7 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Code derived from the OCP codebase:
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Code
+derived from the OCP codebase:
 https://github.com/Open-Catalyst-Project/ocp
 """
 
@@ -55,11 +54,13 @@ def get_pbc_distances(
 
     return out
 
+
 def safe_int_max(tensor, max_value):
     val = tensor.max().item()
-    if val == float('inf') or val != val:  # also catches NaN
+    if val == float("inf") or val != val:  # also catches NaN
         val = max_value
     return min(int(val), max_value)
+
 
 def radius_graph_pbc(
     pos: torch.Tensor,
@@ -70,37 +71,37 @@ def radius_graph_pbc(
     max_num_neighbors_threshold: int,
     max_cell_images_per_dim: int = sys.maxsize,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Function computing the graph in periodic boundary conditions on a (batched) set of
-    positions and cells.
+    """Function computing the graph in periodic boundary conditions on a (batched) set of positions
+    and cells.
 
     This function is copied from
     https://github.com/Open-Catalyst-Project/ocp/blob/main/ocpmodels/common/utils.py,
     commit 480eb9279ec4a5885981f1ee588c99dcb38838b5
 
     Args:
-        pos (LongTensor): Atomic positions in cartesian coordinates
-            :obj:`[n, 3]`
-        pbc (BoolTensor): indicates periodic boundary conditions per structure.
-            :obj:`[n_structures, 3]`
-        natoms (IntTensor): number of atoms per structure. Has shape
-            :obj:`[n_structures]`
-        cell (Tensor): atomic cell. Has shape
-            :obj:`[n_structures, 3, 3]`
-        radius (float): cutoff radius distance
-        max_num_neighbors_threshold (int): Maximum number of neighbours to consider.
+    pos (LongTensor): Atomic positions in cartesian coordinates
+    :obj:`[n, 3]`
+    pbc (BoolTensor): indicates periodic boundary conditions per structure.
+    :obj:`[n_structures, 3]`
+    natoms (IntTensor): number of atoms per structure. Has shape
+    :obj:`[n_structures]`
+    cell (Tensor): atomic cell. Has shape
+    :obj:`[n_structures, 3, 3]`
+    radius (float): cutoff radius distance
+    max_num_neighbors_threshold (int): Maximum number of neighbours to consider.
 
     Returns:
-        edge_index (IntTensor): index of atoms in edges. Has shape
-            :obj:`[n_edges, 2]`
-        cell_offsets (IntTensor): cell displacement w.r.t. their original position of atoms in edges. Has shape
-            :obj:`[n_edges, 3, 3]`
-        num_neighbors_image (IntTensor): Number of neighbours per cell image.
-            :obj:`[n_structures]`
-        offsets (LongTensor): cartesian displacement w.r.t. their original position of atoms in edges. Has shape
-            :obj:`[n_edges, 3, 3]`
-        atom_distance (LongTensor): edge length. Has shape
-            :obj:`[n_edges]`
-    """
+    edge_index (IntTensor): index of atoms in edges. Has shape
+    :obj:`[n_edges, 2]`
+    cell_offsets (IntTensor): cell displacement w.r.t. their original position of atoms in edges. Has shape
+    :obj:`[n_edges, 3, 3]`
+    num_neighbors_image (IntTensor): Number of neighbours per cell image.
+    :obj:`[n_structures]`
+    offsets (LongTensor): cartesian displacement w.r.t. their original position of atoms in edges. Has shape
+    :obj:`[n_edges, 3, 3]`
+    atom_distance (LongTensor): edge length. Has shape
+    :obj:`[n_edges]`
+    """  # noqa: E501
     device = pos.device
     batch_size = len(natoms)
     pbc_ = [False, False, False]
@@ -114,7 +115,7 @@ def radius_graph_pbc(
                 pbc_[i] = True
             else:
                 raise RuntimeError(
-                    "Different structures in the batch have different PBC configurations. This is not currently supported."
+                    "Different structures in the batch have different PBC configurations. This is not currently supported."  # noqa: E501
                 )
 
     natoms_squared = (natoms**2).long()
@@ -125,11 +126,11 @@ def radius_graph_pbc(
     index_offset_expand = torch.repeat_interleave(index_offset, natoms_squared)
     natoms_expand = torch.repeat_interleave(natoms, natoms_squared)
 
-    # Compute a tensor containing sequences of numbers that range from 0 to num_atoms_per_image_squared for each image
-    # that is used to compute indices for the pairs of atoms. This is a very convoluted way to implement
+    # Compute a tensor containing sequences of numbers that range from 0 to num_atoms_per_image_squared for each image  # noqa: E501
+    # that is used to compute indices for the pairs of atoms. This is a very convoluted way to implement  # noqa: E501
     # the following (but 10x faster since it removes the for loop)
     # for batch_idx in range(batch_size):
-    #    batch_count = torch.cat([batch_count, torch.arange(num_atoms_per_image_squared[batch_idx], device=device)], dim=0)
+    #    batch_count = torch.cat([batch_count, torch.arange(num_atoms_per_image_squared[batch_idx], device=device)], dim=0)  # noqa: E501
     num_atom_pairs = torch.sum(natoms_squared)
     index_squared_offset = torch.cumsum(natoms_squared, dim=0) - natoms_squared
     index_squared_offset = torch.repeat_interleave(index_squared_offset, natoms_squared)
@@ -156,12 +157,14 @@ def radius_graph_pbc(
     cell_vol = torch.sum(cell[:, 0] * cross_a2a3, dim=-1, keepdim=True)
 
     # Replace any NaN values in cell_vol with inf
-    cell_vol = torch.where(torch.isnan(cell_vol), torch.full_like(cell_vol, float('inf')), cell_vol)
+    cell_vol = torch.where(torch.isnan(cell_vol), torch.full_like(cell_vol, float("inf")), cell_vol)
 
     if pbc_[0]:
         inv_min_dist_a1 = torch.norm(cross_a2a3 / cell_vol, p=2, dim=-1)
         # Replace any NaN values in inv_min_dist_a2 with 0
-        inv_min_dist_a1 = torch.where(torch.isnan(inv_min_dist_a1), torch.zeros_like(inv_min_dist_a1), inv_min_dist_a1)
+        inv_min_dist_a1 = torch.where(
+            torch.isnan(inv_min_dist_a1), torch.zeros_like(inv_min_dist_a1), inv_min_dist_a1
+        )
         rep_a1 = torch.ceil(radius * inv_min_dist_a1)
     else:
         rep_a1 = cell.new_zeros(1)
@@ -170,7 +173,9 @@ def radius_graph_pbc(
         cross_a3a1 = torch.cross(cell[:, 2], cell[:, 0], dim=-1)
         inv_min_dist_a2 = torch.norm(cross_a3a1 / cell_vol, p=2, dim=-1)
         # Replace any NaN values in inv_min_dist_a2 with 0
-        inv_min_dist_a2 = torch.where(torch.isnan(inv_min_dist_a2), torch.zeros_like(inv_min_dist_a2), inv_min_dist_a2)
+        inv_min_dist_a2 = torch.where(
+            torch.isnan(inv_min_dist_a2), torch.zeros_like(inv_min_dist_a2), inv_min_dist_a2
+        )
         rep_a2 = torch.ceil(radius * inv_min_dist_a2)
     else:
         rep_a2 = cell.new_zeros(1)
@@ -179,7 +184,9 @@ def radius_graph_pbc(
         cross_a1a2 = torch.cross(cell[:, 0], cell[:, 1], dim=-1)
         inv_min_dist_a3 = torch.norm(cross_a1a2 / cell_vol, p=2, dim=-1)
         # Replace any NaN values in inv_min_dist_a2 with 0
-        inv_min_dist_a3 = torch.where(torch.isnan(inv_min_dist_a3), torch.zeros_like(inv_min_dist_a3), inv_min_dist_a3)
+        inv_min_dist_a3 = torch.where(
+            torch.isnan(inv_min_dist_a3), torch.zeros_like(inv_min_dist_a3), inv_min_dist_a3
+        )
         rep_a3 = torch.ceil(radius * inv_min_dist_a3)
     else:
         rep_a3 = cell.new_zeros(1)
@@ -277,9 +284,9 @@ def get_max_neighbors_mask(
     atom_distance_squared: torch.Tensor,
     max_num_neighbors_threshold: int,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """
-    Give a mask that filters out edges so that each atom has at most
+    """Give a mask that filters out edges so that each atom has at most
     `max_num_neighbors_threshold` neighbors.
+
     Assumes that `index` is sorted.
     """
     device = natoms.device

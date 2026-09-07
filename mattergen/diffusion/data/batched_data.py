@@ -22,11 +22,12 @@ class BatchedData(Protocol):
         """Return a copy of self with some fields replaced with new values."""
 
     def get_batch_idx(self, field_name: str) -> torch.LongTensor | None:
-        """Get the batch index (i.e., which row belongs to which sample) for a given field.
-        For 'dense' type data, where every sample has the same shape and the first dimension is the
-        batch dimension, this method should return None. Mathematically,
-        returning None will be treated the same as returning a tensor [0, 1, 2, ..., batch_size - 1]
-        but I expect memory access in other functions to be more efficient if you return None.
+        """Get the batch index (i.e., which row belongs to which sample) for a given field. For
+        'dense' type data, where every sample has the same shape and the first dimension is the.
+
+        batch dimension, this method should return None. Mathematically, returning None will be
+        treated the same as returning a tensor [0, 1, 2, ..., batch_size - 1] but I expect memory
+        access in other functions to be more efficient if you return None.
         """
 
     def get_batch_size(self) -> int:
@@ -88,7 +89,7 @@ class SimpleBatchedData(BatchedData):
         return next(v.device for v in self.data.values())
 
     def to(self, device) -> "SimpleBatchedData":
-        """Modify self in-place to move all tensors to the given device, and return self"""
+        """Modify self in-place to move all tensors to the given device, and return self."""
         if isinstance(self.data, dict):
             for k in self.data.keys():
                 if isinstance(self.data[k], torch.Tensor):
@@ -111,10 +112,11 @@ class SimpleBatchedData(BatchedData):
         )
 
     def to_data_list(self) -> list[dict[str, torch.Tensor]]:
-        """Converts this instance to a list of dictionaries, each of which corresponds to a single datapoint in
-        `batched_data`. The keys of the dictionaries match the keys of `batched_data`.
-        """
+        """Converts this instance to a list of dictionaries, each of which corresponds to a single
+        datapoint in `batched_data`.
 
+        The keys of the dictionaries match the keys of `batched_data`.
+        """
         batch_size = self.get_batch_size()
         if batch_size == 0:
             return []
@@ -133,13 +135,11 @@ class SimpleBatchedData(BatchedData):
 def collate_fn(
     states: list[dict[str, Any]], dense_field_names: Sequence[str] = ()
 ) -> SimpleBatchedData:
-    """
-    Combine a list of samples into a SimpleBatchedData object.
+    """Combine a list of samples into a SimpleBatchedData object.
 
-    The association between the index in `states[i][k]` and a row in the `batched_data[k]` is
-    stored in `batched_data.batch_idx[k]`. If the `k` appears in
-    `dense_field_names`, `batched_data.batch_idx[k]` is `None` and the data is
-    simply stacked along the first dimension.
+    The association between the index in `states[i][k]` and a row in the `batched_data[k]` is stored
+    in `batched_data.batch_idx[k]`. If the `k` appears in `dense_field_names`,
+    `batched_data.batch_idx[k]` is `None` and the data is simply stacked along the first dimension.
 
     Non-tensor values are put into lists.
     """
@@ -152,7 +152,7 @@ def collate_fn(
             if k in dense_field_names:
                 if any(x[k].shape[0] != 1 for x in states):
                     raise ValueError(
-                        f"First dimension should be batch dimension. Instead key {k} has shape {states[0][k].shape}"
+                        f"First dimension should be batch dimension. Instead key {k} has shape {states[0][k].shape}"  # noqa: E501
                     )
                 batch_idx[k] = None
             else:

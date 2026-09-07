@@ -15,9 +15,8 @@ from mattergen.evaluation.utils.utils import generate_chemsys_dict, generate_red
 
 
 class ReferenceDataset(Iterable[ComputedStructureEntry]):
-    """Immutable collection of reference entries with the ability to cache
-    some computation (e.g., space groups).
-    """
+    """Immutable collection of reference entries with the ability to cache some computation (e.g.,
+    space groups)."""
 
     def __init__(
         self,
@@ -48,15 +47,20 @@ class ReferenceDataset(Iterable[ComputedStructureEntry]):
 
     @cached_property
     def space_group_numbers(self) -> dict[str, float]:
-        return np.array([DefaultSpaceGroupAnalyzer(e.structure).get_space_group_number() for e in self])
+        return np.array(
+            [DefaultSpaceGroupAnalyzer(e.structure).get_space_group_number() for e in self]
+        )
 
     @cached_property
     def disordered_space_group_numbers(self) -> dict[str, float]:
-        return np.array([DisorderedSpaceGroupAnalyzer(e.structure).get_space_group_number() for e in self])
+        return np.array(
+            [DisorderedSpaceGroupAnalyzer(e.structure).get_space_group_number() for e in self]
+        )
 
     @cached_property
     def lattice_angles(self) -> np.typing.NDArray[np.float64]:
-        """Returns a list containing all the lattice angles in the dataset (shape=(Ncrystals*3, ))."""
+        """Returns a list containing all the lattice angles in the dataset (shape=(Ncrystals*3,
+        ))."""
         return np.concatenate([e.structure.lattice.angles for e in self])
 
     @cached_property
@@ -71,7 +75,10 @@ class ReferenceDataset(Iterable[ComputedStructureEntry]):
 
 
 class ReferenceDatasetImpl(Iterable[ComputedStructureEntry]):
-    """The implementation of ReferenceDataset. Direct access to entries is not allowed."""
+    """The implementation of ReferenceDataset.
+
+    Direct access to entries is not allowed.
+    """
 
     def __init__(self, entries: Iterable[ComputedStructureEntry]):
         self._entries = tuple(entries)
@@ -84,12 +91,16 @@ class ReferenceDatasetImpl(Iterable[ComputedStructureEntry]):
 
     @cached_property
     def entries_by_reduced_formula(self) -> Mapping[str, list[ComputedStructureEntry]]:
-        """This is a slow path. Subclasses may override entries_by_reduced_formula method
-        to avoid calling this method."""
+        """This is a slow path.
+
+        Subclasses may override entries_by_reduced_formula method to avoid calling this method.
+        """
         return generate_reduced_formula_dict(self._entries)
 
     @cached_property
     def entries_by_chemsys(self) -> Mapping[str, list[ComputedStructureEntry]]:
-        """This is a slow path. Subclasses may override entries_by_chemsys method
-        to avoid calling this method."""
+        """This is a slow path.
+
+        Subclasses may override entries_by_chemsys method to avoid calling this method.
+        """
         return generate_chemsys_dict(self._entries)

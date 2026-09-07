@@ -33,7 +33,7 @@ class ChemGraph(pyg_data.Data):
         edge_attr (Tensor, optional): Edge attributes
             :obj:`[num_edges, num_edge_attr]`. (default: :obj:`None`)
         **kwargs (optional): Additional attributes to be stored in the data object.
-    """
+    """  # noqa: E501
 
     def __init__(
         self,
@@ -60,7 +60,7 @@ class ChemGraph(pyg_data.Data):
             "_collate_structure",
         ):
             raise AttributeError(
-                f"Replacing ChemGraph.{attr} in-place. Consider using the self.replace method to create a shallow copy."
+                f"Replacing ChemGraph.{attr} in-place. Consider using the self.replace method to create a shallow copy."  # noqa: E501
             )
         return super().__setattr__(attr, value)
 
@@ -81,7 +81,7 @@ class ChemGraph(pyg_data.Data):
             self, pyg_data.Batch
         )  # ChemGraphBatch subclass is dynamically defined by PyG
         if field_name == "cell":
-            # Graph-level attributes become 'dense' fields where the first dimension is batch dimension.
+            # Graph-level attributes become 'dense' fields where the first dimension is batch dimension.  # noqa: E501
             return None
         elif field_name in [
             "pos",
@@ -102,12 +102,11 @@ class ChemGraph(pyg_data.Data):
         return self.num_graphs
 
     def subgraph(self, subset: Tensor) -> "ChemGraph":
-        """
-        Returns the induced subgraph given by the node indices :obj:`subset`. If no edge indices are
-        present, subsets will only be created for node features.
+        """Returns the induced subgraph given by the node indices :obj:`subset`.
 
-        Args:
-            subset (LongTensor or BoolTensor): The nodes to keep.
+        If no edge indices are present, subsets will only be created for node features.
+
+        Args:     subset (LongTensor or BoolTensor): The nodes to keep.
         """
         # Check for boolean mask or index array.
         if subset.dtype == torch.bool:
@@ -158,8 +157,9 @@ class ChemGraph(pyg_data.Data):
         replace_kwargs = ["pos", "cell"]
         for key in replace_kwargs:
             out[key] = out[key].detach().requires_grad_(True) if self[key] is not None else None
-        
+
         return out
+
 
 # Retrieve a pointer for the DynamicInheritance-based PYG Batch class.
 # For typing reasons only, use isinstance(pyg_data.Batch) for runtime checks.

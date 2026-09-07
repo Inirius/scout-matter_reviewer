@@ -11,7 +11,7 @@ from mattergen.diffusion.corruption.sde_lib import SDE
 from mattergen.diffusion.tests.conftest import SDE_TYPES
 
 
-# .sde() is only defined for continuous corruptions, hence we only test SDEs here (and not discrete corruptions)
+# .sde() is only defined for continuous corruptions, hence we only test SDEs here (and not discrete corruptions)  # noqa: E501
 @pytest.mark.parametrize("corruption_type", SDE_TYPES)
 def test_multi_corruption(
     corruption_type: Type[SDE], tiny_state_batch, diffusion_mocks, get_multi_corruption

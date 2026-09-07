@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/embedding_block.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/embedding_block.py.
 """
 
 import numpy as np
@@ -13,7 +13,7 @@ from mattergen.common.utils.globals import MAX_ATOMIC_NUM
 
 
 class IdentityEmbedding(torch.nn.Identity):
-    """Embedding layer that just returns the input"""
+    """Embedding layer that just returns the input."""
 
     def __init__(self, emb_size):
         super().__init__()
@@ -21,13 +21,9 @@ class IdentityEmbedding(torch.nn.Identity):
 
 
 class AtomEmbedding(torch.nn.Module):
-    """
-    Initial atom embeddings based on the atom type
+    """Initial atom embeddings based on the atom type.
 
-    Parameters
-    ----------
-        emb_size: int
-            Atom embeddings size
+    Parameters ----------     emb_size: int         Atom embeddings size
     """
 
     def __init__(self, emb_size, with_mask_type=False):
@@ -40,26 +36,16 @@ class AtomEmbedding(torch.nn.Module):
         torch.nn.init.uniform_(self.embeddings.weight, a=-np.sqrt(3), b=np.sqrt(3))
 
     def forward(self, Z):
-        """
-        Returns
-        -------
-            h: torch.Tensor, shape=(nAtoms, emb_size)
-                Atom embeddings.
-        """
+        """Returns ------- h: torch.Tensor, shape=(nAtoms, emb_size) Atom embeddings."""
         h = self.embeddings(Z - 1)  # -1 because Z.min()=1 (==Hydrogen)
         return h
 
 
 class EdgeEmbedding(torch.nn.Module):
-    """
-    Edge embedding based on the concatenation of atom embeddings and subsequent dense layer.
+    """Edge embedding based on the concatenation of atom embeddings and subsequent dense layer.
 
-    Parameters
-    ----------
-        emb_size: int
-            Embedding size after the dense layer.
-        activation: str
-            Activation function used in the dense layer.
+    Parameters ----------     emb_size: int         Embedding size after the dense layer.
+    activation: str         Activation function used in the dense layer.
     """
 
     def __init__(

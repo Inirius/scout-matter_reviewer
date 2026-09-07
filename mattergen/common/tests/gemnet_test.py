@@ -22,7 +22,7 @@ from mattergen.common.utils.data_utils import (
 from mattergen.common.utils.eval_utils import make_structure
 from mattergen.common.utils.globals import MODELS_PROJECT_ROOT
 
-### UTILS ###
+# UTILS ###
 
 
 def get_model(**kwargs) -> GemNetT:
@@ -96,7 +96,7 @@ def get_cubic_data(supercell: Tuple[int, int, int]) -> Tuple[Tuple, Tuple]:
     return reformat_batch(batch=normal_batch), reformat_batch(batch=supercell_batch)
 
 
-### TESTS ###
+# TESTS ###
 
 
 def test_lattice_score_scale_invariance():
@@ -220,9 +220,8 @@ def test_nonconservative_lattice_score_translation_invariance():
 
 
 def test_lattice_parameterization_invariance():
-    """
-    Tests whether our model's predicted score behaves as expected when choosing a different unit cell.
-    """
+    """Tests whether our model's predicted score behaves as expected when choosing a different unit
+    cell."""
     cutoff = 5.0
     max_neighbors = 200
     torch.manual_seed(2)
@@ -243,24 +242,24 @@ def test_lattice_parameterization_invariance():
     lattice_matrices = lattice_params_to_matrix_torch(batch.lengths, batch.angles)
     lattice_matrix_changed = lattice_matrices.clone()
 
-    # Build updated lattice matrices, where a random lattice vector is modified by adding 3x another random (different) lattice vector.
+    # Build updated lattice matrices, where a random lattice vector is modified by adding 3x another random (different) lattice vector.  # noqa: E501
     # This modification does not change the underlying periodic structure.
     combs = torch.tensor(list(permutations(range(3), 2)))
-    # Per lattice, select a random pair of lattice vectors, where we add 3x the second to the first one.
+    # Per lattice, select a random pair of lattice vectors, where we add 3x the second to the first one.  # noqa: E501
     lattice_vector_combine_ixs = torch.randint(0, len(combs), (lattice_matrices.shape[0],))
     combs_sel = combs[lattice_vector_combine_ixs]
 
-    # Build the lattice perturbation matrices. For example, if the two lattice vectors are 0 and 1, we get the following:
+    # Build the lattice perturbation matrices. For example, if the two lattice vectors are 0 and 1, we get the following:  # noqa: E501
     # [
     #   [1.0, 0.0, 0.0],
     #   [3.0, 1.0, 0.0],
     #   [0.0, 0.0, 1.0]
     # ],
-    # which has the effect of changing the first lattice vector to be l_1 := l_1 + 3 * l_2 in the updated lattice.
+    # which has the effect of changing the first lattice vector to be l_1 := l_1 + 3 * l_2 in the updated lattice.  # noqa: E501
     # Shape [batch_size, 3, 3]
     change_matrix = torch.eye(3)[None].expand_as(lattice_matrices).clone().contiguous()
     change_matrix[range(combs_sel.shape[0]), combs_sel[:, 0], combs_sel[:, 1]] = 3
-    # Transposing is needed because in our model, the lattice is a stack of row lattice vectors, but the equations are for stacks of column matrices.
+    # Transposing is needed because in our model, the lattice is a stack of row lattice vectors, but the equations are for stacks of column matrices.  # noqa: E501
     lattice_matrix_changed = (lattice_matrices.transpose(1, 2) @ change_matrix).transpose(1, 2)
     new_frac_coords = cart_to_frac_coords_with_lattice(
         frac_to_cart_coords_with_lattice(batch.frac_coords, batch.num_atoms, lattice_matrices),

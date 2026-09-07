@@ -21,22 +21,19 @@ from mattergen.common.utils.data_utils import (
 
 
 class GemNetTCtrl(GemNetT):
-    """
-    GemNet-T, triplets-only variant of GemNet
+    """GemNet-T, triplets-only variant of GemNet.
 
-    This variation allows for layerwise conditional control for the purpose of
-    conditional finetuning. It adds the following on top of GemNetT:
+    This variation allows for layerwise conditional control for the purpose of conditional
+    finetuning. It adds the following on top of GemNetT:
 
     for each condition in <condition_on_adapt>:
 
-    1. a series of adapt layers that take the concatenation of the node embedding
-       and the condition embedding, process it with an MLP. There is one adapt layer
-       for each GemNetT message passing block.
-    2. a series of mixin layers that take the output of the adapt layer and mix it in
-       to the atom embedding. There is one mixin layer for each GemNetT message passing block.
-       The mixin layers are initialized to zeros so at the beginning of training, the model
-       outputs exactly the same scores as the base GemNetT model.
-
+    1. a series of adapt layers that take the concatenation of the node embedding    and the
+    condition embedding, process it with an MLP. There is one adapt layer    for each GemNetT
+    message passing block. 2. a series of mixin layers that take the output of the adapt layer and
+    mix it in    to the atom embedding. There is one mixin layer for each GemNetT message passing
+    block.    The mixin layers are initialized to zeros so at the beginning of training, the model
+    outputs exactly the same scores as the base GemNetT model.
     """
 
     def __init__(self, condition_on_adapt: List[PropertySourceId], *args, **kwargs):
@@ -83,25 +80,17 @@ class GemNetTCtrl(GemNetT):
         cond_adapt: Optional[Dict[PropertySourceId, torch.Tensor]] = None,
         cond_adapt_mask: Optional[Dict[PropertySourceId, torch.Tensor]] = None,
     ) -> ModelOutput:
-        """
-        args:
-            z: (N_cryst, num_latent)
-            frac_coords: (N_atoms, 3)
-            atom_types: (N_atoms, ) with D3PM need to use atomic number
-            num_atoms: (N_cryst,)
-            lengths: (N_cryst, 3) (optional, either lengths and angles or lattice must be passed)
-            angles: (N_cryst, 3) (optional, either lengths and angles or lattice must be passed)
-            edge_index: (2, N_edge) (optional, only needed if self.otf_graph is False)
-            to_jimages: (N_edge, 3) (optional, only needed if self.otf_graph is False)
-            num_bonds: (N_cryst,) (optional, only needed if self.otf_graph is False)
-            lattice: (N_cryst, 3, 3) (optional, either lengths and angles or lattice must be passed)
-            cond_adapt: (N_cryst, num_cond, dim_cond) (optional, conditional signal for score prediction)
-            cond_adapt_mask: (N_cryst, num_cond) (optional, mask for which data points receive conditional signal)
-        returns:
-            atom_frac_coords: (N_atoms, 3)
-            atom_types: (N_atoms, MAX_ATOMIC_NUM)
-        """
-
+        """Args: z: (N_cryst, num_latent) frac_coords: (N_atoms, 3) atom_types: (N_atoms, ) with
+        D3PM need to use atomic number num_atoms: (N_cryst,) lengths: (N_cryst, 3) (optional, either
+        lengths and angles or lattice must be passed) angles: (N_cryst, 3) (optional, either lengths
+        and angles or lattice must be passed) edge_index: (2, N_edge) (optional, only needed if
+        self.otf_graph is False) to_jimages: (N_edge, 3) (optional, only needed if self.otf_graph is
+        False) num_bonds: (N_cryst,) (optional, only needed if self.otf_graph is False) lattice:
+        (N_cryst, 3, 3) (optional, either lengths and angles or lattice must be passed) cond_adapt:
+        (N_cryst, num_cond, dim_cond) (optional, conditional signal for score prediction)
+        cond_adapt_mask: (N_cryst, num_cond) (optional, mask for which data points receive
+        conditional signal) returns: atom_frac_coords: (N_atoms, 3) atom_types: (N_atoms,
+        MAX_ATOMIC_NUM)"""
         if self.otf_graph:
             assert all(
                 [edge_index is None, to_jimages is None, num_bonds is None]
@@ -200,7 +189,7 @@ class GemNetTCtrl(GemNetT):
                     torch.cat([h, cond_adapt_per_atom[cond]], dim=-1)
                 )
                 h_adapt_cond = self.cond_mixin_layers[cond][i](h_adapt_cond)
-                # cond_adapt_mask_per_atom[cond] is 1.0 if we want to use conditional embedding and 0 for unconditional embedding
+                # cond_adapt_mask_per_atom[cond] is 1.0 if we want to use conditional embedding and 0 for unconditional embedding  # noqa: E501
                 h_adapt += cond_adapt_mask_per_atom[cond] * h_adapt_cond
             h = h + h_adapt
 

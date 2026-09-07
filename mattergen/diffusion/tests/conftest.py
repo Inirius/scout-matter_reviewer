@@ -51,11 +51,10 @@ def seed_all(seed):
 
 @pytest.fixture(autouse=True)
 def seed_random_state(seed: int = 42):
-    """
-    Fixture for seeding random states of every unit test. Is invoked automatically before each test.
+    """Fixture for seeding random states of every unit test.
 
-    Args:
-        seed (int, optional): Random seed. Defaults to 42.
+    Is invoked automatically before each test.     Args:         seed (int, optional): Random seed.
+    Defaults to 42.
     """
     seed_all(seed)
     yield

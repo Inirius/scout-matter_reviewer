@@ -18,9 +18,10 @@ BatchTransform = Callable[[ChemGraph], ChemGraph]
 
 
 class GemNetTAdapter(GemNetTDenoiser):
-    """
-    Denoiser layerwise adapter with GemNetT. On top of a mattergen.denoiser.GemNetTDenoiser,
-    additionally inputs <property_embeddings_adapt> that specifies extra conditions to be conditioned on.
+    """Denoiser layerwise adapter with GemNetT.
+
+    On top of a mattergen.denoiser.GemNetTDenoiser, additionally inputs <property_embeddings_adapt>
+    that specifies extra conditions to be conditioned on.
     """
 
     def __init__(self, property_embeddings_adapt: torch.nn.ModuleDict, *args, **kwargs):
@@ -35,7 +36,7 @@ class GemNetTAdapter(GemNetTDenoiser):
                 k not in self.property_embeddings.keys()
                 for k in self.property_embeddings_adapt.keys()
             ]
-        ), f"One of adapter conditions {self.property_embeddings_adapt.keys()} already exists in base model {self.property_embeddings.keys()}, please remove."
+        ), f"One of adapter conditions {self.property_embeddings_adapt.keys()} already exists in base model {self.property_embeddings.keys()}, please remove."  # noqa: E501
 
         # we make the choice that new adapter fields do not alter the unconditional score
         # we therefore need the unconditional embedding for all properties added in the adapter
@@ -50,10 +51,14 @@ class GemNetTAdapter(GemNetTDenoiser):
         x: ChemGraph,
         t: torch.Tensor,
     ) -> ChemGraph:
-        """
-        augment <z_per_crystal> with <self.condition_embs_adapt>.
-        """
-        (frac_coords, lattice, atom_types, num_atoms, batch,) = (
+        """Augment <z_per_crystal> with <self.condition_embs_adapt>."""
+        (
+            frac_coords,
+            lattice,
+            atom_types,
+            num_atoms,
+            batch,
+        ) = (
             x["pos"],
             x["cell"],
             x["atomic_numbers"],
@@ -118,9 +123,8 @@ class GemNetTAdapter(GemNetTDenoiser):
 
     @property
     def cond_fields_model_was_trained_on(self) -> list[PropertySourceId]:
-        """
-        We adopt the convention that all property embeddings are stored in torch.nn.ModuleDicts of
-        name property_embeddings or property_embeddings_adapt in the case of a fine tuned model.
+        """We adopt the convention that all property embeddings are stored in torch.nn.ModuleDicts
+        of name property_embeddings or property_embeddings_adapt in the case of a fine tuned model.
 
         This function returns the list of all field names that a given score model was trained to
         condition on.

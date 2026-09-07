@@ -3,11 +3,13 @@
 
 import numpy as np
 from numpy.typing import NDArray
+
 from mattergen.common.data.dataset import BaseDataset
 
 # Dataset transforms
 # These transforms are used to modify the dataset in various ways, such as filtering out
 # structures with missing properties.
+
 
 def is_nan(value: NDArray) -> NDArray:
     if value.dtype.kind == "U":
@@ -15,9 +17,10 @@ def is_nan(value: NDArray) -> NDArray:
         return np.zeros(value.shape, dtype=bool)
     return np.isnan(value)
 
+
 def filter_sparse_properties(dataset: BaseDataset) -> BaseDataset:
-    """
-    Filter out structures with missing properties.
+    """Filter out structures with missing properties.
+
     Returns a new dataset with only structures that have all properties.
     """
     if len(dataset.properties) == 0:
@@ -29,7 +32,5 @@ def filter_sparse_properties(dataset: BaseDataset) -> BaseDataset:
 
 
 def repeat(dataset: BaseDataset, n: int) -> BaseDataset:
-    """
-    Repeat the dataset n times.
-    """
+    """Repeat the dataset n times."""
     return dataset.repeat(n)

@@ -19,7 +19,7 @@ def _check_batch_shape(x: torch.Tensor, batch_size: torch.LongTensor):
 @pytest.mark.parametrize("sparse", [True, False])
 @pytest.mark.parametrize("sdetype", SDE_TYPES)
 def test_sde(tiny_state_batch, sdetype: Type[SDE], sparse, EPS):
-    """Tests correct shapes for all methods of the SDE class"""
+    """Tests correct shapes for all methods of the SDE class."""
     x: torch.Tensor = tiny_state_batch["foo"]
     sde: SDE = sdetype()
 

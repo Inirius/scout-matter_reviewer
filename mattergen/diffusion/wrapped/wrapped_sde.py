@@ -13,11 +13,9 @@ B = Optional[torch.LongTensor]
 
 def wrap_at_boundary(x: torch.Tensor, wrapping_boundary: float) -> torch.Tensor:
     """Wrap x at the boundary given by wrapping_boundary.
-    Args:
-      x: tensor of shape (batch_size, dim)
-      wrapping_boundary: float): wrap at [0, wrapping_boundary] in all dimensions.
-    Returns:
-      wrapped_x: tensor of shape (batch_size, dim)
+
+    Args:   x: tensor of shape (batch_size, dim)   wrapping_boundary: float): wrap at [0,
+    wrapping_boundary] in all dimensions. Returns:   wrapped_x: tensor of shape (batch_size, dim)
     """
     return torch.remainder(
         x, wrapping_boundary
@@ -39,8 +37,8 @@ class WrappedSDEMixin:
             and hasattr(self, "wrapping_boundary")
         )
         if (x > self.wrapping_boundary).any() or (x < 0).any():
-            # Values outside the wrapping boundary are valid in principle, but could point to an issue in the data preprocessing,
-            # as typically we assume that the input data is inside the wrapping boundary (e.g., angles between 0 and 2*pi).
+            # Values outside the wrapping boundary are valid in principle, but could point to an issue in the data preprocessing,  # noqa: E501
+            # as typically we assume that the input data is inside the wrapping boundary (e.g., angles between 0 and 2*pi).  # noqa: E501
             print("Warning: Wrapped SDE has received input outside of the wrapping boundary.")
         noisy_x = _super.sample_marginal(x=x, t=t, batch_idx=batch_idx, batch=batch)
         return self.wrap(noisy_x)

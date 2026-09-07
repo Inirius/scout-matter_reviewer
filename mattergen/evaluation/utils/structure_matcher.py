@@ -16,9 +16,9 @@ from mattergen.evaluation.utils.globals import MAX_RMSD
 
 
 class RMSDStructureMatcher(StructureMatcher):
-    """
-    Structure matcher used for computing RMSD distance between structures. Has looser
-    tolerances than the default pymatgen StructureMatcher to ensure that we can get an
+    """Structure matcher used for computing RMSD distance between structures.
+
+    Has looser tolerances than the default pymatgen StructureMatcher to ensure that we can get an
     atom alignment even in case structures don't match.
     """
 
@@ -67,9 +67,9 @@ class OrderedStructureMatcher(StructureMatcher):
 
 
 class DefaultOrderedStructureMatcher(OrderedStructureMatcher):
-    """
-    Ordered structure matcher with default parameters. No args or kwargs are passed in order
-    to ensure consistent behavior across all instances.
+    """Ordered structure matcher with default parameters.
+
+    No args or kwargs are passed in order to ensure consistent behavior across all instances.
     """
 
     def __init__(self):
@@ -89,8 +89,8 @@ class DisorderedStructureMatcher(StructureMatcher):
         allow_subset: bool = True,
         relative_radius_difference_threshold: float = 0.3,
         electronegativity_difference_threshold: float = 1.0,
-        reduced_formula_atol: float = 1e-2,  # 1e-8 is the default value in pymatgen composition.almost_equals()
-        reduced_formula_rtol: float = 1e-1,  # 1e-1 is the default value in pymatgen composition.almost_equals()
+        reduced_formula_atol: float = 1e-2,  # 1e-8 is the default value in pymatgen composition.almost_equals()  # noqa: E501
+        reduced_formula_rtol: float = 1e-1,  # 1e-1 is the default value in pymatgen composition.almost_equals()  # noqa: E501
         *args,
         **kwargs,
     ):
@@ -123,14 +123,13 @@ class DisorderedStructureMatcher(StructureMatcher):
         return "DisorderedStructureMatcher"
 
     def fit(self, structure_1: Structure, structure_2: Structure) -> bool:
-        """
-        Returns True if the structures are equivalent, False otherwise.
-        First checks whether the composition of the structures is similar.
-        Then checks whether the structures are ordered or disordered.
-        If both structures are ordered, they are first compared directly,
-        and if they do not match, one of the structures is disordered and compared again.
-        If one of the structures is disordered, the disordered comparer is used directly.
-        The structures are first copied and their oxidation states are removed.
+        """Returns True if the structures are equivalent, False otherwise.
+
+        First checks whether the composition of the structures is similar. Then checks whether the
+        structures are ordered or disordered. If both structures are ordered, they are first
+        compared directly, and if they do not match, one of the structures is disordered and
+        compared again. If one of the structures is disordered, the disordered comparer is used
+        directly. The structures are first copied and their oxidation states are removed.
         """
         structure_1_nooxi = structure_1.copy().remove_oxidation_states()
         structure_2_nooxi = structure_2.copy().remove_oxidation_states()
@@ -173,9 +172,9 @@ class DisorderedStructureMatcher(StructureMatcher):
 
 
 class DefaultDisorderedStructureMatcher(DisorderedStructureMatcher):
-    """
-    Disordered structure matcher with default parameters. No args or kwargs are passed in order
-    to ensure consistent behavior across all instances.
+    """Disordered structure matcher with default parameters.
+
+    No args or kwargs are passed in order to ensure consistent behavior across all instances.
     """
 
     def __init__(self):
@@ -191,12 +190,12 @@ def get_cliques_out_of_list_of_pairs(pairs: list[list[Element]]) -> list[list[El
             # If any of the elements in the pair are already in the group, there are two options
             if pair[0] in group or pair[1] in group:
                 if previously_appended_to_group is not None:
-                    # Now, if this pair is matching this group but was already matched to another group,
+                    # Now, if this pair is matching this group but was already matched to another group,  # noqa: E501
                     # append the new group to the old group and empty the new group
                     cliques[previously_appended_to_group].extend(group)
                     cliques[i] = []
                 else:
-                    # If instead this is the first group that the pair is matched to, append the pair to the group
+                    # If instead this is the first group that the pair is matched to, append the pair to the group  # noqa: E501
                     # and mark this group as the one that the pair was matched to
                     cliques[i].extend(pair)
                     previously_appended_to_group = i
@@ -209,9 +208,11 @@ def get_cliques_out_of_list_of_pairs(pairs: list[list[Element]]) -> list[list[El
 
 
 def make_structure_disordered(structure: Structure, substitution: list[list[Element]]) -> Structure:
-    """
-    Returns a copy of the structure where the cliques of elements that can substitute each other are replaced by partial occupancies.
-    The partial occupancies are calculated based on the atomic fractions of the elements in the clique.
+    """Returns a copy of the structure where the cliques of elements that can substitute each other
+    are replaced by partial occupancies.
+
+    The partial occupancies are calculated based on the atomic fractions of the elements in the
+    clique.
     """
     disordered_structure = structure.copy().remove_oxidation_states()
     atomic_fractions = {
@@ -247,10 +248,11 @@ def do_elements_substitute(
     relative_radius_difference_threshold: float = 0.3,
     electronegativity_difference_threshold: float = 1.0,
 ) -> bool:
-    """
-    Returns whether two elements could substitute based on their atomic radius and electronegativity.
-    This is a modified Hume-Rothery rule, where the relative atomic radius difference and the electronegativity difference
-    thresholds are obtained from an analysis carried out on ICSD data.
+    """Returns whether two elements could substitute based on their atomic radius and
+    electronegativity.
+
+    This is a modified Hume-Rothery rule, where the relative atomic radius difference and the
+    electronegativity difference thresholds are obtained from an analysis carried out on ICSD data.
     See the revised MatterGen paper for more details.
     """
     relative_atomic_radius_difference = abs(
@@ -268,13 +270,11 @@ def check_is_disordered(
     relative_radius_difference_threshold: float = 0.3,
     electronegativity_difference_threshold: float = 1.0,
 ) -> tuple[bool, list[list[Element]]]:
-    """
-    Function to estimate whether a structure can be thought as an ordered approximation of an alloy.
-    Returns:
+    """Function to estimate whether a structure can be thought as an ordered approximation of an
+    alloy. Returns:
 
-    is_disordered: can the structure be thought of as an alloy?
-    substitutional_groups: list of sets of elements that could substitute for each other
-
+    is_disordered: can the structure be thought of as an alloy? substitutional_groups: list of sets
+    of elements that could substitute for each other
     """
     structure_copy = structure.copy().remove_oxidation_states()
 
@@ -307,8 +307,10 @@ def try_make_structure_disordered(
         electronegativity_difference_threshold=electronegativity_difference_threshold,
     )
     return (
-        make_structure_disordered(structure, substitution_species)
-        if can_be_disordered
-        else structure,
+        (
+            make_structure_disordered(structure, substitution_species)
+            if can_be_disordered
+            else structure
+        ),
         can_be_disordered,
     )

@@ -13,7 +13,8 @@ from mattergen.diffusion.tests.conftest import SDE_TYPES
 
 @pytest.mark.parametrize("sde_type", SDE_TYPES)
 def test_conversions_match(sde_type):
-    """Check that we get the same score whether the model output is interpreted as prediction of clean data, noise, or minus noise."""
+    """Check that we get the same score whether the model output is interpreted as prediction of
+    clean data, noise, or minus noise."""
     sde = sde_type()
     t = torch.linspace(0.1, 0.9, 10)
     clean = torch.randn(10, 3)

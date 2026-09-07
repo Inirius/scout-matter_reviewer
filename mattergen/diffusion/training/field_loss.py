@@ -28,7 +28,7 @@ def compute_noise_given_sample_and_corruption(
     Then we solve:
     x_noisy = x_mean + noise * std w.r.t. `noise`:
     noise = (x_noisy - x_mean) / std
-    """
+    """  # noqa: E501
     x_mean, std = corruption.marginal_prob(
         x,
         t=t,
@@ -39,8 +39,10 @@ def compute_noise_given_sample_and_corruption(
 
 
 class FieldLoss(Protocol):
-    """Loss function for a single field. Because loss functions are defined different ways in different papers,
-    we pass loads of keyword arguments. Each loss function will only use a subset of these arguments.
+    """Loss function for a single field.
+
+    Because loss functions are defined different ways in different papers, we pass loads of keyword
+    arguments. Each loss function will only use a subset of these arguments.
     """
 
     def __call__(
@@ -56,7 +58,10 @@ class FieldLoss(Protocol):
         reduce: Literal["sum", "mean"],
         batch: BatchedData,
     ) -> torch.Tensor:
-        """Calculate loss per sample for a single field. Returns a loss tensor of shape (batch_size,)."""
+        """Calculate loss per sample for a single field.
+
+        Returns a loss tensor of shape (batch_size,).
+        """
         pass
 
 
@@ -93,7 +98,7 @@ def denoising_score_matching(
     if node_is_unmasked is not None:
         losses = node_is_unmasked.unsqueeze(-1) * losses  # Apply masking.
         original_reduce = reduce
-        reduce = "sum"  # We sum first and handle the division by nodes_per_sample for the mean manually later.
+        reduce = "sum"  # We sum first and handle the division by nodes_per_sample for the mean manually later.  # noqa: E501
 
     loss_per_sample = aggregate_per_sample(losses, batch_idx, reduce=reduce, batch_size=batch_size)
 
@@ -131,22 +136,17 @@ def aggregate_per_sample(
     reduce: Literal["sum", "mean"],
     batch_size: int,
 ):
-    """
-    Aggregate (potentially) batched input tensor to get a scalar for each sample in the batch.
-    E.g., (num_atoms, d1, d2, ..., dn) -> (batch_size, d1, d2, ..., dn) -> (batch_size,),
-    where the first aggregation only happens when batch_idx is provided.
+    """Aggregate (potentially) batched input tensor to get a scalar for each sample in the batch.
+    E.g., (num_atoms, d1, d2, ..., dn) -> (batch_size, d1, d2, ..., dn) -> (batch_size,), where the
+    first aggregation only happens when batch_idx is provided.
 
-    Args:
-        loss_per_row: shape (num_nodes, any_more_dims). May contain multiple nodes per sample.
-        batch_idx: shape (num_nodes,). Indicates which sample each row belongs to. If not provided,
-            then we assume the first dimension is the batch dimension.
-        reduce: determines how to aggregate over nodes within each sample. (Aggregation over samples
-            and within dims for one node is always mean.)
-        batch_size: number of samples in the batch.
+    Args:     loss_per_row: shape (num_nodes, any_more_dims). May contain multiple nodes per sample.
+    batch_idx: shape (num_nodes,). Indicates which sample each row belongs to. If not provided,
+    then we assume the first dimension is the batch dimension.     reduce: determines how to
+    aggregate over nodes within each sample. (Aggregation over samples         and within dims for
+    one node is always mean.)     batch_size: number of samples in the batch.
 
-    Returns:
-        Scalar for each sample, shape (batch_size,).
-
+    Returns:     Scalar for each sample, shape (batch_size,).
     """
     # Sum over all but 0th dimension.
     loss_per_row = torch.mean(loss_per_row.reshape(loss_per_row.shape[0], -1), dim=1)

@@ -29,7 +29,7 @@ def init_adapter_lightningmodule_from_pretrained(
     if adapter_cfg.model_path is not None:
         if adapter_cfg.pretrained_name is not None:
             logger.warning(
-                "pretrained_name is provided, but will be ignored since model_path is also provided."
+                "pretrained_name is provided, but will be ignored since model_path is also provided."  # noqa: E501
             )
         model_path = Path(hydra.utils.to_absolute_path(adapter_cfg.model_path))
         ckpt_info = MatterGenCheckpointInfo(model_path, adapter_cfg.load_epoch)
@@ -58,7 +58,7 @@ def init_adapter_lightningmodule_from_pretrained(
 
     # compose adapter lightning_module config.
 
-    ## copy denoiser config from pretrained model to adapter config.
+    # copy denoiser config from pretrained model to adapter config.
     diffusion_module_cfg = deepcopy(pretrained_cfg.lightning_module.diffusion_module)
     denoiser_cfg = diffusion_module_cfg.model
 
@@ -77,7 +77,7 @@ def init_adapter_lightningmodule_from_pretrained(
         # replace original GemNetT model with GemNetTCtrl model.
         adapter_cfg.adapter.gemnet["_target_"] = "mattergen.common.gemnet.gemnet_ctrl.GemNetTCtrl"
 
-        # GemNetTCtrl model has additional input parameter condition_on_adapt, which needs to be set via property_embeddings_adapt.
+        # GemNetTCtrl model has additional input parameter condition_on_adapt, which needs to be set via property_embeddings_adapt.  # noqa: E501
         adapter_cfg.adapter.gemnet.condition_on_adapt = list(
             adapter_cfg.adapter.property_embeddings_adapt
         )

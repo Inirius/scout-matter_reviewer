@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-"""Adapted from https://github.com/yang-song/score_sde_pytorch which is released under Apache license.
+"""Adapted from https://github.com/yang-song/score_sde_pytorch which is released under Apache
+license.
 
-Key changes:
-- Introduced batch_idx argument to work with graph-like data (e.g. molecules)
-- Introduced `..._given_score` methods so that multiple fields can be sampled at once using a shared score model. See PredictorCorrector for how this is used.
+Key changes: - Introduced batch_idx argument to work with graph-like data (e.g. molecules) -
+Introduced `..._given_score` methods so that multiple fields can be sampled at once using a shared
+score model. See PredictorCorrector for how this is used.
 """
 
 import abc
@@ -23,8 +24,8 @@ logger = logging.getLogger(__name__)
 
 
 class Predictor(Sampler):
-    """The abstract class for something that takes x_t and predicts x_{t-dt},
-    where t is diffusion timestep."""
+    """The abstract class for something that takes x_t and predicts x_{t-dt}, where t is diffusion
+    timestep."""
 
     def __init__(
         self,
@@ -44,13 +45,10 @@ class Predictor(Sampler):
     ) -> SampleAndMean:
         """One update of the predictor.
 
-        Args:
-          x: current state
-          t: timesteps
-          batch_idx: indicates which sample each row of x belongs to
+        Args:   x: current state   t: timesteps   batch_idx: indicates which sample each row of x
+        belongs to
 
-        Returns:
-           (sampled next state, mean next state)
+        Returns:    (sampled next state, mean next state)
         """
         check_score_fn_defined(self.score_fn, "update_given_score")
         assert self.score_fn is not None
@@ -76,9 +74,10 @@ class Predictor(Sampler):
 class AncestralSamplingPredictor(Predictor):
     """Suitable for all linear SDEs.
 
-    This predictor is derived by converting the score prediction to a prediction of x_0 given x_t, and then
-    sampling from the conditional distribution of x_{t-dt} given x_0 and x_t according to the corruption process.
-    It corresponds to equation (47) in Song et al. for VESDE (https://openreview.net/forum?id=PxTIG12RRHS)
+    This predictor is derived by converting the score prediction to a prediction of x_0 given x_t,
+    and then sampling from the conditional distribution of x_{t-dt} given x_0 and x_t according to
+    the corruption process. It corresponds to equation (47) in Song et al. for VESDE (
+    https://openreview.net/forum?id=PxTIG12RRHS)
     and equation (7) in Ho et al. for VPSDE (https://arxiv.org/abs/2006.11239)
 
     In more detail: suppose the SDE has marginals x_t ~ N(alpha_t *x_0, sigma_t**2)
@@ -91,7 +90,6 @@ class AncestralSamplingPredictor(Predictor):
 
     Now go away and do some algebra to get the mean and variance of x_s given x_t
     and x_0, and you will get the coefficients in the `update_given_score` method below.
-
     """
 
     def update_given_score(
@@ -120,9 +118,10 @@ class AncestralSamplingPredictor(Predictor):
         return sample, mean
 
     def _get_coeffs(self, x, t, dt, batch_idx, batch):
+        """Compute coefficients for ancestral sampling.
+
+        This is in a separate method to make it easier to test.
         """
-        Compute coefficients for ancestral sampling.
-        This is in a separate method to make it easier to test."""
         sde = self.corruption
         assert isinstance(sde, SDE)
 
@@ -148,11 +147,11 @@ class AncestralSamplingPredictor(Predictor):
         min_alpha_t_given_s = 0.001
         alpha_t_given_s = alpha_t / alpha_s
         if torch.any(alpha_t_given_s < min_alpha_t_given_s):
-            # If this warning is raised, you probably should change something: either modify your noise schedule
-            # so that the diffusion coefficient does not blow up near sde.T, or only denoise from sde.T - eps,
+            # If this warning is raised, you probably should change something: either modify your noise schedule  # noqa: E501
+            # so that the diffusion coefficient does not blow up near sde.T, or only denoise from sde.T - eps,  # noqa: E501
             # rather than sde.T.
             logger.warning(
-                f"Clipping alpha_t_given_s to {min_alpha_t_given_s} to avoid divide-by-zero. You should probably change something else to avoid this."
+                f"Clipping alpha_t_given_s to {min_alpha_t_given_s} to avoid divide-by-zero. You should probably change something else to avoid this."  # noqa: E501
             )
             alpha_t_given_s = torch.clip(alpha_t_given_s, min_alpha_t_given_s, 1)
 

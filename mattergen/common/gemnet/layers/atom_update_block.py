@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/atom_update_block.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/atom_update_block.py.
 """
 
 from typing import Tuple
@@ -16,21 +16,15 @@ from mattergen.common.gemnet.layers.scaling import ScalingFactor
 
 
 class AtomUpdateBlock(torch.nn.Module):
-    """
-    Aggregate the message embeddings of the atoms
+    """Aggregate the message embeddings of the atoms.
 
-    Parameters
-    ----------
-        emb_size_atom: int
-            Embedding size of the atoms.
-        emb_size_atom: int
-            Embedding size of the edges.
-        nHidden: int
-            Number of residual blocks.
-        activation: callable/str
-            Name of the activation function to use in the dense layers.
-        scale_file: str
-            Path to the json file containing the scaling factors.
+    Parameters ----------     emb_size_atom: int         Embedding size of the atoms.
+    emb_size_atom: int         Embedding size of the edges.     nHidden: int         Number of
+    residual blocks.     activation: callable/str         Name of the activation function to use in
+    the dense layers.     scale_
+    file:
+    str
+    Path to the json file containing the scaling factors.
     """
 
     def __init__(
@@ -63,12 +57,7 @@ class AtomUpdateBlock(torch.nn.Module):
     def forward(
         self, h: torch.Tensor, m: torch.Tensor, rbf: torch.Tensor, id_j: torch.Tensor
     ) -> torch.Tensor:
-        """
-        Returns
-        -------
-            h: torch.Tensor, shape=(nAtoms, emb_size_atom)
-                Atom embedding.
-        """
+        """Returns ------- h: torch.Tensor, shape=(nAtoms, emb_size_atom) Atom embedding."""
         nAtoms = h.shape[0]
 
         mlp_rbf = self.dense_rbf(rbf)  # (nEdges, emb_size_edge)
@@ -85,27 +74,18 @@ class AtomUpdateBlock(torch.nn.Module):
 
 
 class OutputBlock(AtomUpdateBlock):
-    """
-    Combines the atom update block and subsequent final dense layer.
+    """Combines the atom update block and subsequent final dense layer.
 
-    Parameters
-    ----------
-        emb_size_atom: int
-            Embedding size of the atoms.
-        emb_size_atom: int
-            Embedding size of the edges.
-        nHidden: int
-            Number of residual blocks.
-        num_targets: int
-            Number of targets.
-        activation: str
-            Name of the activation function to use in the dense layers except for the final dense layer.
-        direct_forces: bool
-            If true directly predict forces without taking the gradient of the energy potential.
-        output_init: int
-            Kernel initializer of the final dense layer.
-        scale_file: str
-            Path to the json file containing the scaling factors.
+    Parameters ----------     emb_size_atom: int         Embedding size of the atoms.
+    emb_size_atom: int         Embedding size of the edges.     nHidden: int         Number of
+    residual blocks.     num_targets: int         Number of targets.     activation: str
+    Name of the activation function to use in the dense layers except for the final dense layer.
+    direct_forces: bool         If true directly predict forces without taking the gradient of the
+    energy potential.     output_init: int         Kernel initializer of the final dense layer.
+    scale_
+    file:
+    str
+    Path to the json file containing the scaling factors.
     """
 
     def __init__(
@@ -162,17 +142,14 @@ class OutputBlock(AtomUpdateBlock):
     def forward(
         self, h: torch.Tensor, m: torch.Tensor, rbf: torch.Tensor, id_j: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        Returns
-        -------
-            (E, F): tuple
-            - E: torch.Tensor, shape=(nAtoms, num_targets)
-            - F: torch.Tensor, shape=(nEdges, num_targets)
-            Energy and force prediction
+        """Returns -------
+
+        (E, F): tuple - E: torch.Tensor, shape=(nAtoms, num_targets) - F: torch.Tensor,
+        shape=(nEdges, num_targets) Energy and force prediction
         """
         nAtoms = h.shape[0]
 
-        # -------------------------------------- Energy Prediction -------------------------------------- #
+        # -------------------------------------- Energy Prediction -------------------------------------- #  # noqa: E501
         rbf_emb_E = self.dense_rbf(rbf)  # (nEdges, emb_size_edge)
         x = m * rbf_emb_E
 
@@ -185,7 +162,7 @@ class OutputBlock(AtomUpdateBlock):
 
         x_E = self.out_energy(x_E)  # (nAtoms, num_targets)
 
-        # --------------------------------------- Force Prediction -------------------------------------- #
+        # --------------------------------------- Force Prediction -------------------------------------- #  # noqa: E501
         if self.direct_forces:
             x_F = m
             for i, layer in enumerate(self.seq_forces):
@@ -198,6 +175,6 @@ class OutputBlock(AtomUpdateBlock):
             x_F = self.out_forces(x_F)  # (nEdges, num_targets)
         else:
             x_F = 0
-        # ----------------------------------------------------------------------------------------------- #
+        # ----------------------------------------------------------------------------------------------- #  # noqa: E501
 
         return x_E, x_F

@@ -83,7 +83,7 @@ class LatticeLangevinDiffCorrector(pc.LangevinCorrector):
         grad_norm = grad_norm_square.sqrt().mean()
         noise_norm = noise_norm_square.sqrt().mean()
 
-        # If gradient is zero (i.e., we are sampling from an improper distribution that's flat over the whole of R^n)
+        # If gradient is zero (i.e., we are sampling from an improper distribution that's flat over the whole of R^n)  # noqa: E501
         # the step_size blows up. Clip step_size to avoid this.
         # The EGNN reports zero scores when there are no edges between nodes.
         step_size = (snr * noise_norm / grad_norm) ** 2 * 2 * alpha

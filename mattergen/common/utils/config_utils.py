@@ -11,22 +11,17 @@ R = TypeVar("R")
 
 
 def get_config(argv: list[str] | None, config_cls: Callable[..., R]) -> R:
+    """Utility function to get OmegaConf config options.
+
+    Args:     argv: Either a list of command line arguments to parse, or None.         If None, this
+    argument is set from sys.argv.     config_cls: Dataclass object specifying config structure
+    (i.e. which fields to expect in the config).         It should be the class itself, NOT an
+    instance of the class.
+
+    Returns:     Config object, which will pass as an instance of `config_cls` among other things.
+    Note: the type for this could be specified more carefully, but OmegaConf's typing         system
+    is a bit complex. See OmegaConf's docs for "structured" for more info.
     """
-    Utility function to get OmegaConf config options.
-
-    Args:
-        argv: Either a list of command line arguments to parse, or None.
-            If None, this argument is set from sys.argv.
-        config_cls: Dataclass object specifying config structure
-            (i.e. which fields to expect in the config).
-            It should be the class itself, NOT an instance of the class.
-
-    Returns:
-        Config object, which will pass as an instance of `config_cls` among other things.
-            Note: the type for this could be specified more carefully, but OmegaConf's typing
-            system is a bit complex. See OmegaConf's docs for "structured" for more info.
-    """
-
     if argv is None:
         argv = sys.argv[1:]
     # Parse command line arguments

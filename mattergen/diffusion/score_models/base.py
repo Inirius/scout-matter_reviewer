@@ -16,8 +16,8 @@ class ScoreModel(torch.nn.Module, Generic[Diffusable], abc.ABC):
 
     @abc.abstractmethod
     def forward(self, x: Diffusable, t: torch.Tensor) -> Diffusable:
-        """Args:
-        x: batch of noisy data
-        t: timestep. Shape (batch_size, 1)
+        """Args: x: batch of noisy data t: timestep.
+
+        Shape (batch_size, 1)
         """
         ...

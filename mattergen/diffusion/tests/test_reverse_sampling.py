@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-"""
-This is an integeratation test of reverse sampling. For a known data distribution that
-is Gaussian, we substitute the known ground truth score for an approximate model
-prediction and reverse sample to check we retrieve correct moments of the data distribution.
+"""This is an integeratation test of reverse sampling.
+
+For a known data distribution that is Gaussian, we substitute the known ground truth score for an
+approximate model prediction and reverse sample to check we retrieve correct moments of the data
+distribution.
 """
 
 from argparse import Namespace
@@ -57,7 +58,9 @@ def score_given_xt(
 
 def get_diffusion_module(x0_mean, x0_std, multi_corruption: MultiCorruption) -> DiffusionModule:
     return DiffusionModule(
-        model=partial(score_given_xt, x0_mean=x0_mean, x0_std=x0_std, multi_corruption=multi_corruption),  # type: ignore
+        model=partial(
+            score_given_xt, x0_mean=x0_mean, x0_std=x0_std, multi_corruption=multi_corruption
+        ),  # type: ignore
         corruption=multi_corruption,
         loss_fn=Namespace(
             model_targets={k: ModelTarget.score_times_std for k in multi_corruption.sdes.keys()}
@@ -88,16 +91,23 @@ def test_reverse_sampling(corruption_type: Type, predictor_type: Type, corrector
 
     multi_corruption: MultiCorruption = MultiCorruption(sdes={f: corruption_type() for f in fields})
 
-    with pytest.raises(IncompatibleSampler) if predictor_type in INCOMPATIBLE_SAMPLERS[
-        corruption_type
-    ] or corrector_type in INCOMPATIBLE_SAMPLERS[corruption_type] else nullcontext():
+    with (
+        pytest.raises(IncompatibleSampler)
+        if predictor_type in INCOMPATIBLE_SAMPLERS[corruption_type]
+        or corrector_type in INCOMPATIBLE_SAMPLERS[corruption_type]
+        else nullcontext()
+    ):
         multi_sampler = PredictorCorrector(
             diffusion_module=get_diffusion_module(
                 multi_corruption=multi_corruption, x0_mean=x0_mean, x0_std=x0_std
             ),
             device=torch.device("cpu"),
-            predictor_partials={} if predictor_type is None else {k: predictor_type for k in fields},  # type: ignore
-            corrector_partials={} if corrector_type is None else {k: corrector_type for k in fields},  # type: ignore
+            predictor_partials=(
+                {} if predictor_type is None else {k: predictor_type for k in fields}
+            ),  # type: ignore
+            corrector_partials=(
+                {} if corrector_type is None else {k: corrector_type for k in fields}
+            ),  # type: ignore
             n_steps_corrector=5,
             N=N,
             eps_t=0.001,

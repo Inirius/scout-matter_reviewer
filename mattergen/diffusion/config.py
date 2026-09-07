@@ -7,7 +7,6 @@ from typing import Any
 
 @dataclass
 class Config:
-
     # This is for CLI applications that need to reuse a CLI parameter in multiple places
     # in the config file. The idea is that you use `my_cli params.output_dir=foobar`
     # and in other places in the config file `output_dir: ${params.output_dir}`

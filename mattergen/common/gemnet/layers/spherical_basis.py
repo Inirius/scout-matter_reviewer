@@ -1,8 +1,8 @@
-"""
-Copyright (c) Facebook, Inc. and its affiliates.
-Copyright (c) Microsoft Corporation.
-Licensed under the MIT License.
-Adapted from https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/spherical_basis.py.
+"""Copyright (c) Facebook, Inc.
+
+and its affiliates. Copyright (c) Microsoft Corporation. Licensed under the MIT License. Adapted
+from
+https://github.com/FAIR-Chem/fairchem/blob/main/src/fairchem/core/models/gemnet/layers/spherical_basis.py.
 """
 
 import sympy as sym
@@ -14,19 +14,11 @@ from mattergen.common.gemnet.layers.radial_basis import RadialBasis
 
 
 class CircularBasisLayer(torch.nn.Module):
-    """
-    2D Fourier Bessel Basis
+    """2D Fourier Bessel Basis.
 
-    Parameters
-    ----------
-    num_spherical: int
-        Controls maximum frequency.
-    radial_basis: RadialBasis
-        Radial basis functions
-    cbf: dict
-        Name and hyperparameters of the cosine basis function
-    efficient: bool
-        Whether to use the "efficient" summation order
+    Parameters ---------- num_spherical: int     Controls maximum frequency. radial_basis:
+    RadialBasis     Radial basis functions cbf: dict     Name and hyperparameters of the cosine
+    basis function efficient: bool     Whether to use the "efficient" summation order
     """
 
     def __init__(

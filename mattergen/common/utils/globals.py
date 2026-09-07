@@ -1,33 +1,35 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-"""Note that importing this module has two side effects:
-1. It sets the environment variable `PROJECT_ROOT` to the root of the explorers project.
-2. It registers a new resolver for OmegaConf, `eval`, which allows us to use `eval` in our config files.
+"""Note that importing this module has two side effects: 1.
+
+It sets the environment variable `PROJECT_ROOT` to the root of the explorers project. 2. It
+registers a new resolver for OmegaConf, `eval`, which allows us to use `eval` in our config files.
 """
+
 import os
 from functools import lru_cache
 from pathlib import Path
-import psutil
 
 import torch
 from omegaconf import OmegaConf
 
 device = None
 
+
 def get_device_name() -> torch.device:
-    """
-    Returns the name of the current device (GPU or CPU).
-    """
+    """Returns the name of the current device (GPU or CPU)."""
     global device
     if device is None:
         device = get_device()
     return device
 
+
 @lru_cache
-def get_device(min_gpu_mem_gb=8, force_gpu:int | None = None) -> torch.device:
-    """
-    Returns the GPU device with the most free memory, and at least min_gpu_mem_gb free memory, if available.
+def get_device(min_gpu_mem_gb=8, force_gpu: int | None = None) -> torch.device:
+    """Returns the GPU device with the most free memory, and at least min_gpu_mem_gb free memory, if
+    available.
+
     Otherwise, returns CPU.
     """
     global device
@@ -42,10 +44,10 @@ def get_device(min_gpu_mem_gb=8, force_gpu:int | None = None) -> torch.device:
         max_mem = 0
         for i in range(torch.cuda.device_count()):
             free_mem_bytes, _ = torch.cuda.mem_get_info(i)
-            if free_mem_bytes >= min_gpu_mem_gb* (1024 ** 3) and free_mem_bytes > max_mem:
+            if free_mem_bytes >= min_gpu_mem_gb * (1024**3) and free_mem_bytes > max_mem:
                 device = torch.device(f"cuda:{i}")
                 max_mem = free_mem_bytes
-    else :
+    else:
         print(f"No GPU with at least {min_gpu_mem_gb} GB free memory found. Falling back to CPU.")
         device = torch.device("cpu")
     print(f"Using device: {device} with at least {min_gpu_mem_gb} GB free memory.")
@@ -54,9 +56,7 @@ def get_device(min_gpu_mem_gb=8, force_gpu:int | None = None) -> torch.device:
 
 @lru_cache
 def get_pyg_device() -> torch.device:
-    """
-    Some operations of pyg don't work on MPS, so fall back to CPU.
-    """
+    """Some operations of pyg don't work on MPS, so fall back to CPU."""
     if torch.cuda.is_available():
         return torch.device("cuda")
     return torch.device("cpu")
@@ -165,8 +165,8 @@ MAX_ATOMIC_NUM = 100
 
 # Set `eval` resolver
 def try_eval(s):
-    """This is a custom resolver for OmegaConf that allows us to use `eval` in our config files
-    with the syntax `${eval:'${foo} + ${bar}'}
+    """This is a custom resolver for OmegaConf that allows us to use `eval` in our config files with
+    the syntax `${eval:'${foo} + ${bar}'}
 
     See:
     https://omegaconf.readthedocs.io/en/2.3_branch/how_to_guides.html#id1

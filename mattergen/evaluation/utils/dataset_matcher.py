@@ -22,17 +22,13 @@ from mattergen.evaluation.utils.structure_matcher import (
 def get_matches(
     structure_matcher: StructureMatcher, d1: List[Structure], d2: List[Structure]
 ) -> dict[int, list[int]]:
-    """
-    Iterates d1 to find matches in d2.
+    """Iterates d1 to find matches in d2.
 
-    Args:
-        structure_matcher: StructureMatcher to use for comparison.
-        d1: List of structures to compare.
-        d2: List of structures to compare against.
+    Args:     structure_matcher: StructureMatcher to use for comparison.     d1: List of structures
+    to compare.     d2: List of structures to compare against.
 
-    Returns:
-        matches: Dictionary of matches. Key is the index of the structure in d1 and value is the index of the structure in d2.
-
+    Returns:     matches: Dictionary of matches. Key is the index of the structure in d1 and value
+    is the index of the structure in d2.
     """
     matches: dict[int, list[int]] = defaultdict(list)
 
@@ -154,16 +150,13 @@ class DisorderedDatasetUniquenessComputer:
 
 
 def matches_to_mask(match_idx: Iterable[int], num_samples: int) -> np.typing.NDArray[bool]:
-    """
-    Convert matches to a boolean mask.
+    """Convert matches to a boolean mask.
 
-    Args:
-        match_idx: List of indices of the structures from the input dataset which have a match
-            in the reference dataset.
-        num_samples: Number of structures in the input dataset.
+    Args:     match_idx: List of indices of the structures from the input dataset which have a match
+    in the reference dataset.     num_samples: Number of structures in the input dataset.
 
-    Returns:
-        mask: Boolean mask of length num_samples. True if the structure has a match, False if not.
+    Returns:     mask: Boolean mask of length num_samples. True if the structure has a match, False
+    if not.
     """
     mask = np.zeros(num_samples, dtype=bool)
     mask[list(match_idx)] = True
@@ -171,10 +164,10 @@ def matches_to_mask(match_idx: Iterable[int], num_samples: int) -> np.typing.NDA
 
 
 class DatasetMatcher:
-    """
-    Class to match a dataset of structures to a reference dataset.
-    Can be used to compute novelty of the input dataset w.r.t. the reference dataset or
-    to compute the recall.
+    """Class to match a dataset of structures to a reference dataset.
+
+    Can be used to compute novelty of the input dataset w.r.t. the reference dataset or to compute
+    the recall.
     """
 
     def __init__(
@@ -185,8 +178,8 @@ class DatasetMatcher:
     def grouped_dataset_entries(
         self, dataset: ReferenceDataset
     ) -> Mapping[str, list[ComputedStructureEntry]]:
-        """
-        Returns a dictionary of entries grouped by a key, e.g., chemsys or reduced_formula.
+        """Returns a dictionary of entries grouped by a key, e.g., chemsys or reduced_formula.
+
         To be implemented by the concrete dataset matcher.
         """
         raise NotImplementedError
@@ -194,16 +187,14 @@ class DatasetMatcher:
     def __call__(
         self, dataset: ReferenceDataset, reference_dataset: ReferenceDataset
     ) -> dict[int, list[str]]:
-        """
-        For each entry in the dataset, check if there is a match in the reference dataset.
+        """For each entry in the dataset, check if there is a match in the reference dataset.
 
-        Args:
-            dataset: Dataset to match.
-            reference_dataset: Reference dataset to match against.
+        Args:     dataset: Dataset to match.     reference_dataset: Reference dataset to match
+        against.
 
-        Returns:
-            global_match_idx: Dictionary of matches. Key is the index of the structure in the input dataset and
-              value is a list of the material_ids (str) of the matching structures in the reference dataset
+        Returns:     global_match_idx: Dictionary of matches. Key is the index of the structure in
+        the input dataset and       value is a list of the material_ids (str) of the matching
+        structures in the reference dataset
         """
         local_match_indices: dict[str, dict[int, list[int]]] = {}
         grouped_dataset_entries = self.grouped_dataset_entries(dataset=dataset)
@@ -237,9 +228,7 @@ class OrderedDatasetMatcher(DatasetMatcher):
     def grouped_dataset_entries(
         self, dataset: ReferenceDataset
     ) -> Mapping[str, list[ComputedStructureEntry]]:
-        """
-        Ordered dataset matcher groups by reduced formula.
-        """
+        """Ordered dataset matcher groups by reduced formula."""
         return dataset.entries_by_reduced_formula
 
 
@@ -250,7 +239,5 @@ class DisorderedDatasetMatcher(DatasetMatcher):
     def grouped_dataset_entries(
         self, dataset: ReferenceDataset
     ) -> Mapping[str, list[ComputedStructureEntry]]:
-        """
-        Disordered dataset matcher groups by chemsys.
-        """
+        """Disordered dataset matcher groups by chemsys."""
         return dataset.entries_by_chemsys

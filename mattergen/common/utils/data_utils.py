@@ -28,16 +28,13 @@ def get_element_symbol(Z: int) -> str:
 
 
 def abs_cap(val: float, max_abs_val: float = 1.0) -> float:
-    """
-    Returns the value with its absolute value capped at max_abs_val.
-    Particularly useful in passing values to trigonometric functions where
-    numerical errors may result in an argument > 1 being passed in.
-    https://github.com/materialsproject/pymatgen/blob/b789d74639aa851d7e5ee427a765d9fd5a8d1079/pymatgen/util/num.py#L15
-    Args:
-        val (float): Input value.
-        max_abs_val (float): The maximum absolute value for val. Defaults to 1.
-    Returns:
-        val if abs(val) < 1 else sign of val * max_abs_val.
+    """Returns the value with its absolute value capped at max_abs_val. Particularly useful in
+    passing values to trigonometric functions where numerical errors may result in an argument > 1
+    being passed in. https://github.com/materialsproject/pymatgen/blob/b789d74639aa851d7e5ee427a765d
+    9fd5a8d1079/pymatgen/util/num.py#L15 Args: val (float): Input value. max_abs_val (float): The
+    maximum absolute value for val. Defaults to 1.
+
+    Returns:     val if abs(val) < 1 else sign of val * max_abs_val.
     """
     return max(min(val, max_abs_val), -max_abs_val)
 
@@ -46,6 +43,7 @@ def lattice_params_to_matrix(
     a: float, b: float, c: float, alpha: float, beta: float, gamma: float
 ) -> np.ndarray:
     """Converts lattice from abc, angles to matrix.
+
     https://github.com/materialsproject/pymatgen/blob/b789d74639aa851d7e5ee427a765d9fd5a8d1079/pymatgen/core/lattice.py#L311
     """
     angles_r = np.radians([alpha, beta, gamma])
@@ -72,8 +70,7 @@ def lattice_params_to_matrix_torch(
 ) -> torch.Tensor:
     """Batched torch version to compute lattice matrix from params.
 
-    lengths: torch.Tensor of shape (N, 3), unit A
-    angles: torch.Tensor of shape (N, 3), unit degree
+    lengths: torch.Tensor of shape (N, 3), unit A angles: torch.Tensor of shape (N, 3), unit degree
     """
     coses = torch.clamp(torch.cos(torch.deg2rad(angles)), -1.0, 1.0)
     sins = (1 - coses**2).sqrt()
@@ -112,13 +109,13 @@ def lattice_params_to_matrix_torch(
 def lattice_matrix_to_params_torch(
     matrix: torch.Tensor, eps: float = 0.0
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Convert a batch of lattice matrices into their corresponding unit cell vector lengths and angles.
+    """Convert a batch of lattice matrices into their corresponding unit cell vector lengths and
+    angles.
 
-    Args:
-        matrix (torch.Tensor, [B, 3, 3]): The batch of lattice matrices.
+    Args:     matrix (torch.Tensor, [B, 3, 3]): The batch of lattice matrices.
 
-    Returns:
-        tuple[torch.Tensor], ([B, 3], [B, 3]): tuple whose first element is the lengths of the unit cell vectors, and the second one gives the angles between the vectors.
+    Returns:     tuple[torch.Tensor], ([B, 3], [B, 3]): tuple whose first element is the lengths of
+    the unit cell vectors, and the second one gives the angles between the vectors.
     """
     assert len(matrix.shape) == 3
 
@@ -243,21 +240,18 @@ def radius_graph_pbc(
 
     Note: topk should take into account self-self edge for (i, i)
 
-        Keyword arguments
-        -----------------
-        cart_cords.shape=[Ntotal, 3] -- concatenate all atoms over all crystals
-        lattice.shape=[Ncrystal, 3, 3]
-        num_atoms.shape=[Ncrystal]
-        max_cell_images_per_dim -- constrain the max. number of cell images per dimension in event
-                                that infinitesimal angles between lattice vectors are encountered.
+    Keyword arguments ----------------- cart_cords.shape=[Ntotal, 3] -- concatenate all atoms over
+    all crystals lattice.shape=[Ncrystal, 3, 3] num_atoms.shape=[Ncrystal] max_cell_images_per_dim
+    -- constrain the max. number of cell images per dimension in event                         that
+    infinitesimal angles between lattice vectors are encountered.
 
-    WARNING: It is possible (and has been observed) that for rare cases when periodic atom images are
-    on or close to the cut off radius boundary, doing these operations in 32 bit floating point can
-    lead to atoms being spuriously considered within or outside of the cut off radius. This can lead
-    to invariance of the neighbour list under global translation of all atoms in the unit cell. For
-    the rare cases where this was observed, switching to 64 bit precision solved the issue. Since all
-    graph embeddings should taper messages from neighbours to zero at the cut off radius, the effect
-    of these errors in 32-bit should be negligible in practice.
+    WARNING: It is possible (and has been observed) that for rare cases when periodic atom images
+    are on or close to the cut off radius boundary, doing these operations in 32 bit floating point
+    can lead to atoms being spuriously considered within or outside of the cut off radius. This can
+    lead to invariance of the neighbour list under global translation of all atoms in the unit cell.
+    For the rare cases where this was observed, switching to 64 bit precision solved the issue.
+    Since all graph embeddings should taper messages from neighbours to zero at the cut off radius,
+    the effect of these errors in 32-bit should be negligible in practice.
     """
     assert topk_per_pair is None, "non None values of topk_per_pair is not supported"
     edge_index, unit_cell, num_neighbors_image, _, _ = radius_graph_pbc_ocp(
@@ -373,7 +367,7 @@ def torch_nanstd(x: torch.Tensor, dim: int, unbiased: bool) -> torch.Tensor:
 def compute_lattice_polar_decomposition(lattice_matrix: torch.Tensor) -> torch.Tensor:
     # Polar decomposition via SVD, see https://en.wikipedia.org/wiki/Polar_decomposition
     # lattice_matrix: [batch_size, 3, 3]
-    # Computes the (unique) symmetric lattice matrix that is equivalent (up to rotation) to the input lattice.
+    # Computes the (unique) symmetric lattice matrix that is equivalent (up to rotation) to the input lattice.  # noqa: E501
 
     W, S, V_transp = torch.linalg.svd(lattice_matrix)
     S_square = torch.diag_embed(S)

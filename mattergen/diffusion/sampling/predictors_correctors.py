@@ -2,11 +2,11 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-# Adapted from https://github.com/yang-song/score_sde_pytorch which is released under Apache license.
+# Adapted from https://github.com/yang-song/score_sde_pytorch which is released under Apache license.  # noqa: E501
 
 # Key changes:
 # - Introduced batch_idx argument to work with graph-like data (e.g. molecules)
-# - Introduced `..._given_score` methods so that multiple fields can be sampled at once using a shared score model. See PredictorCorrector for how this is used.
+# - Introduced `..._given_score` methods so that multiple fields can be sampled at once using a shared score model. See PredictorCorrector for how this is used.  # noqa: E501
 
 import abc
 
@@ -52,12 +52,9 @@ class LangevinCorrector(Sampler):
     ):
         """The Langevin corrector.
 
-        Args:
-            corruption: corruption process
-            score_fn: score function
-            n_steps: number of Langevin steps at each noise level
-            snr: signal-to-noise ratio
-            max_step_size: largest coefficient that the score can be multiplied by for each Langevin step.
+        Args:     corruption: corruption process     score_fn: score function     n_steps: number of
+        Langevin steps at each noise level     snr: signal-to-noise ratio     max_step_size: largest
+        coefficient that the score can be multiplied by for each Langevin step.
         """
         super().__init__(corruption=corruption, score_fn=score_fn)
         self.n_steps = n_steps
@@ -107,7 +104,7 @@ class LangevinCorrector(Sampler):
 
             noise_norm = torch.sqrt(scatter_add(noise_norm_square, dim=-1, index=batch_idx)).mean()
 
-        # If gradient is zero (i.e., we are sampling from an improper distribution that's flat over the whole of R^n)
+        # If gradient is zero (i.e., we are sampling from an improper distribution that's flat over the whole of R^n)  # noqa: E501
         # the step_size blows up. Clip step_size to avoid this.
         # The EGNN reports zero scores when there are no edges between nodes.
         step_size = (snr * noise_norm / grad_norm) ** 2 * 2 * alpha
