@@ -395,14 +395,14 @@ class PredictorCorrector(Generic[Diffusable]):
                 # Corrector updates.
                 if self._correctors and self.algo == 1:
                     for _ in range(self._n_steps_corrector):
-                        score = self._score_fn(batch_, t)
+                        score = self._score_fn(batch_, t + dt)
                         fns = {
                             k: corrector.step_given_score
                             for k, corrector in self._correctors.items()
                         }
                         samples_means: dict[str, Tuple[torch.Tensor, torch.Tensor]] = apply(
                             fns=fns,
-                            broadcast={"t": t, "dt": dt},
+                            broadcast={"t": t + dt, "dt": dt},
                             x=batch_,
                             score=score,
                             batch_idx=self._multi_corruption._get_batch_indices(batch_),
