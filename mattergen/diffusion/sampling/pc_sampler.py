@@ -295,12 +295,14 @@ class PredictorCorrector(Generic[Diffusable]):
         s: torch.Tensor,
         k: str,
         batch_idx: torch.Tensor | None = None,
+        batch: Diffusable | None = None,
     ) -> Tuple[Diffusable, torch.Tensor]:
         """Forward pass for a corruption from s to t."""
         return (
-            self._multi_corruption.corruptions[k].sample_from_s(batch_k, t, s, batch_idx=batch_idx),
+            self._multi_corruption.corruptions[k].sample_from_s(batch_k, t, s, batch_idx=batch_idx, batch=batch
+            ),
             self._multi_corruption.corruptions[k].marginal_prob_from_s(
-                batch_k, t, s, batch_idx=batch_idx
+                batch_k, t, s, batch_idx=batch_idx, batch=batch
             )[0],
         )
 
